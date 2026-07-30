@@ -126,3 +126,22 @@ formulas. They must retain and label the log ratio when exponentiation overflows
 numerator and denominator, and describe all results as normalized Wald approximations rather than
 exact fitted likelihoods, Bayes factors, or posterior probabilities. The legacy module and every
 pre-v0.2.0 calculation remain unchanged.
+
+## 2026-07-30: Verify finite support endpoints and fail closed when unrepresentable
+
+**Context:** At an extreme working-scale center, the analytic half-width can be smaller than or
+comparable to one binary64 spacing unit. Multiple requested support criteria can then round to the
+same adjacent endpoints even though those floats have one fixed, materially different support
+ratio. Finite-range clipping flags do not describe this condition because the endpoints themselves
+are finite.
+
+**Decision:** In v0.2.1, independently re-evaluate every non-clipped support-interval endpoint with
+the exact-binary64 `log_support_ratio` kernel. Require agreement with the requested MLE-to-bound log
+support at relative tolerance `1e-12` and absolute tolerance `0`. Raise `ValidationError` when the
+check fails. Continue returning explicitly flagged overflow-clipped endpoints without claiming
+that a clipped bound equals the requested analytic boundary.
+
+**Consequences:** Inputs whose analytic boundaries are not accurately representable now fail closed
+instead of returning a misleading interval. The no-absolute-floor rule also protects near-zero
+cutoffs from silently collapsing to the center. Representable endpoints, formulas, root-public
+names, the legacy adapter, and frozen baseline values remain unchanged.

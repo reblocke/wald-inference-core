@@ -57,8 +57,8 @@ SMOKE_CODE = textwrap.dedent(
         raise AssertionError(f"unexpected smoke value type: {type(value)!r}")
 
 
-    assert version("wald-inference") == "0.2.0"
-    assert wald_inference.__version__ == "0.2.0"
+    assert version("wald-inference") == "0.2.1"
+    assert wald_inference.__version__ == "0.2.1"
     assert wald_inference.__all__
     for exported_name in wald_inference.__all__:
         assert hasattr(wald_inference, exported_name), exported_name
@@ -159,6 +159,16 @@ SMOKE_CODE = textwrap.dedent(
         is None
     )
     assert float(log_support_ratio(0.0, 40.0, theta_hat=0.0, se=1.0)) == 800.0
+    try:
+        support_interval_for_ratio(
+            float.fromhex("0x1.1ccf385ebc8a0p+1023"),
+            1.0183045837972807e292,
+            mle_to_bound_ratio=4.0,
+        )
+    except ValidationError as exc:
+        assert "cannot represent the requested log-relative-likelihood cutoff" in str(exc)
+    else:
+        raise AssertionError("unrepresentable support boundary did not raise ValidationError")
 
     design = design_metrics_for_true_effects(
         [0.0, 0.3],

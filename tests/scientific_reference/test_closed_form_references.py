@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import math
+from fractions import Fraction
 
+import pytest
 from scipy.stats import norm
 
 from wald_inference import (
+    ValidationError,
     design_metrics_for_true_effects,
     legacy_critical_effect_distance,
     log_support_ratio,
@@ -79,6 +82,29 @@ def test_exp_2_ratio_interval_is_the_legacy_s_minus_2_interval() -> None:
         standard_error,
         mle_to_bound_ratio=math.exp(2.0),
     ) == support_interval(theta_hat, standard_error)
+
+
+def test_extreme_binary64_neighbor_cannot_stand_in_for_a_requested_support_boundary() -> None:
+    center = float.fromhex("0x1.1ccf385ebc8a0p+1023")
+    standard_error = 1.0183045837972807e292
+    nearest_lower = float.fromhex("0x1.1ccf385ebc89fp+1023")
+    exact_delta = Fraction.from_float(center) - Fraction.from_float(nearest_lower)
+    exact_se = Fraction.from_float(standard_error)
+    independently_derived_log_ratio = float((exact_delta * exact_delta) / (2 * exact_se * exact_se))
+
+    assert independently_derived_log_ratio == 1.920729410347063
+    assert not math.isclose(
+        independently_derived_log_ratio,
+        math.log(4.0),
+        rel_tol=1e-12,
+        abs_tol=0.0,
+    )
+    with pytest.raises(ValidationError, match="cannot represent the requested"):
+        support_interval_for_ratio(
+            center,
+            standard_error,
+            mle_to_bound_ratio=4.0,
+        )
 
 
 def test_legacy_detectability_distance_matches_documented_z_sum() -> None:
