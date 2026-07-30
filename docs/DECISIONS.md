@@ -107,3 +107,22 @@ the root `wald_inference.__all__`, recompute any constant, or add a second warni
 general consumers continue to use canonical root functions. Any future removal or value change
 requires an explicit versioned migration; this decision does not broaden the package's scientific
 scope or change numerical behavior.
+
+## 2026-07-29: Expose generic support criteria through log-domain-first APIs
+
+**Context:** A focused relative-support app needs arbitrary pairwise comparisons and support
+interval criteria such as 2:1, 4:1, and 8:1. Computing these relationships downstream would fork
+the Wald formula, while changing the existing `support_interval` signature or S−2 default would
+unnecessarily disturb the frozen interface.
+
+**Decision:** In v0.2.0, add root-public `log_support_ratio`, scalar `support_ratio`, and
+`support_interval_for_ratio`. Define pairwise ordering explicitly as `log L(A) - log L(B)`, use the
+log-domain result as the authoritative extreme-value representation, require finite
+MLE-to-bound ratios greater than one, and delegate ratio-based intervals to the existing canonical
+log-cutoff implementation. Preserve the existing `support_interval` API and S−2 default unchanged.
+
+**Consequences:** Downstream applications can offer generic support criteria without app-local
+formulas. They must retain and label the log ratio when exponentiation overflows, identify the
+numerator and denominator, and describe all results as normalized Wald approximations rather than
+exact fitted likelihoods, Bayes factors, or posterior probabilities. The legacy module and every
+pre-v0.2.0 calculation remain unchanged.

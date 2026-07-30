@@ -13,7 +13,13 @@ from wald_inference.compatibility import (
     wald_point_summary,
 )
 from wald_inference.effects import from_working_scale, to_working_scale
-from wald_inference.likelihood import relative_likelihood, support_interval
+from wald_inference.likelihood import (
+    log_support_ratio,
+    relative_likelihood,
+    support_interval,
+    support_interval_for_ratio,
+    support_ratio,
+)
 from wald_inference.reconstruction import reconstruct_wald
 
 WORKING_SCALE_FLOATS = st.floats(
@@ -157,6 +163,151 @@ def test_support_interval_has_requested_log_support_at_finite_endpoints(
     expected_lower = theta_hat - (distance * se)
     expected_upper = theta_hat + (distance * se)
     assert interval.range_working == pytest.approx((expected_lower, expected_upper))
+
+
+@given(
+    theta_hat=st.floats(
+        min_value=-1e4,
+        max_value=1e4,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+    se=st.floats(min_value=0.05, max_value=10.0),
+    candidate_a=st.floats(
+        min_value=-1e4,
+        max_value=1e4,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+    candidate_b=st.floats(
+        min_value=-1e4,
+        max_value=1e4,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+)
+def test_pairwise_log_support_is_antisymmetric(
+    theta_hat: float,
+    se: float,
+    candidate_a: float,
+    candidate_b: float,
+) -> None:
+    a_to_b = float(
+        log_support_ratio(
+            candidate_a,
+            candidate_b,
+            theta_hat=theta_hat,
+            se=se,
+        )
+    )
+    b_to_a = float(
+        log_support_ratio(
+            candidate_b,
+            candidate_a,
+            theta_hat=theta_hat,
+            se=se,
+        )
+    )
+
+    assert a_to_b == pytest.approx(-b_to_a)
+    assert (
+        float(
+            log_support_ratio(
+                candidate_a,
+                candidate_a,
+                theta_hat=theta_hat,
+                se=se,
+            )
+        )
+        == 0.0
+    )
+
+
+@given(
+    theta_hat=st.floats(
+        min_value=-1e3,
+        max_value=1e3,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+    se=st.floats(min_value=0.1, max_value=10.0),
+    candidate_a=st.floats(
+        min_value=-1e3,
+        max_value=1e3,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+    candidate_b=st.floats(
+        min_value=-1e3,
+        max_value=1e3,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+)
+def test_support_ratio_matches_exponentiated_log_when_representable(
+    theta_hat: float,
+    se: float,
+    candidate_a: float,
+    candidate_b: float,
+) -> None:
+    log_ratio = float(
+        log_support_ratio(
+            candidate_a,
+            candidate_b,
+            theta_hat=theta_hat,
+            se=se,
+        )
+    )
+    ratio = support_ratio(
+        candidate_a,
+        candidate_b,
+        theta_hat=theta_hat,
+        se=se,
+    )
+
+    if log_ratio > LOG_MAX_FLOAT:
+        assert ratio is None
+    else:
+        assert ratio == pytest.approx(math.exp(log_ratio))
+
+
+@given(
+    theta_hat=st.floats(
+        min_value=-100.0,
+        max_value=100.0,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+    se=st.floats(min_value=0.05, max_value=10.0),
+    ratio=st.floats(
+        min_value=1.000001,
+        max_value=1e100,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+)
+def test_ratio_support_interval_endpoints_have_requested_pairwise_support(
+    theta_hat: float,
+    se: float,
+    ratio: float,
+) -> None:
+    interval = support_interval_for_ratio(
+        theta_hat,
+        se,
+        mle_to_bound_ratio=ratio,
+    )
+
+    assert interval.working_clipped is False
+    for endpoint in interval.range_working:
+        endpoint_log_ratio = float(
+            log_support_ratio(
+                theta_hat,
+                endpoint,
+                theta_hat=theta_hat,
+                se=se,
+            )
+        )
+        assert endpoint_log_ratio == pytest.approx(math.log(ratio))
 
 
 @given(

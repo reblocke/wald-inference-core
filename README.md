@@ -8,6 +8,8 @@ The distribution is `wald-inference`; the import package is `wald_inference`. Ve
 the behavior-preserving extraction from the immutable
 [`conf_curve_likelihood` pre-split baseline](https://github.com/reblocke/conf_curve_likelihood/releases/tag/pre-split-baseline-2026-07-29).
 Version `0.1.1` preserves that numerical behavior and documents stable adapter-only imports.
+Version `0.2.0` adds generic pairwise support ratios and MLE-to-bound support intervals without
+changing the preserved calculations.
 
 ## Question supported
 
@@ -25,7 +27,8 @@ particular study.
 - validates an optional reported estimate against the interval midpoint;
 - computes standardized distances, two-sided compatibility, and normalized Wald relative
   likelihood;
-- computes S−2 and generic log-support intervals and pairwise support comparisons;
+- computes S−2, generic log-support, and MLE-to-bound-ratio intervals plus pairwise support
+  comparisons;
 - preserves the legacy z-sum critical-effect benchmark;
 - represents six selected-claim rules and computes selected-claim probability, Type S, Type M, and
   observed exaggeration; and
@@ -58,11 +61,11 @@ For development from a clone:
 uv sync --locked --all-groups
 ```
 
-GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.1.1
+GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.2.0
 wheel:
 
 ```bash
-python -m pip install ./wald_inference-0.1.1-py3-none-any.whl
+python -m pip install ./wald_inference-0.2.0-py3-none-any.whl
 ```
 
 The release page is <https://github.com/reblocke/wald-inference-core/releases>. A downstream
@@ -78,6 +81,7 @@ from wald_inference import (
     compatibility_curve,
     reconstruct_wald_from_95_ci,
     relative_likelihood,
+    support_interval_for_ratio,
 )
 
 reconstruction = reconstruct_wald_from_95_ci(
@@ -102,10 +106,17 @@ support = relative_likelihood(
     reconstruction.estimate_working,
     reconstruction.standard_error,
 )
+four_to_one_interval = support_interval_for_ratio(
+    reconstruction.estimate_working,
+    reconstruction.standard_error,
+    mle_to_bound_ratio=4.0,
+)
 ```
 
 `compatibility[1]` and `support[1]` are one at the reconstructed estimate. The endpoint
 compatibilities are approximately `0.05` under the 95% Wald reconstruction.
+`four_to_one_interval` contains working-scale values for which the CI-implied estimate is no more
+than four times as supported under the normalized Wald reconstruction.
 
 ## Minimal Type S/M example
 
@@ -196,7 +207,7 @@ privacy behavior.
 
 ## Version, citation, license, and contact
 
-- Version prepared for release: `0.1.1`
+- Version prepared for release: `0.2.0`
 - Citation metadata: [`CITATION.cff`](CITATION.cff)
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - License: MIT; see [`LICENSE`](LICENSE)

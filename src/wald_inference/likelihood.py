@@ -83,6 +83,80 @@ def _exp_or_none(log_value: float | None) -> float | None:
     return float(np.exp(log_value))
 
 
+def _log_support_ratio_kernel(
+    log_candidate_a: ObservedResult,
+    log_candidate_b: ObservedResult,
+) -> ObservedResult:
+    try:
+        with np.errstate(over="ignore", invalid="ignore"):
+            log_ratio = np.subtract(log_candidate_a, log_candidate_b)
+    except ValueError as exc:
+        raise ValidationError("Support-ratio values must be broadcast-compatible.") from exc
+    if not np.isfinite(log_ratio).all():
+        raise ValidationError("Log support ratio exceeds the finite floating-point range.")
+    return log_ratio
+
+
+def log_support_ratio(
+    candidate_a_working: LikelihoodValues,
+    candidate_b_working: LikelihoodValues,
+    *,
+    theta_hat: float,
+    se: float,
+) -> ObservedResult:
+    """Return finite log L(A)/L(B) under the normalized Wald reconstruction."""
+
+    log_candidate_a = log_relative_likelihood(
+        candidate_a_working,
+        theta_hat=theta_hat,
+        se=se,
+    )
+    log_candidate_b = log_relative_likelihood(
+        candidate_b_working,
+        theta_hat=theta_hat,
+        se=se,
+    )
+    return _log_support_ratio_kernel(log_candidate_a, log_candidate_b)
+
+
+def _coerce_support_pair(
+    candidate_a_working: float,
+    candidate_b_working: float,
+) -> tuple[float, float]:
+    try:
+        candidate_a = float(candidate_a_working)
+        candidate_b = float(candidate_b_working)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValidationError("Support comparison values must be finite.") from exc
+    if not isfinite(candidate_a) or not isfinite(candidate_b):
+        raise ValidationError("Support comparison values must be finite.")
+    return candidate_a, candidate_b
+
+
+def support_ratio(
+    candidate_a_working: float,
+    candidate_b_working: float,
+    *,
+    theta_hat: float,
+    se: float,
+) -> float | None:
+    """Return L(A)/L(B), or ``None`` when exponentiation would overflow."""
+
+    candidate_a, candidate_b = _coerce_support_pair(
+        candidate_a_working,
+        candidate_b_working,
+    )
+    log_ratio = float(
+        log_support_ratio(
+            candidate_a,
+            candidate_b,
+            theta_hat=theta_hat,
+            se=se,
+        )
+    )
+    return _exp_or_none(log_ratio)
+
+
 def support_comparison(
     candidate_working: float,
     reference_working: float,
@@ -92,13 +166,7 @@ def support_comparison(
 ) -> SupportComparison:
     """Compare candidate support with the MLE and with a reference value."""
 
-    try:
-        candidate = float(candidate_working)
-        reference = float(reference_working)
-    except (TypeError, ValueError, OverflowError) as exc:
-        raise ValidationError("Support comparison values must be finite.") from exc
-    if not isfinite(candidate) or not isfinite(reference):
-        raise ValidationError("Support comparison values must be finite.")
+    candidate, reference = _coerce_support_pair(candidate_working, reference_working)
 
     log_values = log_relative_likelihood(
         np.asarray([candidate, reference]),
@@ -180,4 +248,28 @@ def support_interval(
         upper_working=upper_working,
         lower_clipped=lower_clipped,
         upper_clipped=upper_clipped,
+    )
+
+
+def support_interval_for_ratio(
+    theta_hat: float,
+    se: float,
+    *,
+    mle_to_bound_ratio: float,
+) -> SupportInterval:
+    """Return effects no more than a chosen ratio less supported than the MLE."""
+
+    try:
+        ratio = float(mle_to_bound_ratio)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValidationError(
+            "MLE-to-bound support ratio must be finite and greater than 1."
+        ) from exc
+    if not isfinite(ratio) or ratio <= 1.0:
+        raise ValidationError("MLE-to-bound support ratio must be finite and greater than 1.")
+
+    return support_interval(
+        theta_hat,
+        se,
+        log_relative_likelihood_cutoff=-float(np.log(ratio)),
     )

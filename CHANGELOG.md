@@ -4,6 +4,33 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-29
+
+### Added
+
+- Added a vectorized, log-domain-first `log_support_ratio` API with explicit numerator/denominator
+  ordering and broadcasting validation.
+- Added scalar `support_ratio`, which returns `None` rather than infinity when exponentiating a
+  finite log ratio would overflow.
+- Added `support_interval_for_ratio` for finite MLE-to-bound criteria greater than one, including
+  the existing S−2 criterion as the special case `R = exp(2)`.
+
+### Validation
+
+- Added unit, property, and independent closed-form tests for pairwise antisymmetry, identity,
+  broadcasting, overflow, analytic interval endpoints, interval-width ordering, invalid criteria,
+  and exact legacy S−2 parity.
+- Extended the exact root API contract and cold-wheel smoke test while retaining the unchanged
+  `wald_inference.legacy` contract.
+- Retained the frozen baseline-parity gate for every pre-existing numerical output and added
+  v0.2.0 expectations to the deterministic archive coverage.
+
+### Scientific impact
+
+- The new APIs expose algebraic consequences of the existing normalized one-parameter Wald
+  likelihood reconstruction. They do not recover an exact fitted-model likelihood, introduce a
+  posterior interpretation, or change any pre-existing formula, default, tolerance, or result.
+
 ## [0.1.1] - 2026-07-29
 
 ### Added
@@ -58,6 +85,7 @@ All notable changes to this project are documented here.
 - The package implements documented Wald approximations, not exact fitted-model likelihood,
   arbitrary non-Wald intervals, Bayesian inference, or design-specific sample-size calculations.
 
-[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/reblocke/wald-inference-core/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/reblocke/wald-inference-core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/reblocke/wald-inference-core/releases/tag/v0.1.0

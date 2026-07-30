@@ -65,8 +65,11 @@ Compatibility is the two-sided normal survival probability for the absolute stan
 ```python
 relative_likelihood(theta, theta_hat, se)
 log_relative_likelihood(theta, theta_hat, se)
+log_support_ratio(candidate_a_working, candidate_b_working, *, theta_hat, se)
+support_ratio(candidate_a_working, candidate_b_working, *, theta_hat, se)
 SupportInterval
 support_interval(theta_hat, se, *, log_relative_likelihood_cutoff=-2.0)
+support_interval_for_ratio(theta_hat, se, *, mle_to_bound_ratio)
 SupportComparison
 support_comparison(candidate_working, reference_working, *, theta_hat, se)
 ```
@@ -75,6 +78,22 @@ Relative likelihood is normalized to one at `theta_hat`. `support_interval` defa
 evidential S−2 cutoff and returns working-scale endpoints plus finite-range clipping flags.
 `support_comparison` reports candidate support relative to both the reconstructed estimate and a
 reference value, with log-domain values available when exponentiated ratios overflow.
+
+`log_support_ratio(A, B, ...)` returns `log L(A) - log L(B)`, so a positive result means A is more
+supported than B under the normalized Wald reconstruction. Its candidate inputs accept scalars,
+sequences, or NumPy arrays and follow NumPy broadcasting rules. `support_ratio` is the scalar
+exponentiated form: it returns `None` when the finite log ratio is larger than the maximum
+representable exponent and may return `0.0` on floating-point underflow. Use `log_support_ratio`
+whenever preserving magnitude or direction at numerical extremes matters.
+
+`support_interval_for_ratio(..., mle_to_bound_ratio=R)` requires a finite `R > 1` and delegates to
+the canonical log-cutoff interval with cutoff `-log(R)`. It contains values for which the
+reconstructed estimate is no more than R times as supported under the normalized Wald likelihood.
+S−2 is exactly the special case `R = exp(2)`; a 2:1 interval is not an S−2 interval.
+
+These APIs compare parameter values under a one-parameter Wald approximation. They do not recover
+the fitted model's exact profile likelihood and do not produce posterior probabilities or Bayes
+factors.
 
 ## Detectability benchmark
 
@@ -201,7 +220,7 @@ ValidationError
 __version__
 ```
 
-`__version__` is `0.1.1`. Canonical numerical outputs intended for serialization contain finite
+`__version__` is `0.2.0`. Canonical numerical outputs intended for serialization contain finite
 values or documented `None`; invalid inputs do not return sentinel NaN or infinity. The documented
 `SelectionRuleSpec.intervals` infinities are structural open-tail boundaries, not calculated result
 values.

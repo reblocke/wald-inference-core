@@ -7,8 +7,10 @@ from scipy.stats import norm
 from wald_inference import (
     design_metrics_for_true_effects,
     legacy_critical_effect_distance,
+    log_support_ratio,
     relative_likelihood,
     support_interval,
+    support_interval_for_ratio,
 )
 
 
@@ -24,6 +26,59 @@ def test_s_minus_2_support_matches_closed_form_normal_kernel() -> None:
     for endpoint in interval.range_working:
         observed = float(relative_likelihood(endpoint, theta_hat, standard_error))
         assert math.isclose(observed, math.exp(-2.0), rel_tol=1e-15, abs_tol=0.0)
+
+
+def test_pairwise_log_support_matches_independent_normal_kernel_difference() -> None:
+    theta_hat = 0.25
+    standard_error = 0.5
+    candidate_a = 1.0
+    candidate_b = 0.0
+    expected = (
+        -0.5 * ((candidate_a - theta_hat) / standard_error) ** 2
+        + 0.5 * ((candidate_b - theta_hat) / standard_error) ** 2
+    )
+
+    observed = float(
+        log_support_ratio(
+            candidate_a,
+            candidate_b,
+            theta_hat=theta_hat,
+            se=standard_error,
+        )
+    )
+
+    assert math.isclose(observed, expected, rel_tol=1e-15, abs_tol=0.0)
+
+
+def test_ratio_support_interval_matches_closed_form_normal_kernel() -> None:
+    theta_hat = 0.35
+    standard_error = 0.2
+    ratio = 4.0
+    expected_half_width = standard_error * math.sqrt(2.0 * math.log(ratio))
+    interval = support_interval_for_ratio(
+        theta_hat,
+        standard_error,
+        mle_to_bound_ratio=ratio,
+    )
+
+    assert interval.range_working == (
+        theta_hat - expected_half_width,
+        theta_hat + expected_half_width,
+    )
+    for endpoint in interval.range_working:
+        observed = float(relative_likelihood(endpoint, theta_hat, standard_error))
+        assert math.isclose(observed, 1.0 / ratio, rel_tol=1e-15, abs_tol=0.0)
+
+
+def test_exp_2_ratio_interval_is_the_legacy_s_minus_2_interval() -> None:
+    theta_hat = 0.35
+    standard_error = 0.2
+
+    assert support_interval_for_ratio(
+        theta_hat,
+        standard_error,
+        mle_to_bound_ratio=math.exp(2.0),
+    ) == support_interval(theta_hat, standard_error)
 
 
 def test_legacy_detectability_distance_matches_documented_z_sum() -> None:
