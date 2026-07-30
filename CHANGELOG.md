@@ -15,6 +15,9 @@ All notable changes to this project are documented here.
 - Route the candidate-to-reference field in `support_comparison` through the canonical
   exact-binary64 `log_support_ratio` implementation. Extreme finite candidates no longer lose a
   representable pairwise log ratio through subtraction of separately rounded log likelihoods.
+- Reject a strict public log-ratio back-transform when exponential underflow would return natural
+  zero, which is outside the ratio effect registry's strictly positive domain. The frozen legacy
+  adapter retains its historical underflow behavior.
 
 ### Validation
 
@@ -22,6 +25,7 @@ All notable changes to this project are documented here.
   standard error, plus an unattainable-target control.
 - Added extreme symmetric and adjacent-candidate regressions proving that `support_comparison` and
   `log_support_ratio` share one pairwise numerical authority.
+- Added scalar/array ratio-underflow, cold-wheel, and legacy-boundary regressions.
 - Retained the existing ordinary-path precision values and notes, candidate-versus-MLE comparison
   fields, root API, legacy adapter, and frozen baseline-parity contract.
 
@@ -33,6 +37,8 @@ All notable changes to this project are documented here.
 - The pairwise repair changes only finite extreme-value comparisons affected by catastrophic
   cancellation. It does not recover a fitted-model likelihood or change the normalized Wald
   interpretation.
+- The transform repair replaces an out-of-domain natural zero with `ValidationError`. The stricter
+  validation does not change any representable natural-scale result.
 
 ## [0.4.0] - 2026-07-30
 

@@ -18,7 +18,9 @@ from_working_scale(effect_type, values)
 scalar input and a NumPy array for sequence or positive-dimensional array input. A
 zero-dimensional array retains the frozen NumPy-operation result: ratio transformations return a
 NumPy scalar, while identity transformations return a zero-dimensional array. Ratio
-transformations reject nonpositive natural-scale values.
+transformations reject nonpositive natural-scale values. A strict public ratio back-transform also
+raises `ValidationError` when a finite log value underflows to natural zero; zero is not returned as
+a representable ratio.
 
 Defaults exported for adapters:
 

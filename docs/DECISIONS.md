@@ -234,8 +234,11 @@ Also make `support_comparison` delegate its candidate-to-reference log ratio to
 `log_support_ratio`, while retaining the candidate-versus-MLE fields and the existing finite-range
 validation of both candidate and reference log likelihoods.
 
+Make strict public ratio back-transformation reject exponential underflow to natural zero while
+leaving `wald_inference.legacy` unchanged.
+
 **Consequences:** Feasible threshold-conditioned power bands are no longer skipped, including the
 negative-direction mirror. Extreme finite pairwise comparisons share the exact-binary64 authority
 already exposed by the scalar/vector ratio API. The forward Wald model, thresholds, default
 tolerances, Type S/M definitions, candidate-versus-MLE comparison fields, and legacy adapter are
-unchanged.
+unchanged. Strict ratio outputs remain inside the registry domain.

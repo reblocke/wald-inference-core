@@ -127,10 +127,11 @@ not a third-party code or scientific-data source.
 The v0.4.1 inverse-precision repair follows directly from the authored six-rule selection
 definition: the estimate-exceeds rule changes active cutoff where the standardized claim threshold
 equals the two-sided critical value. The support-comparison repair delegates to the repository's
-existing exact-binary64 pairwise identity. Neither repair imports external code, data, numerical
-fixtures, figures, tables, or publication text. Targeted positive/negative transition cases,
-extreme finite pairwise cases, frozen baseline parity, packaging tests, and cold-wheel smoke cover
-the repaired paths.
+existing exact-binary64 pairwise identity. The strict effect-transform repair enforces the authored
+positive-only registry. None of these repairs imports external code, data, numerical fixtures,
+figures, tables, or publication text. Targeted positive/negative transition cases, extreme finite
+pairwise and ratio-transform cases, frozen baseline parity, packaging tests, and cold-wheel smoke
+cover the repaired paths.
 
 ## Canonical metadata
 

@@ -44,6 +44,8 @@ The result records whether the estimate was reconstructed or validated, the tran
 null, the standard error and method, relative interval asymmetry, and warnings. Finite-range
 protection is part of the contract: invalid or unrepresentable derived values raise
 `ValidationError` rather than leaking `NaN` or infinity.
+For a ratio effect, exponential underflow to natural zero is also unrepresentable because the
+registry domain is strictly positive; the strict public back-transform fails closed.
 
 This reconstruction cannot recover the original model, likelihood, covariance structure, variance
 estimator, degrees-of-freedom correction, or study design.

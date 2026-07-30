@@ -17,7 +17,7 @@ while retaining the legacy z-sum benchmark separately. Version `0.4.0` adds type
 precision-guardrail and assumed-effect sensitivity results while preserving every existing
 per-target calculation. Version `0.4.1` repairs threshold-transition bracketing in inverse
 precision and makes structured pairwise comparisons reuse the canonical exact-binary64 support
-ratio.
+ratio. It also fails closed on natural-ratio underflow.
 
 ## Question supported
 

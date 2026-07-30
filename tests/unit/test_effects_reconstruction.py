@@ -84,6 +84,26 @@ def test_log_back_transform_rejects_overflow_instead_of_returning_infinity() -> 
         from_working_scale("odds_ratio", 1_000.0)
 
 
+@pytest.mark.parametrize(
+    "effect_type",
+    [
+        "odds_ratio",
+        "risk_ratio",
+        "hazard_ratio",
+        "incidence_rate_ratio",
+        "ratio_of_means",
+    ],
+)
+def test_log_back_transform_rejects_underflow_instead_of_returning_zero(
+    effect_type: str,
+) -> None:
+    assert from_working_scale(effect_type, -745.0) == math.ulp(0.0)
+    with pytest.raises(ValidationError, match="representable as strictly positive"):
+        from_working_scale(effect_type, -746.0)
+    with pytest.raises(ValidationError, match="representable as strictly positive"):
+        from_working_scale(effect_type, [0.0, -746.0])
+
+
 def test_additive_reconstruction_infers_working_midpoint() -> None:
     result = reconstruct_wald(
         "mean_difference",
