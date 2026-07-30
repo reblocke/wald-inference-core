@@ -4,6 +4,47 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-30
+
+### Added
+
+- Added scalar/array `selected_claim_probability` and one-dimensional `power_curve`, both routed
+  through the canonical intervals for all six existing selection rules.
+- Added `critical_effect_for_target_probability` with one coherent, conservatively certified
+  binary64 probability kernel for forward evaluation, inversion, and achieved probability.
+- Added immutable `CriticalEffectResult` with signed standardized delta, working-scale critical
+  effect, target, and achieved probability.
+
+### Validation
+
+- Added unit, property, and independent scientific-reference tests for six-rule parity, scalar and
+  vector behavior, null probability, monotonicity, symmetry, analytic one-sided quantiles, direct
+  two-sided tail evaluation, target inversion, log-scale composition, invalid inputs, and
+  floating-point extremes.
+- Added high-precision boundary and high-alpha references, explicit predecessor-minimality checks,
+  targets one floating-point step above alpha and below one, and bit-exact null and near-null
+  monotonicity contracts.
+- Added handoff-neighbor, high-alpha, high-probability, nonzero-null representability, and
+  public-forward coherence regressions. A guarded critical value, direction-specific tail
+  evaluation, and scale-aware probability guards keep roots on the conservative side of hard-coded
+  high-precision references across extreme finite alpha values; ordered-binary64 bracketing finds
+  the minimal representable working effect without a fixed ULP cap. Replaced adaptive scalar
+  quadrature with fixed stable quadrature, reducing a 10,000-point near-null curve to well under one
+  second in local validation.
+- Extended the exact root API, release metadata, distribution inspection, and cold-wheel smoke
+  contracts for v0.3.0.
+- Retained the frozen baseline-parity gate for every pre-existing numerical output, including the
+  unchanged legacy z-sum distance and markers.
+
+### Scientific impact
+
+- The exact critical effect is defined as the smallest directed working-scale effect meeting the
+  requested conservatively rounded selected-claim probability under a fixed-SE one-parameter
+  normal/Wald model.
+- The legacy z-sum calculation remains a separately labeled closed-form benchmark. Neither quantity
+  is a confidence bound, observed estimate, clinically validated meaningful effect, or
+  study-specific sample-size calculation.
+
 ## [0.2.1] - 2026-07-30
 
 ### Fixed
@@ -111,7 +152,8 @@ All notable changes to this project are documented here.
 - The package implements documented Wald approximations, not exact fitted-model likelihood,
   arbitrary non-Wald intervals, Bayesian inference, or design-specific sample-size calculations.
 
-[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/reblocke/wald-inference-core/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/reblocke/wald-inference-core/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/reblocke/wald-inference-core/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/reblocke/wald-inference-core/compare/v0.1.0...v0.1.1

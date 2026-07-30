@@ -29,12 +29,15 @@ SMOKE_CODE = textwrap.dedent(
     from wald_inference import (
         ValidationError,
         compatibility_curve,
+        critical_effect_for_target_probability,
         design_metrics_for_true_effects,
         get_effect_spec,
         log_support_ratio,
         precision_target_results,
+        power_curve,
         reconstruct_wald_from_95_ci,
         relative_likelihood,
+        selected_claim_probability,
         support_interval_for_ratio,
         support_ratio,
     )
@@ -57,8 +60,8 @@ SMOKE_CODE = textwrap.dedent(
         raise AssertionError(f"unexpected smoke value type: {type(value)!r}")
 
 
-    assert version("wald-inference") == "0.2.1"
-    assert wald_inference.__version__ == "0.2.1"
+    assert version("wald-inference") == "0.3.0"
+    assert wald_inference.__version__ == "0.3.0"
     assert wald_inference.__all__
     for exported_name in wald_inference.__all__:
         assert hasattr(wald_inference, exported_name), exported_name
@@ -182,6 +185,29 @@ SMOKE_CODE = textwrap.dedent(
     assert design[1].type_s is not None
     assert design[1].type_m is not None
 
+    probabilities = power_curve(
+        [0.0, 0.3],
+        null_working=reconstruction.null_working,
+        standard_error=reconstruction.standard_error,
+    )
+    assert math.isclose(float(probabilities[0]), 0.05)
+    assert math.isclose(
+        float(probabilities[1]),
+        selected_claim_probability(
+            0.3,
+            null_working=reconstruction.null_working,
+            standard_error=reconstruction.standard_error,
+        ),
+    )
+    critical_effect = critical_effect_for_target_probability(
+        null_working=reconstruction.null_working,
+        standard_error=reconstruction.standard_error,
+        alpha=0.05,
+        target_probability=0.8,
+    )
+    assert critical_effect.critical_delta > 0
+    assert math.isclose(critical_effect.achieved_probability, 0.8)
+
     precision = precision_target_results(
         0.2,
         null_working=reconstruction.null_working,
@@ -195,6 +221,7 @@ SMOKE_CODE = textwrap.dedent(
     assert_finite_or_none(asdict(reconstruction))
     for item in design:
         assert_finite_or_none(asdict(item))
+    assert_finite_or_none(asdict(critical_effect))
     for item in precision:
         assert_finite_or_none(asdict(item))
 

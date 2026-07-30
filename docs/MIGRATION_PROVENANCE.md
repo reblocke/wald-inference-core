@@ -82,9 +82,30 @@ terminology but is not a source-code or numerical fixture dependency.
 
 The v0.2.1 endpoint check is a local numerical safety repair derived from the documented Wald
 identity and exact binary64 input values. It adds no external code, data, figure, table, or
-publication text. The frozen corpus continues to govern pre-existing outputs; an exact hexadecimal
-regression case, independently expressed rational calculation, property tests, and artifact smoke
-test cover the newly rejected unrepresentable boundary.
+publication text. The frozen corpus continues to govern pre-existing outputs; exact hexadecimal
+regression cases, independently expressed rational calculations, property tests, and artifact
+smoke tests cover newly rejected unrepresentable boundaries and recovered subnormal centers.
+
+## Post-extraction v0.3.0 detectability extension
+
+The v0.3.0 selected-claim probability, vectorized power-curve, and exact critical-effect APIs are
+additive post-extraction work. Forward probabilities delegate to the same canonical selection
+interval definitions already used by the frozen Type S/M implementation. A detectability-local
+kernel integrates their canonical density derivative near the null and uses stable tail or
+unselected-interval complements elsewhere. Directed conservative rounding, generic bisection, and
+working-scale re-evaluation make forward probability, inverse certification, and achieved
+probability one coherent contract. These paths avoid rounded tail plateaus without modifying the
+frozen selection module or introducing a second selection-rule definition. The frozen legacy
+z-sum functions remain unchanged and continue to be covered by exact parity tests.
+
+No external code, figure, table, dataset, or substantial publication text was added for this
+extension. Independent tests express the documented normal-tail identities and analytic one-sided
+quantiles. Independent release-gate stress also compares thousands of null-adjacent, handoff,
+ordinary, high-alpha, and extreme-tail forward and inverse cases with high-precision normal
+probabilities; the committed suite freezes the resulting boundary regressions without adding
+mpmath as a runtime dependency. The Perugini et al. reference below supplies critical-effect-size
+design context but is not a source-code, numerical-fixture, or semantic authority over the
+transparent implemented definitions.
 
 ## Canonical metadata
 

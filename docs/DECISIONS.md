@@ -135,13 +135,50 @@ same adjacent endpoints even though those floats have one fixed, materially diff
 ratio. Finite-range clipping flags do not describe this condition because the endpoints themselves
 are finite.
 
-**Decision:** In v0.2.1, independently re-evaluate every non-clipped support-interval endpoint with
-the exact-binary64 `log_support_ratio` kernel. Require agreement with the requested MLE-to-bound log
-support at relative tolerance `1e-12` and absolute tolerance `0`. Raise `ValidationError` when the
-check fails. Continue returning explicitly flagged overflow-clipped endpoints without claiming
-that a clipped bound equals the requested analytic boundary.
+**Decision:** In v0.2.1, construct an exact-input fallback endpoint and independently certify every
+non-clipped support-interval endpoint with exact rational arithmetic over its binary64 inputs.
+Require agreement with the requested MLE-to-bound log support at relative tolerance `1e-12` and
+absolute tolerance `0`. Preserve the v0.2.0 endpoint bit pattern whenever it passes that
+certification, use the fallback when half-scaling erases a representable subnormal center, and
+raise `ValidationError` when neither endpoint is faithful. Continue returning explicitly flagged
+overflow-clipped endpoints without claiming that a clipped bound equals the requested boundary.
 
 **Consequences:** Inputs whose analytic boundaries are not accurately representable now fail closed
 instead of returning a misleading interval. The no-absolute-floor rule also protects near-zero
 cutoffs from silently collapsing to the center. Representable endpoints, formulas, root-public
 names, the legacy adapter, and frozen baseline values remain unchanged.
+
+## 2026-07-30: Separate exact detectability from the legacy z-sum benchmark
+
+**Context:** A focused critical-effect app needs vectorized selected-claim probability and inverse
+detectability thresholds. The frozen integrated calculation instead provides only the fixed
+`alpha=0.05`, nominal-80% z-sum marker, which is close to but not exactly the solution of the
+two-tailed probability equation. Reimplementing selection tails in each downstream app would create
+multiple numerical authorities.
+
+**Decision:** In v0.3.0, add root-public `selected_claim_probability`, `power_curve`,
+`critical_effect_for_target_probability`, and immutable `CriticalEffectResult`. Route every forward
+probability through the canonical selection intervals for all six existing rules. Restrict monotonic
+inversion to the two-sided, matching one-sided positive, and matching one-sided negative p-value
+rules. Normalize exact-null probability locally to alpha without changing the frozen selection
+module. Use fixed Gauss-Legendre integration of the canonical positive derivative for
+`abs(delta) <= 0.125`; outside that neighborhood, evaluate one-sided tails directly and two-sided
+unselected probability in a stable complement/log domain. Apply a small directed-rounding guard so
+the public float is a conservative representation of the exact model probability: guard the
+canonical critical value upward by four ULPs, use a lower quadrature bound for selected-direction
+near-null increments, use a guarded direct tail in the opposing one-sided direction, and apply a
+64-ULP probability-component guard increased to 256 ULPs below `1e-8`. Use this one public kernel
+for arrays, scalar calls, generic monotonic bisection, and achieved probability, regardless of
+target proximity to alpha or one. Require each returned magnitude to satisfy the public probability
+while its immediately preceding float does not. Compose and re-evaluate the working-scale effect,
+use only relative representability tolerance with no absolute floor, and search the ordered
+binary64 working-effect lattice rather than imposing a fixed adjacent-float adjustment cap. Reject
+unsupported, uncertifiable, or unrepresentable results. Preserve
+`legacy_critical_effect_distance` and `legacy_critical_effect_markers` unchanged as a separately
+labeled closed-form benchmark.
+
+**Consequences:** Downstream applications can calculate exact Wald detectability without copying
+selection formulas and can compose log-scale results through the effect registry. They must keep
+the exact result distinct from the legacy benchmark, meaningful-effect inputs, confidence bounds,
+observed estimates, and study-specific sample-size calculations. The six selection rules and all
+pre-v0.3.0 outputs remain unchanged.

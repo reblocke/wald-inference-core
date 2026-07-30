@@ -4,8 +4,8 @@
 
 Given a reported estimate and confidence interval that are treated as one-parameter normal/Wald
 quantities, or a repeated-study scenario with an explicitly specified Wald selection rule, what
-reconstruction, compatibility, normalized relative-support, Type S/M, and precision quantities
-follow from those assumptions?
+reconstruction, compatibility, normalized relative-support, detectability, Type S/M, and precision
+quantities follow from those assumptions?
 
 The package answers that narrow mathematical question. It does not establish that the assumptions
 are appropriate for a particular study.
@@ -95,12 +95,62 @@ log-relative-likelihood function; they are not separately fitted likelihoods. Co
 instead map the same absolute Wald distance to a two-sided tail area. Neither quantity is a
 posterior probability, and a relative-support ratio is not a Bayes factor.
 
-## Detectability benchmark
+## Exact detectability and the legacy benchmark
 
-The legacy critical-effect calculation is a closed-form z-sum benchmark retained for baseline
-compatibility. It must be described as the legacy benchmark, not as exact generalized power or a
-study-specific sample-size result. Generalized detectability functions, when present, must state
-their selection rule and assumptions explicitly.
+For an assumed true working-scale effect \(\theta_{\mathrm{true}}\), null
+\(\theta_{\mathrm{null}}\), and fixed Wald standard error \(SE > 0\):
+
+```text
+delta = (theta_true - theta_null) / SE
+Z ~ Normal(delta, 1)
+```
+
+For `c = Normal.isf(alpha / 2)`, two-sided p-value selection has exact probability:
+
+```text
+P(selected) = P(Z < -c) + P(Z > c)
+```
+
+For `c = Normal.isf(alpha)`, the one-sided positive and negative probabilities are respectively:
+
+```text
+P(selected positive) = P(Z > c)
+P(selected negative) = P(Z < -c)
+```
+
+Forward selected-claim probability also supports the other three canonical interval rules below by
+evaluating their shared future-Z intervals. Critical-effect inversion is narrower: it returns the
+smallest working-scale effect in a requested positive or negative direction whose conservatively
+rounded binary64 evaluation of the exact model probability is at least the target. Forward
+probability, inversion, and achieved probability share one stable numerical kernel; a nonzero
+effect that cannot be faithfully composed on the requested working scale fails closed. The
+two-sided rule is symmetric in standardized distance; its positive and negative calls therefore
+produce paired working-scale distances around the null.
+
+This critical effect is a repeated-study detectability threshold under the stated fixed-SE Wald
+model. It is not the observed estimate, a confidence bound, evidence about a realized result, a
+user-defined scientifically meaningful effect, or a clinically validated minimum important
+difference. Computing a probability at a post hoc observed estimate can be optimistic or circular
+and does not convert that probability into observed evidence. Study-specific power or sample-size
+planning may differ because it can require degrees-of-freedom corrections, non-normal reference
+distributions, nuisance parameters, covariance, clustering, attrition, event rates, or a
+design-specific relationship between information and sample size.
+
+For ratio measures, effects and standard errors enter detectability calculations on the log working
+scale. Paired natural-scale values are multiplicatively symmetric around the null ratio, not
+arithmetically symmetric.
+
+The retained legacy calculation:
+
+```text
+distance = (z_(1 - alpha/2) + z_power) * SE
+```
+
+is frozen at `alpha=0.05` and nominal probability `0.80`. It is a closed-form legacy benchmark, not
+the exact solution of the two-tailed probability equation. The Perugini et al. source recorded in
+[migration provenance](MIGRATION_PROVENANCE.md#methodology-references-carried-forward) supports the
+critical-effect-size design rationale; the transparent normal/Wald definitions above govern the
+implemented quantity.
 
 ## Selected claims and Type S/M
 
@@ -156,6 +206,8 @@ does not translate an information multiplier into sample size for a particular s
   model.
 - Selected-claim, Type S/M, and precision quantities are repeated-study design calculations
   conditioned on user-specified true effects and rules.
+- Critical-effect inversion is also a repeated-study design calculation and must not be interpreted
+  as evidence about the observed estimate.
 - These two layers may share a standard-error reconstruction but answer different questions.
 - User-specified thresholds are mathematical inputs; the package does not determine whether a
   threshold is clinically or scientifically meaningful.

@@ -44,13 +44,18 @@ failure.
 ## Test layers
 
 - **Unit tests** cover transformations, reconstruction, observed functions, pairwise support and
-  ratio-based support intervals, finite endpoint representability, selection rules, Type S/M,
-  precision, error behavior, and the exact root and adapter compatibility surfaces.
+  ratio-based support intervals, six-rule detectability probability, restricted critical-effect
+  inversion, finite endpoint representability, selection rules, Type S/M, precision, error
+  behavior, and the exact root and adapter compatibility surfaces.
 - **Property tests** cover valid finite ranges, symmetry, identity/log equivalence, pairwise
-  antisymmetry, fail-closed requested endpoint support, information scaling, and scalar/array
-  consistency.
+  antisymmetry, fail-closed requested endpoint support, detectability monotonicity and symmetry,
+  information scaling, scalar/array consistency, and public-probability predecessor minimality
+  across low and high alpha values.
 - **Scientific-reference tests** compare formulas with independently expressed normal-distribution
-  identities or closed forms, including exact-rational evaluation of extreme binary64 neighbors.
+  identities or closed forms, including exact-rational evaluation of extreme binary64 support
+  neighbors, analytic one-sided and direct-tail two-sided detectability, hard-coded mpmath quantile
+  differences, conservative-sided high-precision roots, extreme-alpha complement behavior, and
+  floating-boundary roots.
 - **Regression tests** compare every core-owned value with the frozen corpus and preserve exact
   finite/undefined conventions.
 - **Packaging tests** inspect wheel/sdist metadata and contents.
@@ -87,11 +92,11 @@ The tag workflow:
 7. publishes SHA-256 checksums and the machine-readable parity report; and
 8. passes only those already-verified files to the write-enabled release job.
 
-The expected v0.2.1 assets are:
+The expected v0.3.0 assets are:
 
 ```text
-wald_inference-0.2.1-py3-none-any.whl
-wald_inference-0.2.1.tar.gz
+wald_inference-0.3.0-py3-none-any.whl
+wald_inference-0.3.0.tar.gz
 SHA256SUMS
 baseline-parity.json
 ```

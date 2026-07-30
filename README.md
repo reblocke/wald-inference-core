@@ -1,8 +1,9 @@
 # Wald Inference Core
 
 `wald-inference` is a pure-Python package for deriving documented Wald reconstruction,
-compatibility, normalized relative-support, selected-claim, Type S/M, and precision quantities from
-reported estimates and confidence intervals or explicitly specified repeated-study scenarios.
+compatibility, normalized relative-support, detectability, selected-claim, Type S/M, and precision
+quantities from reported estimates and confidence intervals or explicitly specified repeated-study
+scenarios.
 
 The distribution is `wald-inference`; the import package is `wald_inference`. Version `0.1.0` was
 the behavior-preserving extraction from the immutable
@@ -10,13 +11,15 @@ the behavior-preserving extraction from the immutable
 Version `0.1.1` preserves that numerical behavior and documents stable adapter-only imports.
 Version `0.2.0` adds generic pairwise support ratios and MLE-to-bound support intervals without
 changing the preserved calculations. Version `0.2.1` makes those interval APIs fail closed when a
-finite floating-point endpoint cannot accurately represent its requested support boundary.
+finite floating-point endpoint cannot accurately represent its requested support boundary. Version
+`0.3.0` adds selected-claim probability curves and certified directed critical-effect inversion
+while retaining the legacy z-sum benchmark separately.
 
 ## Question supported
 
 Given a reported estimate and 95% confidence interval treated as a one-parameter normal/Wald result,
 or a repeated-study scenario with a specified Wald selection rule, what compatibility, normalized
-relative-support, Type S/M, and precision quantities follow from those assumptions?
+relative-support, detectability, Type S/M, and precision quantities follow from those assumptions?
 
 The package answers that mathematical question. It does not establish that the assumptions fit a
 particular study.
@@ -30,7 +33,11 @@ particular study.
   likelihood;
 - computes S−2, generic log-support, and MLE-to-bound-ratio intervals plus pairwise support
   comparisons;
-- preserves the legacy z-sum critical-effect benchmark;
+- computes exact selected-claim probabilities and power curves for all six canonical selection
+  rules;
+- solves exact directed critical effects for two-sided, one-sided positive, and one-sided negative
+  p-value rules;
+- preserves the legacy z-sum critical-effect benchmark as a distinct closed-form benchmark;
 - represents six selected-claim rules and computes selected-claim probability, Type S, Type M, and
   observed exaggeration; and
 - evaluates information scaling and inverse precision targets.
@@ -62,11 +69,11 @@ For development from a clone:
 uv sync --locked --all-groups
 ```
 
-GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.2.1
+GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.3.0
 wheel:
 
 ```bash
-python -m pip install ./wald_inference-0.2.1-py3-none-any.whl
+python -m pip install ./wald_inference-0.3.0-py3-none-any.whl
 ```
 
 The release page is <https://github.com/reblocke/wald-inference-core/releases>. A downstream
@@ -122,6 +129,40 @@ returned only when each non-clipped endpoint independently reproduces the reques
 boundary within the documented numerical tolerance; otherwise the call raises `ValidationError`
 instead of labeling a materially different representable float as that boundary.
 
+## Minimal detectability example
+
+Continuing from the reconstruction above:
+
+```python
+from wald_inference import (
+    critical_effect_for_target_probability,
+    power_curve,
+)
+
+critical = critical_effect_for_target_probability(
+    null_working=reconstruction.null_working,
+    standard_error=reconstruction.standard_error,
+    alpha=0.05,
+    target_probability=0.80,
+    selection_rule="two_sided_p_lt_alpha",
+    claim_direction="positive",
+)
+probabilities = power_curve(
+    [0.0, 0.1, 0.3],
+    null_working=reconstruction.null_working,
+    standard_error=reconstruction.standard_error,
+    alpha=0.05,
+)
+```
+
+`critical` is the smallest positive working-scale effect whose conservatively rounded binary64
+evaluation of the exact selected-claim probability meets the target under the stated normal/Wald
+model. For the symmetric two-sided rule, call the solver with `claim_direction="negative"` to
+obtain the paired lower value. This mathematical detectability threshold is not a confidence
+bound, observed estimate, user-defined meaningful effect, clinically validated MCID, or
+study-specific sample-size result. The preserved `legacy_critical_effect_distance` is a nearby
+closed-form benchmark, not the exact two-tailed solution.
+
 ## Minimal Type S/M example
 
 Continuing from the reconstruction above:
@@ -171,6 +212,10 @@ positive inputs and use the log working scale with default null `1`. Mean differ
 difference, rate difference, and regression coefficient use the identity working scale with default
 null `0`.
 
+Detectability functions accept and return working-scale effects. For a ratio measure, transform
+critical working values through `from_working_scale`; equal positive and negative log distances are
+multiplicatively, not arithmetically, symmetric on the natural scale.
+
 Type M for a ratio measure is therefore an exaggeration ratio of log distances from the null, not
 direct inflation of the natural-scale ratio.
 
@@ -211,7 +256,7 @@ privacy behavior.
 
 ## Version, citation, license, and contact
 
-- Version prepared for release: `0.2.1`
+- Version prepared for release: `0.3.0`
 - Citation metadata: [`CITATION.cff`](CITATION.cff)
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - License: MIT; see [`LICENSE`](LICENSE)

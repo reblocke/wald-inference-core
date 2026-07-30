@@ -103,7 +103,93 @@ These APIs compare parameter values under a one-parameter Wald approximation. Th
 the fitted model's exact profile likelihood and do not produce posterior probabilities or Bayes
 factors.
 
-## Detectability benchmark
+## Exact detectability
+
+```python
+selected_claim_probability(
+    true_effect_working,
+    *,
+    null_working,
+    standard_error,
+    alpha=0.05,
+    selection_rule="two_sided_p_lt_alpha",
+    claim_direction="positive",
+    threshold_working=None,
+)
+power_curve(
+    true_effects_working,
+    *,
+    null_working,
+    standard_error,
+    alpha=0.05,
+    selection_rule="two_sided_p_lt_alpha",
+    claim_direction="positive",
+    threshold_working=None,
+)
+CriticalEffectResult
+critical_effect_for_target_probability(
+    *,
+    null_working,
+    standard_error,
+    alpha=0.05,
+    target_probability=0.80,
+    selection_rule="two_sided_p_lt_alpha",
+    claim_direction="positive",
+)
+```
+
+`selected_claim_probability` evaluates the canonical selection intervals under a future
+standard-normal Wald statistic centered at
+`delta = (true_effect_working - null_working) / standard_error`. It supports all six selection rules
+documented below. Scalar input returns a Python `float`; array-like input returns a NumPy array with
+the same shape. `power_curve` is the corresponding nonempty one-dimensional convenience.
+
+`critical_effect_for_target_probability` returns the smallest effect in the requested direction
+whose conservatively rounded exact-model selected-claim probability meets the finite target
+strictly between zero and one. It uses stable integrated probability increments near the null,
+stable tail or unselected-probability complements away from that boundary, and explicit finite
+bracketing with monotonic bisection.
+Inversion is intentionally limited to:
+
+```text
+two_sided_p_lt_alpha             positive or negative branch
+one_sided_positive_p_lt_alpha    positive branch
+one_sided_negative_p_lt_alpha    negative branch
+```
+
+The immutable `CriticalEffectResult` records the rule, direction, alpha, target, null, standard
+error, signed standardized `critical_delta`, working-scale critical effect, and achieved
+probability. Unsupported inverse rules, incoherent one-sided directions, a target without a finite
+bracket, or an unrepresentable working-scale result raise `ValidationError`.
+
+The binary64 precision contract is independent of the target. Near the null, fixed
+Gauss-Legendre quadrature integrates the canonical positive probability derivative. Outside that
+neighborhood, one-sided tails are evaluated directly and two-sided selection uses the central
+unselected interval in a stable complement/log domain. Exact rational float addition/subtraction
+and direction-specific tail evaluation round the reported probability conservatively. The kernel
+uses a four-ULP upward guard on the canonical critical value, a 64-ULP probability-component guard
+increased to 256 ULPs below `1e-8`, a lower quadrature bound for selected-direction near-null
+increments, and a guarded direct tail in the opposing one-sided direction. These bounds cover the
+normal-tail, quantile, and floating-point evaluation error demonstrated by independent
+high-precision stress tests down to extreme finite alpha values. Each bisection result must satisfy
+this same public forward probability while the immediately preceding magnitude does not.
+`achieved_probability` is a direct call to the same kernel after working-scale composition, never a
+value raised to the target after an independently rounded calculation.
+
+For the three invertible p-value rules, forward probability at an exact zero standardized distance
+is bit-exact `alpha`. Near-null forward evaluation uses the same stable selection-interval increment
+as inversion for `abs(delta) <= 0.125` instead of relying on rounded differences between nearly
+equal tail probabilities. A nonzero critical effect that cannot be represented on the supplied
+working scale within relative tolerance `1e-12` fails closed. Representable working effects are
+searched on the ordered binary64 lattice and certified against the immediately preceding value;
+there is no fixed ULP adjustment cap or absolute tolerance that could reject an ordinary valid
+effect or accept a result rounded back to the null.
+
+For ratio measures, these functions operate on the log working scale. Use the effect registry
+transformations to map returned critical effects to the natural scale; equal log distances are
+multiplicatively rather than arithmetically symmetric.
+
+## Legacy detectability benchmark
 
 ```python
 legacy_critical_effect_distance(se)
@@ -228,7 +314,7 @@ ValidationError
 __version__
 ```
 
-`__version__` is `0.2.1`. Canonical numerical outputs intended for serialization contain finite
+`__version__` is `0.3.0`. Canonical numerical outputs intended for serialization contain finite
 values or documented `None`; invalid inputs do not return sentinel NaN or infinity. The documented
 `SelectionRuleSpec.intervals` infinities are structural open-tail boundaries, not calculated result
 values.
