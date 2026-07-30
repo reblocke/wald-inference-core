@@ -1,0 +1,24 @@
+{
+  "design_alpha": "not-a-number",
+  "design_claim_direction": "sideways",
+  "design_claim_threshold": "not-a-number",
+  "design_enabled": false,
+  "design_information_multiplier": -1,
+  "design_max_type_m": 0,
+  "design_max_type_s": -1,
+  "design_plausible_range_lower": 1,
+  "design_precision_target_effect": "not-a-number",
+  "design_selection_rule": "unsupported-rule",
+  "design_target_power": 2,
+  "design_true_effects": [
+    "not-a-number"
+  ],
+  "effect_type": "mean_difference",
+  "grid_points": 401,
+  "lower": 0.11,
+  "null_value": 0.0,
+  "thresholds": [
+    0.2
+  ],
+  "upper": 0.73
+}

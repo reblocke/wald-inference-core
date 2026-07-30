@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install locked environment
+        run: uv sync --locked --all-groups
+
+      - name: Ruff format check
+        run: make fmt-check
+
+      - name: Ruff lint
+        run: make lint
+
+      - name: Verify release metadata
+        run: make metadata-check
+
+      - name: Run unit, property, reference, and regression tests
+        run: make test
+
+      - name: Verify frozen baseline parity
+        run: make parity
+
+      - name: Build and inspect wheel and sdist
+        run: make build
+
+      - name: Cold-wheel smoke
+        run: make smoke
+
+      - name: Verify clean tracked state
+        shell: bash
+        run: |
+          git diff --check
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git status --short
+            exit 1
+          fi
+
+      - name: Upload parity report
+        uses: actions/upload-artifact@v7
+        with:
+          name: baseline-parity
+          path: reports/baseline-parity.json
+          if-no-files-found: error
+          retention-days: 14

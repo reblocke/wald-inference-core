@@ -1,0 +1,5 @@
+{
+  "error_type": "ValidationError",
+  "message": "Plausible display range lower and upper must be supplied together.",
+  "status": "error"
+}

@@ -1,0 +1,796 @@
+{
+  "case_count": 22,
+  "cases": [
+    {
+      "description": "Additive observed reconstruction",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B01.json",
+      "expected_sha256": "1bf593672494c95cfcc9227876276ed3c809b374cc013791d495121fdff200c8",
+      "expected_status": "success",
+      "fixture_kind": "full_contract",
+      "fixture_sha256": "0d58e74d2e855a1d4715d78a0b23cd884ed025b75e8ee0ad2171bab729e509b0",
+      "id": "B01",
+      "matrix_case": "B01",
+      "request_file": "requests/B01.json",
+      "request_sha256": "30ab2c2fa2ac43cc9d1806494215627be938e6fe1b7d26cb6d393979e359a0ce",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Ratio observed reconstruction on the natural display scale",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B02.json",
+      "expected_sha256": "697aeaf7213ea98a96762026c2574b7d28ef4b88cfb3f81c4b4550cf040a6e8f",
+      "expected_status": "success",
+      "fixture_kind": "full_contract",
+      "fixture_sha256": "a4c231b18fb6396fefd36fe7ec5ba2f241566b9b5a65c4b701475c8da62658c3",
+      "id": "B02",
+      "matrix_case": "B02",
+      "request_file": "requests/B02.json",
+      "request_sha256": "13ebdd5ddee1989d2c469afa3e68ec608505e5b74f8c28ce7f1947cf5e656af4",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Presentation-only ratio display window",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B03.json",
+      "expected_sha256": "88953630723a557adb251ccef81fcf1bd0d0a7930071548918d77000c2d7c723",
+      "expected_status": "success",
+      "fixture_kind": "full_contract",
+      "fixture_sha256": "30d2e3c0d712e46bca161741609ca714532a7f6aecf00e6099de0360b33861bb",
+      "id": "B03",
+      "matrix_case": "B03",
+      "request_file": "requests/B03.json",
+      "request_sha256": "208781ef5ada4d0495bbfedc9034a8bb7436fce0e7666dfe33b8cc8d40e01c4d",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Forward two-sided design calibration",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B04.json",
+      "expected_sha256": "78ac05fc45c2db4c062d016900a053599182cb898ad5fb14567000b77866ea3c",
+      "expected_status": "success",
+      "fixture_kind": "full_contract",
+      "fixture_sha256": "fa2402ef8f7117ac1b752d38bd049cd7043389e4999794cf8de5eaf63cc981c8",
+      "id": "B04",
+      "matrix_case": "B04",
+      "request_file": "requests/B04.json",
+      "request_sha256": "fd4007d78c05df3478b494db109d1532f69014abc265b3d3ca354c79580d110d",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Directional threshold rule on a ratio scale",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B05.json",
+      "expected_sha256": "84164b77c91711cf87767721d613334f31232eb5d7af97f26954af465136058e",
+      "expected_status": "success",
+      "fixture_kind": "full_contract",
+      "fixture_sha256": "628c2b7cfcc0c98f48b296a7ef9ede3be92e950d91e8e5c6733a31f81d6de8b8",
+      "id": "B05",
+      "matrix_case": "B05",
+      "request_file": "requests/B05.json",
+      "request_sha256": "867950da611ee95c91c79021d5e42eb3464411aa96fcffb1f04cde3e8455e8de",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Inverse precision targets",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B06.json",
+      "expected_sha256": "395ede4da84a55f0e1ab5e103fc4e4ac60fb95fbc2dd0ed551c90dfec0cb95fe",
+      "expected_status": "success",
+      "fixture_kind": "full_contract",
+      "fixture_sha256": "a391c655e70eaeaefd85283259910713ae157ecc7e01a6c9e8532ff622e3826f",
+      "id": "B06",
+      "matrix_case": "B06",
+      "request_file": "requests/B06.json",
+      "request_sha256": "f1df6d4c866aa098064e24449760dc3420bee549c8f000d588981757db2f4cbb",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Precision target exactly at the null is undefined",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07a-null.json",
+      "expected_sha256": "3cc81c08a80fa0fdb1ed6fbbcee0ef5e88d2a54c157af278ac05267436eb7fce",
+      "expected_status": "success",
+      "fixture_kind": "edge_summary",
+      "fixture_sha256": "15f2021b03e50c6aafae7c04f2338a10e1f96f0608fb9f18324c8e714143888b",
+      "id": "B07a-null",
+      "matrix_case": "B07",
+      "request_file": "requests/B07a-null.json",
+      "request_sha256": "328af5b8dc02011fb920e1d24f6d48fc100c1b560103a890fdce5dd201a77c26",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Near-null precision target and assumed true-effect scenario are undefined",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07b-near-null.json",
+      "expected_sha256": "a374497424ddb0d4d0b8ebe3bfc3956550a3a38a1e59eecbb4ad6e2a3529fcd7",
+      "expected_status": "success",
+      "fixture_kind": "edge_summary",
+      "fixture_sha256": "5d1f8874c5d8a0599e5215f9b4f25e1086a39a8c1494ba4e781248a3ce59e565",
+      "id": "B07b-near-null",
+      "matrix_case": "B07",
+      "request_file": "requests/B07b-near-null.json",
+      "request_sha256": "42daf73f8c92f0a35e9ae9a927c3fb67a9ecac1a3f9b967f3b8aa7090582c4d0",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Positive threshold-conditioned target below the threshold is infeasible",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07c-threshold-infeasible.json",
+      "expected_sha256": "bda0a50f700748109936422b8aa84c851a7739b0844335b61b4014c12483f2b6",
+      "expected_status": "success",
+      "fixture_kind": "edge_summary",
+      "fixture_sha256": "cade4d9e947e81b5d7d86fb6d6d6687b42439370c9ca0f9320b00e4f8f1d28fd",
+      "id": "B07c-threshold-infeasible",
+      "matrix_case": "B07",
+      "request_file": "requests/B07c-threshold-infeasible.json",
+      "request_sha256": "a1f211ff8ad567c1718e45efa79820369b4cbc190e1143aeff6c3788ebe3972b",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Design alpha of zero is invalid",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07d-alpha-zero.json",
+      "expected_sha256": "1c15173efddbacaad29a9f1b63793ae737f6b0d1c7871b20dac7ef52c549f339",
+      "expected_status": "error",
+      "fixture_kind": "expected_error",
+      "fixture_sha256": "f45d1a712dd33115e8e9c0d2922067860b9461093de186d98748ad4a7a5b88f9",
+      "id": "B07d-alpha-zero",
+      "matrix_case": "B07",
+      "request_file": "requests/B07d-alpha-zero.json",
+      "request_sha256": "50635b8024a4a21467a67a8326f3a33897f387ec67897512cd3caead064fb754",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Design alpha of one is invalid",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07e-alpha-one.json",
+      "expected_sha256": "1c15173efddbacaad29a9f1b63793ae737f6b0d1c7871b20dac7ef52c549f339",
+      "expected_status": "error",
+      "fixture_kind": "expected_error",
+      "fixture_sha256": "a9bda643141eac7ba4172e5dc9a23ea8602878e62068f7b6f0cab42ca969dbc3",
+      "id": "B07e-alpha-one",
+      "matrix_case": "B07",
+      "request_file": "requests/B07e-alpha-one.json",
+      "request_sha256": "776cecb2a574e6e7fd01f2660e85bd9d72796aa6c96963b170dd81fdae924620",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Nonnumeric design alpha is invalid",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07f-alpha-nonnumeric.json",
+      "expected_sha256": "7a6ce0493223443b938dc9d17e456f5481745aa90acd5f03640270e2ae237c22",
+      "expected_status": "error",
+      "fixture_kind": "expected_error",
+      "fixture_sha256": "0af756316d20438839313b67b48444326257f4599f2b62c5ed9cd2e68ab686cb",
+      "id": "B07f-alpha-nonnumeric",
+      "matrix_case": "B07",
+      "request_file": "requests/B07f-alpha-nonnumeric.json",
+      "request_sha256": "2b6fba1cff20ceb4059855d6dec6f11bcb057b23fa2b72d58c87c85937f18293",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Underflowing design tail probability is rejected",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07g-alpha-underflow.json",
+      "expected_sha256": "4c39e9009173093c2c63f39d45e13148700c318669ad717ff75b6cc0d0b6080e",
+      "expected_status": "error",
+      "fixture_kind": "expected_error",
+      "fixture_sha256": "b4a26e6029fa2a4fb848d5f509c0085d11cca4f56ec3e4e1710b223d74980350",
+      "id": "B07g-alpha-underflow",
+      "matrix_case": "B07",
+      "request_file": "requests/B07g-alpha-underflow.json",
+      "request_sha256": "c01c7e82638e185a4e9cf09f2f53c6de408dc04e0517ec31cee4c71c00e8d8b6",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "A display range requires both bounds",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07h-display-range-pair.json",
+      "expected_sha256": "f89dfdf1e873c048db2858108114be1e130b698a1dcd5092bc28b11a5fe8f559",
+      "expected_status": "error",
+      "fixture_kind": "expected_error",
+      "fixture_sha256": "2acce5cf7bb74bb01b5b709e6cb7921c756477c276c25a7be25170378ee64d49",
+      "id": "B07h-display-range-pair",
+      "matrix_case": "B07",
+      "request_file": "requests/B07h-display-range-pair.json",
+      "request_sha256": "64271aef6863d99ecffdecbe4ea1eb327c27a025e915d3442e8d791f8cdedcfd",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "A design plausible range requires both bounds",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07i-design-range-pair.json",
+      "expected_sha256": "7b2d4104e78e945e0ab6840d03b7c1a78bf41ae3c918f2cdadc48f0cf2a6a583",
+      "expected_status": "error",
+      "fixture_kind": "expected_error",
+      "fixture_sha256": "59856ae1519b588d3285fcd7a44b1a7f9a06f1d3d3890702f72c0ec5c527856b",
+      "id": "B07i-design-range-pair",
+      "matrix_case": "B07",
+      "request_file": "requests/B07i-design-range-pair.json",
+      "request_sha256": "0e92b650733869b794692f4e7825abffb3976d9872c957844665e29684327d8b",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Natural-scale ratio inputs must be positive",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07j-ratio-positive.json",
+      "expected_sha256": "97135f5ecb4abd66a8ac95d568d5ddce59fd30cb4790746eb60d8148571f840a",
+      "expected_status": "error",
+      "fixture_kind": "expected_error",
+      "fixture_sha256": "e4d04e23665a7bc136122f7a36ce5c09797ab5d2c32157e53daba74fe4e48f24",
+      "id": "B07j-ratio-positive",
+      "matrix_case": "B07",
+      "request_file": "requests/B07j-ratio-positive.json",
+      "request_sha256": "cff6ea01bf8f5b94f5e9ff4caeabf18bfdbb4c89ddc96acb11f626cf40bce7cc",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Disabled design fields are ignored and leave the observed contract unchanged",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B07k-disabled-design-ignored.json",
+      "expected_sha256": "1bf593672494c95cfcc9227876276ed3c809b374cc013791d495121fdff200c8",
+      "expected_status": "success",
+      "fixture_kind": "full_contract",
+      "fixture_sha256": "9a370bdbc9c93a550a490f424169113130edd03dc67b74bb3cb83f506149d92a",
+      "id": "B07k-disabled-design-ignored",
+      "matrix_case": "B07",
+      "request_file": "requests/B07k-disabled-design-ignored.json",
+      "request_sha256": "2415a593ad755c62f74ead93086ecb587cb2ddabf47715e9b6c21dd19b13e05a",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Opposite-signed extreme additive bounds use a safe finite midpoint",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B08a-additive-midpoint.json",
+      "expected_sha256": "b89c880656f70f14bd1a496e1dac7c98a762d721f7c73321d9d92be7625f80f3",
+      "expected_status": "success",
+      "fixture_kind": "edge_summary",
+      "fixture_sha256": "88288e8b4ad75323830b0d5653cd466f99c21eb06eac265b69e0da831bdec1fb",
+      "id": "B08a-additive-midpoint",
+      "matrix_case": "B08",
+      "request_file": "requests/B08a-additive-midpoint.json",
+      "request_sha256": "7adc7276f4ac0cf7bdf5da2bf7b7947941b937ae0ab0a1413a99e96d125754ad",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Extreme additive S-2 endpoints are clipped to finite values",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B08b-s-minus-2-clipping.json",
+      "expected_sha256": "876c8b22b8da44fd2b671c1dd6e35bf09db744cb8cbc257d72ce6af5f002c11f",
+      "expected_status": "success",
+      "fixture_kind": "edge_summary",
+      "fixture_sha256": "8d6f6da9d826582f0c3cd5f5fe0795ccbf50e65ebd44faacd9f0e109b3169da8",
+      "id": "B08b-s-minus-2-clipping",
+      "matrix_case": "B08",
+      "request_file": "requests/B08b-s-minus-2-clipping.json",
+      "request_sha256": "0680d87079a27ae14316c9a37ce344c3cb344b74d8c418f511f9ecea9564f24e",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Extreme likelihood ratio falls back to a finite log-scale result",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B08c-log-likelihood-fallback.json",
+      "expected_sha256": "2a2f361fa628017ce7142fab1939201faad640ca14b13264dd73459f31c4bf95",
+      "expected_status": "success",
+      "fixture_kind": "edge_summary",
+      "fixture_sha256": "81fb033fadbffda8ec7baffaa639c233a4c770cdd61f5043b85dfc18f90ef7b6",
+      "id": "B08c-log-likelihood-fallback",
+      "matrix_case": "B08",
+      "request_file": "requests/B08c-log-likelihood-fallback.json",
+      "request_sha256": "750ecfe6e42f268a35724c9d2572d480c40222244f1ee170604d45e62f50a18c",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Near-maximum ratio bounds remain finite on the natural display axis",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B08d-ratio-natural-clipping.json",
+      "expected_sha256": "c464f52dd957e24c722114207b0684b47a2d604c05811e195503a6d2da260398",
+      "expected_status": "success",
+      "fixture_kind": "edge_summary",
+      "fixture_sha256": "7488a6ea2955fa73da093e71eefde1e30ff6f1212b29d77a1b33d5cc186ff251",
+      "id": "B08d-ratio-natural-clipping",
+      "matrix_case": "B08",
+      "request_file": "requests/B08d-ratio-natural-clipping.json",
+      "request_sha256": "1153f593c84cece2384c16f134537659cc128c2cfba8b9e98d703adc2d021b7e",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    },
+    {
+      "description": "Unrepresentable finite design distance is rejected before JSON serialization",
+      "exact_float_paths": [
+        "$.response.meta.effect_spec.default_null"
+      ],
+      "expected_file": "responses/B08e-unrepresentable-design-distance.json",
+      "expected_sha256": "e7fae9ad9a6b278f065471174ea5a11074b05a6a792efa5959f50bb349bac30f",
+      "expected_status": "error",
+      "fixture_kind": "expected_error",
+      "fixture_sha256": "188858274427fe79a7686e2176e94b28c6d2430da46e6462f28e402f1bd31d77",
+      "id": "B08e-unrepresentable-design-distance",
+      "matrix_case": "B08",
+      "request_file": "requests/B08e-unrepresentable-design-distance.json",
+      "request_sha256": "5980b4d27d5ac989455f63d50bc59626745884823f209df949bd9113a3d923d4",
+      "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+      "tolerance": {
+        "atol": 1e-14,
+        "rtol": 1e-12
+      },
+      "versions": {
+        "confcurve": "0.1.0",
+        "hypothesis": "6.151.9",
+        "numpy": "2.2.6",
+        "playwright": "1.58.0",
+        "plotly": "3.1.0",
+        "pyodide": "0.29.3",
+        "pytest": "9.0.2",
+        "pytest-playwright": "0.7.2",
+        "python_declared": "3.11",
+        "python_runtime": "3.11.10",
+        "scipy": "1.14.1"
+      }
+    }
+  ],
+  "comparison": {
+    "exact_float_paths": [
+      "$.response.meta.effect_spec.default_null"
+    ],
+    "float_mode": "tolerant except for declared exact_float_paths"
+  },
+  "default_tolerance": {
+    "atol": 1e-14,
+    "rtol": 1e-12
+  },
+  "dependency_authority_files": [
+    "pyproject.toml",
+    "uv.lock",
+    ".python-version"
+  ],
+  "export_schemas": [
+    {
+      "path": "export_schemas/browser_contract.json",
+      "sha256": "3acae71a7cc41f28bcd47cdc6dc3d8eeba06dd7939d4fe06287c7135692589e6"
+    },
+    {
+      "path": "export_schemas/browser_key_order.json",
+      "sha256": "bb4271c570e73544f5264dc20c9c12791493e4c9d20aeacaa664493b2fd52412"
+    },
+    {
+      "path": "export_schemas/effect_registry.json",
+      "sha256": "c495efa2cff266ebbee600de472d42dd279bc7d6439d8ca046857accd22f54f6"
+    },
+    {
+      "path": "export_schemas/csv_columns.json",
+      "sha256": "13e6f7ef8881e65e4c784eedb75c62f0a20a7ee1e31159a06d010116810d9852"
+    },
+    {
+      "path": "export_schemas/figure_exports.json",
+      "sha256": "ce801557e8c6e22007cf7114dbc6b55eaba4480a27a22ecddcc22e20f109a054"
+    }
+  ],
+  "fixture_set_sha256": "81c341b39e711caffc85a444f0c1e4bc1e2d00633474c82e720afeb60def3c4d",
+  "generated_on": "2026-07-29",
+  "schema_version": 1,
+  "serialization": {
+    "allow_nan": false,
+    "encoding": "UTF-8",
+    "indent": 2,
+    "newline": "LF with terminal newline",
+    "sorted_keys": true
+  },
+  "source": {
+    "branch": "main",
+    "commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+    "repository": "reblocke/conf_curve_likelihood"
+  },
+  "versions": {
+    "confcurve": "0.1.0",
+    "hypothesis": "6.151.9",
+    "numpy": "2.2.6",
+    "playwright": "1.58.0",
+    "plotly": "3.1.0",
+    "pyodide": "0.29.3",
+    "pytest": "9.0.2",
+    "pytest-playwright": "0.7.2",
+    "python_declared": "3.11",
+    "python_runtime": "3.11.10",
+    "scipy": "1.14.1"
+  }
+}

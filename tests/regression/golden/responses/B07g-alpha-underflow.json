@@ -1,0 +1,5 @@
+{
+  "error_type": "ValidationError",
+  "message": "Design alpha is too small to evaluate with finite floating-point precision.",
+  "status": "error"
+}

@@ -1,0 +1,16 @@
+{
+  "design_alpha": 0.05,
+  "design_enabled": true,
+  "design_selection_rule": "two_sided_p_lt_alpha",
+  "design_true_effects": [
+    0.1,
+    0.3
+  ],
+  "effect_type": "mean_difference",
+  "grid_points": 401,
+  "lower": 0.11,
+  "thresholds": [
+    0.2
+  ],
+  "upper": 0.73
+}

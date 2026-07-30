@@ -1,0 +1,120 @@
+{
+  "response": {
+    "design": null,
+    "grid": {
+      "compatibility": {
+        "all_numeric_values_finite": true,
+        "first": 0.04570182963054248,
+        "last": 0.04570182963054248,
+        "length": 401,
+        "none_count": 0
+      },
+      "effect_display": {
+        "all_numeric_values_finite": true,
+        "first": 9.92306865137684e+307,
+        "last": 1.7976931348623157e+308,
+        "length": 401,
+        "none_count": 0
+      },
+      "effect_working": {
+        "all_numeric_values_finite": true,
+        "first": 9.92306865137684e+307,
+        "last": 1.7976931348623157e+308,
+        "length": 401,
+        "none_count": 0
+      },
+      "log_relative_likelihood": {
+        "all_numeric_values_finite": true,
+        "first": -1.9962753618172246,
+        "last": -1.9962753618172246,
+        "length": 401,
+        "none_count": 0
+      },
+      "relative_likelihood": {
+        "all_numeric_values_finite": true,
+        "first": 0.13584029811504586,
+        "last": 0.13584029811504586,
+        "length": 401,
+        "none_count": 0
+      },
+      "z": {
+        "all_numeric_values_finite": true,
+        "first": -1.9981368130422024,
+        "last": 1.9981368130422024,
+        "length": 401,
+        "none_count": 0
+      }
+    },
+    "meta": {
+      "default_null_applied": true,
+      "display_axis_scale": "working",
+      "display_range_active": false,
+      "display_range_display": null,
+      "display_range_working": null,
+      "effect_spec": {
+        "default_null": 0.0,
+        "family": "additive",
+        "key": "mean_difference",
+        "label": "Mean difference",
+        "positive_only": false,
+        "working_scale": "identity"
+      },
+      "estimate_source": "inferred_from_ci",
+      "grid_points": 401,
+      "relative_asymmetry": 4.951614083014335e-16,
+      "s_minus_2_interval": {
+        "likelihood_ratio_mle_to_bound": 7.38905609893065,
+        "range_display": [
+          9.919313690295233e+307,
+          1.7976931348623157e+308
+        ],
+        "range_working": [
+          9.919313690295233e+307,
+          1.7976931348623157e+308
+        ],
+        "relative_likelihood_cutoff": 0.1353352832366127,
+        "support_cutoff": -2.0
+      },
+      "se_method": "ci_width",
+      "show_cutoffs": true,
+      "threshold_support_summaries": [],
+      "thresholds_display": [],
+      "thresholds_working": []
+    },
+    "summary": {
+      "ci_display": [
+        1e+308,
+        1.79e+308
+      ],
+      "ci_working": [
+        1e+308,
+        1.79e+308
+      ],
+      "critical_effect_distance_working": 5.64615559205959e+307,
+      "critical_effect_markers_display": [
+        -5.64615559205959e+307,
+        5.64615559205959e+307
+      ],
+      "critical_effect_markers_working": [
+        -5.64615559205959e+307,
+        5.64615559205959e+307
+      ],
+      "estimate_display": 1.3949999999999999e+308,
+      "estimate_working": 1.3949999999999999e+308,
+      "likelihood_ratio_mle_to_null": 25357409441.53061,
+      "log_likelihood_ratio_mle_to_null": 23.956336809938428,
+      "log_null_relative_likelihood": -23.956336809938428,
+      "null_display": 0.0,
+      "null_relative_likelihood": 3.943620511810605e-11,
+      "null_working": 0.0,
+      "null_z_value": -6.921898122616141,
+      "two_sided_wald_p_value": 4.456316960717226e-12,
+      "working_scale_se": 2.015343154852383e+307
+    },
+    "warnings": [
+      "Grid expansion was truncated to keep the plotted payload within finite floating-point range. Very extreme null, threshold, or critical-effect values may fall outside the plotted x-axis.",
+      "Working-scale S-2 interval endpoints were clipped at the largest finite floating-point value. Wald summaries are unchanged."
+    ]
+  },
+  "status": "success"
+}

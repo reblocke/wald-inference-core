@@ -1,0 +1,1401 @@
+{
+  "objects": {
+    "CurveRequest": {
+      "field_order": [
+        "effect_type",
+        "estimate",
+        "lower",
+        "upper",
+        "null_value",
+        "thresholds",
+        "display_range_lower",
+        "display_range_upper",
+        "display_natural_axis",
+        "grid_points",
+        "show_cutoffs",
+        "design_enabled",
+        "design_alpha",
+        "design_selection_rule",
+        "design_claim_direction",
+        "design_claim_threshold",
+        "design_information_multiplier",
+        "design_precision_target_effect",
+        "design_target_power",
+        "design_max_type_s",
+        "design_max_type_m",
+        "design_true_effects",
+        "design_plausible_range_lower",
+        "design_plausible_range_upper"
+      ],
+      "fields": {
+        "design_alpha": {
+          "conditioning": "design",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission when design is enabled; otherwise ignored.",
+          "has_omission_default": true,
+          "meaning": "Selected-claim rule alpha",
+          "nullable": true,
+          "omission_behavior": "Uses alpha 0.05 when design is enabled.",
+          "omission_default": 0.05,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "probability"
+        },
+        "design_claim_direction": {
+          "conditioning": "design",
+          "explicit_null_accepted": false,
+          "explicit_null_behavior": "Rejected when evaluated by a design rule. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Direction used by directional selected-claim rules",
+          "nullable": false,
+          "omission_behavior": "Uses the positive direction unless a one-sided rule fixes direction.",
+          "omission_default": "positive",
+          "required": false,
+          "type": "string",
+          "units_or_scale": "positive or negative"
+        },
+        "design_claim_threshold": {
+          "conditioning": "design",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission when design is enabled. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Threshold used only by threshold-conditioned claim rules",
+          "nullable": true,
+          "omission_behavior": "Uses no threshold; threshold-conditioned rules reject its absence.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "design_enabled": {
+          "conditioning": "design",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Boolean coercion disables design and ignores all other design fields.",
+          "has_omission_default": true,
+          "meaning": "Enables repeated-study design calibration",
+          "nullable": true,
+          "omission_behavior": "Returns null for the design response block.",
+          "omission_default": false,
+          "required": false,
+          "type": "boolean",
+          "units_or_scale": "mode flag"
+        },
+        "design_information_multiplier": {
+          "conditioning": "design",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission when design is enabled. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Scales hypothetical design SE by the inverse square root",
+          "nullable": true,
+          "omission_behavior": "Uses current CI-implied information when design is enabled.",
+          "omission_default": 1.0,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "information ratio"
+        },
+        "design_max_type_m": {
+          "conditioning": "design",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission when design is enabled. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Optional maximum Type M target",
+          "nullable": true,
+          "omission_behavior": "Adds no maximum Type M inverse-precision target.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "working-scale magnitude ratio"
+        },
+        "design_max_type_s": {
+          "conditioning": "design",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission when design is enabled. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Optional maximum Type S target",
+          "nullable": true,
+          "omission_behavior": "Adds no maximum Type S inverse-precision target.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "conditional probability"
+        },
+        "design_plausible_range_lower": {
+          "conditioning": "design presentation",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Treated as absent; both bounds must otherwise be supplied. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Optional design-panel-only true-effect range lower bound",
+          "nullable": true,
+          "omission_behavior": "Uses no design-only plausible-range overlay.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "design_plausible_range_upper": {
+          "conditioning": "design presentation",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Treated as absent; both bounds must otherwise be supplied. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Optional design-panel-only true-effect range upper bound",
+          "nullable": true,
+          "omission_behavior": "Uses no design-only plausible-range overlay.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "design_precision_target_effect": {
+          "conditioning": "design",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission when design is enabled. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Assumed true effect for inverse precision targets",
+          "nullable": true,
+          "omission_behavior": "Produces no inverse-precision target rows.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "design_selection_rule": {
+          "conditioning": "design",
+          "explicit_null_accepted": false,
+          "explicit_null_behavior": "Rejected when design is enabled. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "One of the six supported selected-claim rules",
+          "nullable": false,
+          "omission_behavior": "Uses the two-sided p-value rule when design is enabled.",
+          "omission_default": "two_sided_p_lt_alpha",
+          "required": false,
+          "type": "string",
+          "units_or_scale": "selection-rule key"
+        },
+        "design_target_power": {
+          "conditioning": "design",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission when design is enabled. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Requested selected-claim probability target",
+          "nullable": true,
+          "omission_behavior": "Uses 0.80 only when a precision target effect is supplied.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "probability"
+        },
+        "design_true_effects": {
+          "conditioning": "design",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission when design is enabled. Ignored without validation when design_enabled is false.",
+          "has_omission_default": true,
+          "meaning": "Custom assumed true-effect scenario values",
+          "nullable": true,
+          "omission_behavior": "Adds no custom true-effect scenarios.",
+          "omission_default": [],
+          "required": false,
+          "type": "number[]",
+          "units_or_scale": "natural effect scale"
+        },
+        "display_natural_axis": {
+          "conditioning": "presentation",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Boolean coercion selects the working-scale display axis.",
+          "has_omission_default": true,
+          "meaning": "Requests natural-scale rather than working-scale x values",
+          "nullable": true,
+          "omission_behavior": "Requests a natural display axis for ratio measures.",
+          "omission_default": true,
+          "required": false,
+          "type": "boolean",
+          "units_or_scale": "display mode"
+        },
+        "display_range_lower": {
+          "conditioning": "presentation",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Treated as absent; both bounds must otherwise be supplied together.",
+          "has_omission_default": true,
+          "meaning": "Optional presentation-only x-grid lower bound",
+          "nullable": true,
+          "omission_behavior": "Uses the automatically constructed observed x-grid.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "display_range_upper": {
+          "conditioning": "presentation",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Treated as absent; both bounds must otherwise be supplied together.",
+          "has_omission_default": true,
+          "meaning": "Optional presentation-only x-grid upper bound",
+          "nullable": true,
+          "omission_behavior": "Uses the automatically constructed observed x-grid.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "effect_type": {
+          "conditioning": "shared input",
+          "explicit_null_accepted": false,
+          "explicit_null_behavior": "Rejected as an unsupported effect registry key.",
+          "has_omission_default": true,
+          "meaning": "Selects effect family, working scale, label, and default null",
+          "nullable": false,
+          "omission_behavior": "Uses the odds_ratio registry entry.",
+          "omission_default": "odds_ratio",
+          "required": false,
+          "type": "string",
+          "units_or_scale": "effect registry key"
+        },
+        "estimate": {
+          "conditioning": "observed evidence",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission: infer from the CI.",
+          "has_omission_default": true,
+          "meaning": "Optional point estimate used only to validate the CI midpoint",
+          "nullable": true,
+          "omission_behavior": "Infers the point estimate from the CI midpoint on the working scale.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "grid_points": {
+          "conditioning": "shared grid",
+          "explicit_null_accepted": false,
+          "explicit_null_behavior": "Rejected by integer coercion.",
+          "has_omission_default": true,
+          "meaning": "Requested grid size, normalized to an odd count",
+          "nullable": false,
+          "omission_behavior": "Uses 801 grid points.",
+          "omission_default": 801,
+          "required": false,
+          "type": "integer",
+          "units_or_scale": "count"
+        },
+        "lower": {
+          "conditioning": "observed evidence",
+          "explicit_null_accepted": false,
+          "explicit_null_behavior": "Rejected because both CI limits are runtime-required.",
+          "has_omission_default": false,
+          "meaning": "Reported 95% CI lower limit",
+          "nullable": false,
+          "omission_behavior": "Rejected because both CI limits are runtime-required.",
+          "omission_default": null,
+          "required": true,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "null_value": {
+          "conditioning": "shared observed/design reference",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission: use the effect registry default null.",
+          "has_omission_default": true,
+          "meaning": "Candidate null; defaults from the effect registry",
+          "nullable": true,
+          "omission_behavior": "Uses the selected effect registry default null.",
+          "omission_default": null,
+          "required": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "show_cutoffs": {
+          "conditioning": "presentation",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Boolean coercion disables compatibility-guide overlays.",
+          "has_omission_default": true,
+          "meaning": "Controls compatibility-guide overlays",
+          "nullable": true,
+          "omission_behavior": "Enables compatibility-guide overlays.",
+          "omission_default": true,
+          "required": false,
+          "type": "boolean",
+          "units_or_scale": "display flag"
+        },
+        "thresholds": {
+          "conditioning": "observed evidence",
+          "explicit_null_accepted": true,
+          "explicit_null_behavior": "Same as omission: use no reference thresholds.",
+          "has_omission_default": true,
+          "meaning": "Observed reference thresholds or MCIDs",
+          "nullable": true,
+          "omission_behavior": "Uses no reference thresholds.",
+          "omission_default": [],
+          "required": false,
+          "type": "number[]",
+          "units_or_scale": "natural effect scale"
+        },
+        "upper": {
+          "conditioning": "observed evidence",
+          "explicit_null_accepted": false,
+          "explicit_null_behavior": "Rejected because both CI limits are runtime-required.",
+          "has_omission_default": false,
+          "meaning": "Reported 95% CI upper limit",
+          "nullable": false,
+          "omission_behavior": "Rejected because both CI limits are runtime-required.",
+          "omission_default": null,
+          "required": true,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        }
+      },
+      "optional_fields": [
+        "effect_type",
+        "estimate",
+        "null_value",
+        "thresholds",
+        "display_range_lower",
+        "display_range_upper",
+        "display_natural_axis",
+        "grid_points",
+        "show_cutoffs",
+        "design_enabled",
+        "design_alpha",
+        "design_selection_rule",
+        "design_claim_direction",
+        "design_claim_threshold",
+        "design_information_multiplier",
+        "design_precision_target_effect",
+        "design_target_power",
+        "design_max_type_s",
+        "design_max_type_m",
+        "design_true_effects",
+        "design_plausible_range_lower",
+        "design_plausible_range_upper"
+      ],
+      "order_contract": "TypedDict declaration order; input mapping order is not relied upon",
+      "required_fields": [
+        "lower",
+        "upper"
+      ],
+      "typed_dict_total": false
+    },
+    "CurveResponse": {
+      "field_order": [
+        "meta",
+        "summary",
+        "warnings",
+        "grid",
+        "design"
+      ],
+      "fields": {
+        "design": {
+          "conditioning": "design",
+          "meaning": "Repeated-study design block; null when disabled",
+          "nullable": true,
+          "type": "DesignPayload",
+          "units_or_scale": "mixed design values"
+        },
+        "grid": {
+          "conditioning": "observed evidence",
+          "meaning": "Observed x-grid and function values",
+          "nullable": false,
+          "type": "GridPayload",
+          "units_or_scale": "aligned arrays"
+        },
+        "meta": {
+          "conditioning": "observed evidence",
+          "meaning": "Effect, reconstruction, threshold, range, and S-2 metadata",
+          "nullable": false,
+          "type": "MetaPayload",
+          "units_or_scale": "mixed metadata"
+        },
+        "summary": {
+          "conditioning": "observed evidence",
+          "meaning": "Observed reconstructed summary statistics",
+          "nullable": false,
+          "type": "SummaryPayload",
+          "units_or_scale": "mixed summary values"
+        },
+        "warnings": {
+          "conditioning": "observed evidence",
+          "meaning": "Observed reconstruction and finite-value warnings",
+          "nullable": false,
+          "type": "string[]",
+          "units_or_scale": "messages"
+        }
+      },
+      "order_contract": "frozen browser response insertion order"
+    },
+    "DesignConfigPayload": {
+      "field_order": [
+        "enabled",
+        "alpha",
+        "selection_rule",
+        "selection_rule_label",
+        "claim_direction",
+        "claim_threshold_display",
+        "claim_threshold_working",
+        "se_working",
+        "current_se_working",
+        "design_se_working",
+        "information_multiplier",
+        "current_ci_width_working",
+        "approx_design_ci_width_working",
+        "null_working",
+        "estimate_working",
+        "near_null_delta",
+        "type_m_scale_note",
+        "plausible_range_display",
+        "plausible_range_working"
+      ],
+      "fields": {
+        "alpha": {
+          "conditioning": "design",
+          "meaning": "Resolved selected-claim alpha",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "probability"
+        },
+        "approx_design_ci_width_working": {
+          "conditioning": "design",
+          "meaning": "Approximate design 95% CI width",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "claim_direction": {
+          "conditioning": "design",
+          "meaning": "Resolved claim direction",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "positive or negative"
+        },
+        "claim_threshold_display": {
+          "conditioning": "design",
+          "meaning": "Directional claim threshold for display",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "claim_threshold_working": {
+          "conditioning": "design",
+          "meaning": "Directional claim threshold used in tail calculations",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "current_ci_width_working": {
+          "conditioning": "shared precision",
+          "meaning": "Approximate current 95% CI width",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "current_se_working": {
+          "conditioning": "shared precision",
+          "meaning": "SE reconstructed from the current CI",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "design_se_working": {
+          "conditioning": "design",
+          "meaning": "Hypothetical SE after information scaling",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "enabled": {
+          "conditioning": "design",
+          "meaning": "Design block enabled state",
+          "nullable": false,
+          "type": "boolean",
+          "units_or_scale": "flag"
+        },
+        "estimate_working": {
+          "conditioning": "design comparison",
+          "meaning": "Observed CI-implied estimate used only for observed exaggeration",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "information_multiplier": {
+          "conditioning": "design",
+          "meaning": "Hypothetical information relative to current precision",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "information ratio"
+        },
+        "near_null_delta": {
+          "conditioning": "design",
+          "meaning": "Tolerance for undefined Type S/M ratios",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "standardized distance"
+        },
+        "null_working": {
+          "conditioning": "design",
+          "meaning": "Null used for true-effect distances",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "plausible_range_display": {
+          "conditioning": "design presentation",
+          "meaning": "Optional displayed true-effect range",
+          "nullable": true,
+          "type": "number[2]",
+          "units_or_scale": "natural effect scale"
+        },
+        "plausible_range_working": {
+          "conditioning": "design presentation",
+          "meaning": "Optional transformed true-effect range",
+          "nullable": true,
+          "type": "number[2]",
+          "units_or_scale": "working effect scale"
+        },
+        "se_working": {
+          "conditioning": "design",
+          "meaning": "Compatibility alias for design SE",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "selection_rule": {
+          "conditioning": "design",
+          "meaning": "Resolved selected-claim rule",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "selection-rule key"
+        },
+        "selection_rule_label": {
+          "conditioning": "design",
+          "meaning": "Human-readable selected-claim rule",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "display text"
+        },
+        "type_m_scale_note": {
+          "conditioning": "design",
+          "meaning": "States additive or log-working-scale Type M semantics",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "interpretive text"
+        }
+      },
+      "order_contract": "frozen browser response insertion order"
+    },
+    "DesignGridPayload": {
+      "field_order": [
+        "true_effect_display",
+        "true_effect_working",
+        "delta",
+        "power",
+        "type_s",
+        "type_m",
+        "expected_selected_abs_z",
+        "observed_exaggeration"
+      ],
+      "fields": {
+        "delta": {
+          "conditioning": "design",
+          "meaning": "True-effect distances from the null",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "design standard errors"
+        },
+        "expected_selected_abs_z": {
+          "conditioning": "design",
+          "meaning": "Expected selected absolute Wald Z",
+          "nullable": false,
+          "type": "(number|null)[]",
+          "units_or_scale": "absolute Z"
+        },
+        "observed_exaggeration": {
+          "conditioning": "design comparison",
+          "meaning": "Observed-to-assumed-true magnitude ratio",
+          "nullable": false,
+          "type": "(number|null)[]",
+          "units_or_scale": "working-scale magnitude ratio"
+        },
+        "power": {
+          "conditioning": "design",
+          "meaning": "Probability that the selected-claim rule is met",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "selected-claim probability"
+        },
+        "true_effect_display": {
+          "conditioning": "design",
+          "meaning": "Each x value treated as assumed truth",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "true_effect_working": {
+          "conditioning": "design",
+          "meaning": "Assumed truths used in calculations",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "working effect scale"
+        },
+        "type_m": {
+          "conditioning": "design",
+          "meaning": "Expected selected magnitude divided by true magnitude",
+          "nullable": false,
+          "type": "(number|null)[]",
+          "units_or_scale": "working-scale magnitude ratio"
+        },
+        "type_s": {
+          "conditioning": "design",
+          "meaning": "Wrong-sign probability among selected claims",
+          "nullable": false,
+          "type": "(number|null)[]",
+          "units_or_scale": "conditional probability"
+        }
+      },
+      "order_contract": "frozen browser response and CSV alignment order"
+    },
+    "DesignPayload": {
+      "field_order": [
+        "config",
+        "grid",
+        "scenarios",
+        "precision_targets",
+        "warnings"
+      ],
+      "fields": {
+        "config": {
+          "conditioning": "design",
+          "meaning": "Resolved design inputs and precision",
+          "nullable": false,
+          "type": "DesignConfigPayload",
+          "units_or_scale": "mixed configuration"
+        },
+        "grid": {
+          "conditioning": "design",
+          "meaning": "Forward operating characteristics on the shared x-grid",
+          "nullable": false,
+          "type": "DesignGridPayload",
+          "units_or_scale": "aligned arrays"
+        },
+        "precision_targets": {
+          "conditioning": "design",
+          "meaning": "Per-target required precision results",
+          "nullable": false,
+          "type": "DesignPrecisionTargetPayload[]",
+          "units_or_scale": "inverse precision rows"
+        },
+        "scenarios": {
+          "conditioning": "design",
+          "meaning": "Deduplicated null, estimate, threshold, and custom scenarios",
+          "nullable": false,
+          "type": "DesignScenarioPayload[]",
+          "units_or_scale": "scenario rows"
+        },
+        "warnings": {
+          "conditioning": "design",
+          "meaning": "Design conditioning, semantics, and feasibility notes",
+          "nullable": false,
+          "type": "string[]",
+          "units_or_scale": "messages"
+        }
+      },
+      "order_contract": "frozen browser response insertion order"
+    },
+    "DesignPrecisionTargetPayload": {
+      "field_order": [
+        "target",
+        "requested_value",
+        "target_effect_display",
+        "target_effect_working",
+        "required_se",
+        "required_information_multiplier",
+        "approx_95_ci_width_working",
+        "achieved_power",
+        "achieved_type_s",
+        "achieved_type_m",
+        "note"
+      ],
+      "fields": {
+        "achieved_power": {
+          "conditioning": "design",
+          "meaning": "Power at the solved SE",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "selected-claim probability"
+        },
+        "achieved_type_m": {
+          "conditioning": "design",
+          "meaning": "Type M at the solved SE",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "working-scale magnitude ratio"
+        },
+        "achieved_type_s": {
+          "conditioning": "design",
+          "meaning": "Type S at the solved SE",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "conditional probability"
+        },
+        "approx_95_ci_width_working": {
+          "conditioning": "design",
+          "meaning": "Approximate 2 z0.975 required-SE width",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "note": {
+          "conditioning": "design",
+          "meaning": "Already met, bisection, undefined, or infeasible status",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "status text"
+        },
+        "requested_value": {
+          "conditioning": "design",
+          "meaning": "Requested target or maximum",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "target-specific"
+        },
+        "required_information_multiplier": {
+          "conditioning": "design",
+          "meaning": "Current SE squared over required SE squared",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "information ratio"
+        },
+        "required_se": {
+          "conditioning": "design",
+          "meaning": "Largest SE estimated to satisfy the target",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "target": {
+          "conditioning": "design",
+          "meaning": "Power, maximum Type S, or maximum Type M",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "target label"
+        },
+        "target_effect_display": {
+          "conditioning": "design",
+          "meaning": "Assumed true effect as supplied before working-scale transformation",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "target_effect_working": {
+          "conditioning": "design",
+          "meaning": "Assumed true effect used by the solver",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        }
+      },
+      "order_contract": "frozen row key and requested-target order"
+    },
+    "DesignScenarioPayload": {
+      "field_order": [
+        "label",
+        "source",
+        "true_effect_display",
+        "true_effect_working",
+        "delta",
+        "power",
+        "type_s",
+        "type_m",
+        "observed_exaggeration",
+        "note"
+      ],
+      "fields": {
+        "delta": {
+          "conditioning": "design",
+          "meaning": "True-effect distance from the null",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "design standard errors"
+        },
+        "label": {
+          "conditioning": "design",
+          "meaning": "Scenario label",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "display text"
+        },
+        "note": {
+          "conditioning": "design",
+          "meaning": "Scenario caveat or source note",
+          "nullable": true,
+          "type": "string",
+          "units_or_scale": "interpretive text"
+        },
+        "observed_exaggeration": {
+          "conditioning": "design comparison",
+          "meaning": "Observed-to-assumed-true magnitude ratio",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "working-scale magnitude ratio"
+        },
+        "power": {
+          "conditioning": "design",
+          "meaning": "Probability that the selection rule is met",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "selected-claim probability"
+        },
+        "source": {
+          "conditioning": "design",
+          "meaning": "Null, estimate, threshold, or custom source",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "source key"
+        },
+        "true_effect_display": {
+          "conditioning": "design",
+          "meaning": "Assumed truth for display",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "true_effect_working": {
+          "conditioning": "design",
+          "meaning": "Assumed truth used in calculations",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "type_m": {
+          "conditioning": "design",
+          "meaning": "Expected selected magnitude exaggeration",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "working-scale magnitude ratio"
+        },
+        "type_s": {
+          "conditioning": "design",
+          "meaning": "Wrong-sign probability among selected claims",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "conditional probability"
+        }
+      },
+      "order_contract": "frozen row key order; row order follows source priority"
+    },
+    "EffectSpecPayload": {
+      "field_order": [
+        "key",
+        "label",
+        "family",
+        "working_scale",
+        "default_null",
+        "positive_only"
+      ],
+      "fields": {
+        "default_null": {
+          "conditioning": "shared metadata",
+          "meaning": "Registry default null value",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "natural effect scale"
+        },
+        "family": {
+          "conditioning": "shared metadata",
+          "meaning": "Effect family",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "additive or ratio"
+        },
+        "key": {
+          "conditioning": "shared metadata",
+          "meaning": "Canonical effect-measure key",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "registry key"
+        },
+        "label": {
+          "conditioning": "shared metadata",
+          "meaning": "Human-readable effect label",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "display text"
+        },
+        "positive_only": {
+          "conditioning": "shared metadata",
+          "meaning": "Whether natural-scale inputs must be positive",
+          "nullable": false,
+          "type": "boolean",
+          "units_or_scale": "constraint flag"
+        },
+        "working_scale": {
+          "conditioning": "shared metadata",
+          "meaning": "Numerical working scale",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "identity or log"
+        }
+      },
+      "order_contract": "deterministic dataclass field order"
+    },
+    "GridPayload": {
+      "field_order": [
+        "effect_display",
+        "effect_working",
+        "z",
+        "compatibility",
+        "relative_likelihood",
+        "log_relative_likelihood"
+      ],
+      "fields": {
+        "compatibility": {
+          "conditioning": "observed evidence",
+          "meaning": "Wald compatibility curve values",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "two-sided probability"
+        },
+        "effect_display": {
+          "conditioning": "observed evidence",
+          "meaning": "Displayed candidate effects",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "effect_working": {
+          "conditioning": "observed evidence",
+          "meaning": "Candidate effects used in calculations",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "working effect scale"
+        },
+        "log_relative_likelihood": {
+          "conditioning": "observed evidence",
+          "meaning": "Log normalized Wald relative-likelihood values",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "natural log ratio to peak"
+        },
+        "relative_likelihood": {
+          "conditioning": "observed evidence",
+          "meaning": "Normalized Wald relative-likelihood values",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "ratio to peak"
+        },
+        "z": {
+          "conditioning": "observed evidence",
+          "meaning": "Standardized distances from the CI-implied estimate",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "standard errors"
+        }
+      },
+      "order_contract": "frozen order used by CSV export and tests"
+    },
+    "MetaPayload": {
+      "field_order": [
+        "effect_spec",
+        "display_axis_scale",
+        "estimate_source",
+        "default_null_applied",
+        "grid_points",
+        "show_cutoffs",
+        "se_method",
+        "relative_asymmetry",
+        "thresholds_display",
+        "thresholds_working",
+        "display_range_active",
+        "display_range_display",
+        "display_range_working",
+        "threshold_support_summaries",
+        "s_minus_2_interval"
+      ],
+      "fields": {
+        "default_null_applied": {
+          "conditioning": "observed evidence",
+          "meaning": "Whether the effect-registry null was applied",
+          "nullable": false,
+          "type": "boolean",
+          "units_or_scale": "flag"
+        },
+        "display_axis_scale": {
+          "conditioning": "presentation",
+          "meaning": "Scale of effect_display values",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "natural or working"
+        },
+        "display_range_active": {
+          "conditioning": "presentation",
+          "meaning": "Whether an explicit presentation window is active",
+          "nullable": false,
+          "type": "boolean",
+          "units_or_scale": "flag"
+        },
+        "display_range_display": {
+          "conditioning": "presentation",
+          "meaning": "Requested displayed x-grid endpoints",
+          "nullable": true,
+          "type": "number[2]",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "display_range_working": {
+          "conditioning": "presentation",
+          "meaning": "Requested x-grid endpoints used to build the grid",
+          "nullable": true,
+          "type": "number[2]",
+          "units_or_scale": "working effect scale"
+        },
+        "effect_spec": {
+          "conditioning": "observed evidence",
+          "meaning": "Selected effect specification",
+          "nullable": false,
+          "type": "EffectSpecPayload",
+          "units_or_scale": "registry metadata"
+        },
+        "estimate_source": {
+          "conditioning": "observed evidence",
+          "meaning": "Whether an estimate was inferred or supplied and validated",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "source label"
+        },
+        "grid_points": {
+          "conditioning": "shared grid",
+          "meaning": "Actual odd grid size",
+          "nullable": false,
+          "type": "integer",
+          "units_or_scale": "count"
+        },
+        "relative_asymmetry": {
+          "conditioning": "observed evidence",
+          "meaning": "Relative CI-side SE asymmetry",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "relative difference"
+        },
+        "s_minus_2_interval": {
+          "conditioning": "observed evidence",
+          "meaning": "Effects with log relative support at least -2",
+          "nullable": false,
+          "type": "SMinus2IntervalPayload",
+          "units_or_scale": "support interval"
+        },
+        "se_method": {
+          "conditioning": "observed evidence",
+          "meaning": "CI-width or mean-side SE reconstruction method",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "method label"
+        },
+        "show_cutoffs": {
+          "conditioning": "presentation",
+          "meaning": "Whether compatibility guide cutoffs are requested",
+          "nullable": false,
+          "type": "boolean",
+          "units_or_scale": "display flag"
+        },
+        "threshold_support_summaries": {
+          "conditioning": "observed evidence",
+          "meaning": "Observed support summaries in input threshold order",
+          "nullable": false,
+          "type": "ThresholdSupportPayload[]",
+          "units_or_scale": "mixed support values"
+        },
+        "thresholds_display": {
+          "conditioning": "observed evidence",
+          "meaning": "Reference thresholds for display",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "thresholds_working": {
+          "conditioning": "observed evidence",
+          "meaning": "Reference thresholds used in calculations",
+          "nullable": false,
+          "type": "number[]",
+          "units_or_scale": "working effect scale"
+        }
+      },
+      "order_contract": "frozen browser response insertion order"
+    },
+    "SMinus2IntervalPayload": {
+      "field_order": [
+        "support_cutoff",
+        "relative_likelihood_cutoff",
+        "likelihood_ratio_mle_to_bound",
+        "range_display",
+        "range_working"
+      ],
+      "fields": {
+        "likelihood_ratio_mle_to_bound": {
+          "conditioning": "observed evidence",
+          "meaning": "Peak-to-bound ratio exp(2)",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "support ratio"
+        },
+        "range_display": {
+          "conditioning": "observed evidence",
+          "meaning": "Finite display-scale support endpoints",
+          "nullable": false,
+          "type": "number[2]",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "range_working": {
+          "conditioning": "observed evidence",
+          "meaning": "Finite estimate plus or minus 2 SE endpoints",
+          "nullable": false,
+          "type": "number[2]",
+          "units_or_scale": "working effect scale"
+        },
+        "relative_likelihood_cutoff": {
+          "conditioning": "observed evidence",
+          "meaning": "Exponentiated support cutoff exp(-2)",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "ratio to peak"
+        },
+        "support_cutoff": {
+          "conditioning": "observed evidence",
+          "meaning": "Fixed log support cutoff of -2",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "log relative support"
+        }
+      },
+      "order_contract": "frozen browser response insertion order"
+    },
+    "SummaryPayload": {
+      "field_order": [
+        "estimate_display",
+        "estimate_working",
+        "ci_display",
+        "ci_working",
+        "null_display",
+        "null_working",
+        "working_scale_se",
+        "null_relative_likelihood",
+        "log_null_relative_likelihood",
+        "likelihood_ratio_mle_to_null",
+        "log_likelihood_ratio_mle_to_null",
+        "two_sided_wald_p_value",
+        "null_z_value",
+        "critical_effect_markers_display",
+        "critical_effect_markers_working",
+        "critical_effect_distance_working"
+      ],
+      "fields": {
+        "ci_display": {
+          "conditioning": "observed evidence",
+          "meaning": "Reported CI limits",
+          "nullable": false,
+          "type": "number[2]",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "ci_working": {
+          "conditioning": "observed evidence",
+          "meaning": "Reported CI limits after transformation",
+          "nullable": false,
+          "type": "number[2]",
+          "units_or_scale": "working effect scale"
+        },
+        "critical_effect_distance_working": {
+          "conditioning": "design interpretation",
+          "meaning": "Legacy z-sum benchmark distance from the null",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "critical_effect_markers_display": {
+          "conditioning": "design interpretation",
+          "meaning": "Legacy paired 80% benchmark markers for display",
+          "nullable": false,
+          "type": "number[2]",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "critical_effect_markers_working": {
+          "conditioning": "design interpretation",
+          "meaning": "Legacy paired 80% benchmark markers",
+          "nullable": false,
+          "type": "number[2]",
+          "units_or_scale": "working effect scale"
+        },
+        "estimate_display": {
+          "conditioning": "observed evidence",
+          "meaning": "CI-midpoint estimate for display",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "estimate_working": {
+          "conditioning": "observed evidence",
+          "meaning": "CI-midpoint estimate used in calculations",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "likelihood_ratio_mle_to_null": {
+          "conditioning": "observed evidence",
+          "meaning": "Exponentiated MLE-to-null support when finite",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "support ratio"
+        },
+        "log_likelihood_ratio_mle_to_null": {
+          "conditioning": "observed evidence",
+          "meaning": "Log MLE-to-null support when finite",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "natural log support ratio"
+        },
+        "log_null_relative_likelihood": {
+          "conditioning": "observed evidence",
+          "meaning": "Log relative likelihood at the null when finite",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "natural log ratio to peak"
+        },
+        "null_display": {
+          "conditioning": "observed evidence",
+          "meaning": "Null value for display",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "null_relative_likelihood": {
+          "conditioning": "observed evidence",
+          "meaning": "Normalized Wald relative likelihood at the null",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "ratio to peak"
+        },
+        "null_working": {
+          "conditioning": "shared observed/design reference",
+          "meaning": "Null value used in calculations",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        },
+        "null_z_value": {
+          "conditioning": "observed evidence",
+          "meaning": "Signed standardized null distance when finite",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "standard errors"
+        },
+        "two_sided_wald_p_value": {
+          "conditioning": "observed evidence",
+          "meaning": "Two-sided compatibility value at the null",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "probability"
+        },
+        "working_scale_se": {
+          "conditioning": "shared precision",
+          "meaning": "SE reconstructed from the reported 95% CI",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        }
+      },
+      "order_contract": "frozen browser response insertion order"
+    },
+    "ThresholdSupportPayload": {
+      "field_order": [
+        "threshold_display",
+        "threshold_working",
+        "relative_likelihood",
+        "log_relative_likelihood",
+        "likelihood_ratio_mle_to_threshold",
+        "log_likelihood_ratio_mle_to_threshold",
+        "likelihood_ratio_threshold_to_null",
+        "log_likelihood_ratio_threshold_to_null",
+        "direction_from_estimate",
+        "direction_from_null"
+      ],
+      "fields": {
+        "direction_from_estimate": {
+          "conditioning": "observed evidence",
+          "meaning": "Threshold position relative to the CI-implied estimate",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "direction label"
+        },
+        "direction_from_null": {
+          "conditioning": "observed evidence",
+          "meaning": "Threshold position relative to the null",
+          "nullable": false,
+          "type": "string",
+          "units_or_scale": "direction label"
+        },
+        "likelihood_ratio_mle_to_threshold": {
+          "conditioning": "observed evidence",
+          "meaning": "Exponentiated MLE-to-threshold support when finite",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "support ratio"
+        },
+        "likelihood_ratio_threshold_to_null": {
+          "conditioning": "observed evidence",
+          "meaning": "Exponentiated threshold-to-null support when finite",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "support ratio"
+        },
+        "log_likelihood_ratio_mle_to_threshold": {
+          "conditioning": "observed evidence",
+          "meaning": "Log MLE-to-threshold support",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "natural log support ratio"
+        },
+        "log_likelihood_ratio_threshold_to_null": {
+          "conditioning": "observed evidence",
+          "meaning": "Log threshold-to-null support when the null summary is finite",
+          "nullable": true,
+          "type": "number",
+          "units_or_scale": "natural log support ratio"
+        },
+        "log_relative_likelihood": {
+          "conditioning": "observed evidence",
+          "meaning": "Log normalized Wald relative likelihood",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "natural log ratio to peak"
+        },
+        "relative_likelihood": {
+          "conditioning": "observed evidence",
+          "meaning": "Normalized Wald relative likelihood at the threshold",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "ratio to peak"
+        },
+        "threshold_display": {
+          "conditioning": "observed evidence",
+          "meaning": "Reference threshold for display",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "display effect scale; see meta.display_axis_scale"
+        },
+        "threshold_working": {
+          "conditioning": "observed evidence",
+          "meaning": "Reference threshold used in calculations",
+          "nullable": false,
+          "type": "number",
+          "units_or_scale": "working effect scale"
+        }
+      },
+      "order_contract": "frozen browser response insertion order"
+    }
+  },
+  "ordering": {
+    "request_mapping_order_is_ignored": true,
+    "response_key_orders_are_frozen": true,
+    "separate_order_fixture": "browser_key_order.json"
+  },
+  "schema_version": 1,
+  "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+  "strict_json": {
+    "allow_nan": false,
+    "known_defect": null,
+    "status": "enforced for every successful response",
+    "undefined_value": null
+  }
+}

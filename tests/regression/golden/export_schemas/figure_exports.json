@@ -1,0 +1,25 @@
+{
+  "controls": [
+    "export-csv",
+    "export-png",
+    "export-manuscript-png",
+    "copy-caption",
+    "copy-reviewer-text"
+  ],
+  "dashboard": {
+    "format": "png",
+    "height_design": 1600,
+    "height_observed": 1100,
+    "scale": 2,
+    "width": 1400
+  },
+  "manuscript": {
+    "caption_embedded": false,
+    "format": "png",
+    "height_design": 1500,
+    "height_observed": 1000,
+    "scale": 2,
+    "width": 1400
+  },
+  "schema_version": 1
+}

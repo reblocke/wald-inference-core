@@ -1,0 +1,7 @@
+{
+  "design_alpha": "not-a-number",
+  "design_enabled": true,
+  "effect_type": "mean_difference",
+  "lower": 0.11,
+  "upper": 0.73
+}
