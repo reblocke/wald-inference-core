@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from fractions import Fraction
 from math import isfinite
 
 import numpy as np
@@ -11,6 +12,8 @@ from .compatibility import (
     LOG_MAX_FLOAT,
     ObservedResult,
     _standardized_distance_kernel,
+    _strict_to_array,
+    _validate_center_and_se,
     standardized_distance,
 )
 from .compatibility import (
@@ -84,17 +87,44 @@ def _exp_or_none(log_value: float | None) -> float | None:
 
 
 def _log_support_ratio_kernel(
-    log_candidate_a: ObservedResult,
-    log_candidate_b: ObservedResult,
+    candidate_a: np.ndarray,
+    candidate_b: np.ndarray,
+    *,
+    theta_hat: float,
+    se: float,
 ) -> ObservedResult:
     try:
-        with np.errstate(over="ignore", invalid="ignore"):
-            log_ratio = np.subtract(log_candidate_a, log_candidate_b)
+        candidate_a, candidate_b = np.broadcast_arrays(candidate_a, candidate_b)
     except ValueError as exc:
         raise ValidationError("Support-ratio values must be broadcast-compatible.") from exc
-    if not np.isfinite(log_ratio).all():
-        raise ValidationError("Log support ratio exceeds the finite floating-point range.")
-    return log_ratio
+
+    # For L(A) / L(B), the direct difference of the two log kernels is
+    #
+    #   ((B - theta_hat)^2 - (A - theta_hat)^2) / (2 * se^2).
+    #
+    # Evaluating those squares separately can overflow or catastrophically
+    # cancel even when their difference is finite. Scaling first is also not
+    # sufficient: it can erase subnormal values or a small nonzero center
+    # before symmetric candidates cancel. Fraction.from_float preserves the
+    # exact binary64 inputs, so this factorization rounds only once when each
+    # completed log ratio is converted back to binary64.
+    center = Fraction.from_float(theta_hat)
+    standard_error = Fraction.from_float(se)
+    denominator = 2 * standard_error * standard_error
+    log_ratio = np.empty(candidate_a.shape, dtype=float)
+
+    try:
+        for index in np.ndindex(candidate_a.shape):
+            candidate_a_exact = Fraction.from_float(float(candidate_a[index]))
+            candidate_b_exact = Fraction.from_float(float(candidate_b[index]))
+            numerator = (candidate_b_exact - candidate_a_exact) * (
+                candidate_a_exact + candidate_b_exact - (2 * center)
+            )
+            log_ratio[index] = float(numerator / denominator)
+    except OverflowError as exc:
+        raise ValidationError("Log support ratio exceeds the finite floating-point range.") from exc
+
+    return log_ratio[()] if log_ratio.ndim == 0 else log_ratio
 
 
 def log_support_ratio(
@@ -106,17 +136,17 @@ def log_support_ratio(
 ) -> ObservedResult:
     """Return finite log L(A)/L(B) under the normalized Wald reconstruction."""
 
-    log_candidate_a = log_relative_likelihood(
-        candidate_a_working,
-        theta_hat=theta_hat,
-        se=se,
+    candidate_a = _strict_to_array(candidate_a_working)
+    candidate_b = _strict_to_array(candidate_b_working)
+    if not np.isfinite(candidate_a).all() or not np.isfinite(candidate_b).all():
+        raise ValidationError("Evaluation points must be finite.")
+    center, standard_error = _validate_center_and_se(theta_hat, se)
+    return _log_support_ratio_kernel(
+        candidate_a,
+        candidate_b,
+        theta_hat=center,
+        se=standard_error,
     )
-    log_candidate_b = log_relative_likelihood(
-        candidate_b_working,
-        theta_hat=theta_hat,
-        se=se,
-    )
-    return _log_support_ratio_kernel(log_candidate_a, log_candidate_b)
 
 
 def _coerce_support_pair(

@@ -162,6 +162,85 @@ def test_log_support_ratio_is_ordered_and_antisymmetric() -> None:
     assert float(log_support_ratio(1.0, 1.0, theta_hat=0.25, se=0.5)) == 0.0
 
 
+def test_log_support_ratio_is_stable_for_huge_equal_or_symmetric_candidates() -> None:
+    huge = 1e155
+
+    assert float(log_support_ratio(huge, huge, theta_hat=0.0, se=1.0)) == 0.0
+    assert support_ratio(huge, huge, theta_hat=0.0, se=1.0) == 1.0
+    assert float(log_support_ratio(huge, -huge, theta_hat=0.0, se=1.0)) == 0.0
+    assert support_ratio(huge, -huge, theta_hat=0.0, se=1.0) == 1.0
+
+
+def test_log_support_ratio_avoids_cancellation_for_adjacent_large_candidates() -> None:
+    candidate_a = 1e10
+    candidate_b = math.nextafter(candidate_a, math.inf)
+    expected = 0.5 * (candidate_b - candidate_a) * (candidate_a + candidate_b)
+
+    observed = float(
+        log_support_ratio(
+            candidate_a,
+            candidate_b,
+            theta_hat=0.0,
+            se=1.0,
+        )
+    )
+
+    assert expected == 19073.486328125
+    assert observed == expected
+
+
+def test_log_support_ratio_preserves_a_tiny_center_between_symmetric_candidates() -> None:
+    assert float(
+        log_support_ratio(
+            1.0,
+            -1.0,
+            theta_hat=1e-20,
+            se=1e-10,
+        )
+    ) == pytest.approx(2.0)
+    assert float(
+        log_support_ratio(
+            1e10,
+            -1e10,
+            theta_hat=1e-7,
+            se=1.0,
+        )
+    ) == pytest.approx(2000.0)
+
+
+def test_log_support_ratio_preserves_minimum_subnormal_inputs() -> None:
+    smallest_subnormal = float.fromhex("0x0.0000000000001p-1022")
+
+    assert (
+        float(
+            log_support_ratio(
+                0.0,
+                smallest_subnormal,
+                theta_hat=0.0,
+                se=smallest_subnormal,
+            )
+        )
+        == 0.5
+    )
+    assert support_ratio(
+        0.0,
+        smallest_subnormal,
+        theta_hat=0.0,
+        se=smallest_subnormal,
+    ) == pytest.approx(math.exp(0.5))
+    assert (
+        float(
+            log_support_ratio(
+                0.0,
+                smallest_subnormal,
+                theta_hat=smallest_subnormal,
+                se=smallest_subnormal,
+            )
+        )
+        == -0.5
+    )
+
+
 def test_log_support_ratio_broadcasts_candidate_arrays() -> None:
     candidate_a = np.asarray([-0.5, 0.25, 1.0])
     candidate_b = np.asarray([[0.0], [0.5]])
