@@ -10,9 +10,8 @@ All notable changes to this project are documented here.
 
 - Added scalar/array `selected_claim_probability` and one-dimensional `power_curve`, both routed
   through the canonical intervals for all six existing selection rules.
-- Added `critical_effect_for_target_probability` with stable near-null probability increments,
-  one-sided quantile-domain inversion, and complement-domain one- and two-sided inversion near
-  probability one.
+- Added `critical_effect_for_target_probability` with one coherent, conservatively certified
+  binary64 probability kernel for forward evaluation, inversion, and achieved probability.
 - Added immutable `CriticalEffectResult` with signed standardized delta, working-scale critical
   effect, target, and achieved probability.
 
@@ -25,6 +24,9 @@ All notable changes to this project are documented here.
 - Added high-precision boundary and high-alpha references, explicit predecessor-minimality checks,
   targets one floating-point step above alpha and below one, and bit-exact null and near-null
   monotonicity contracts.
+- Added handoff-neighbor, high-alpha, high-probability, nonzero-null representability, and
+  public-forward coherence regressions. Replaced adaptive scalar quadrature with fixed stable
+  quadrature, reducing a 10,000-point near-null curve to well under one second in local validation.
 - Extended the exact root API, release metadata, distribution inspection, and cold-wheel smoke
   contracts for v0.3.0.
 - Retained the frozen baseline-parity gate for every pre-existing numerical output, including the
@@ -33,10 +35,37 @@ All notable changes to this project are documented here.
 ### Scientific impact
 
 - The exact critical effect is defined as the smallest directed working-scale effect meeting the
-  requested selected-claim probability under a fixed-SE one-parameter normal/Wald model.
+  requested conservatively rounded selected-claim probability under a fixed-SE one-parameter
+  normal/Wald model.
 - The legacy z-sum calculation remains a separately labeled closed-form benchmark. Neither quantity
   is a confidence bound, observed estimate, clinically validated meaningful effect, or
   study-specific sample-size calculation.
+
+## [0.2.1] - 2026-07-30
+
+### Fixed
+
+- Made `support_interval` and `support_interval_for_ratio` fail closed when finite binary64
+  endpoint quantization produces a materially different support boundary.
+- Independently re-evaluate every non-clipped endpoint with the exact-binary64 pairwise log-support
+  kernel and require relative agreement at `1e-12` with no absolute-tolerance floor.
+- Preserved deliberately overflow-clipped endpoints and their explicit flags, without claiming that
+  the clipped value equals the requested analytic boundary.
+
+### Validation
+
+- Added the exact hexadecimal `theta_hat=1e308` adjacent-float regression: criteria from 2:1 through
+  8:1 previously collapsed to endpoints whose actual ratio was `6.825935561925903`.
+- Added unit, property, independent rational scientific-reference, near-zero cutoff, minimum
+  subnormal standard-error, clipping, and cold-wheel regressions.
+- Retained exact root and legacy API contracts and zero-difference frozen parity across all 23,095
+  compared values.
+
+### Scientific impact
+
+- Analytic Wald formulas and all accurately representable interval endpoints are unchanged.
+  Extreme scale combinations that cannot encode the requested boundary now raise `ValidationError`
+  rather than returning a finite but scientifically mislabeled interval.
 
 ## [0.2.0] - 2026-07-29
 
@@ -120,7 +149,8 @@ All notable changes to this project are documented here.
   arbitrary non-Wald intervals, Bayesian inference, or design-specific sample-size calculations.
 
 [Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/reblocke/wald-inference-core/compare/v0.2.0...v0.3.0
+[0.3.0]: https://github.com/reblocke/wald-inference-core/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/reblocke/wald-inference-core/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/reblocke/wald-inference-core/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/reblocke/wald-inference-core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/reblocke/wald-inference-core/releases/tag/v0.1.0

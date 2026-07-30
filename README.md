@@ -10,8 +10,10 @@ the behavior-preserving extraction from the immutable
 [`conf_curve_likelihood` pre-split baseline](https://github.com/reblocke/conf_curve_likelihood/releases/tag/pre-split-baseline-2026-07-29).
 Version `0.1.1` preserves that numerical behavior and documents stable adapter-only imports.
 Version `0.2.0` adds generic pairwise support ratios and MLE-to-bound support intervals without
-changing the preserved calculations. Version `0.3.0` adds exact selected-claim probability curves
-and directed critical-effect inversion while retaining the legacy z-sum benchmark separately.
+changing the preserved calculations. Version `0.2.1` makes those interval APIs fail closed when a
+finite floating-point endpoint cannot accurately represent its requested support boundary. Version
+`0.3.0` adds selected-claim probability curves and certified directed critical-effect inversion
+while retaining the legacy z-sum benchmark separately.
 
 ## Question supported
 
@@ -122,7 +124,10 @@ four_to_one_interval = support_interval_for_ratio(
 `compatibility[1]` and `support[1]` are one at the reconstructed estimate. The endpoint
 compatibilities are approximately `0.05` under the 95% Wald reconstruction.
 `four_to_one_interval` contains working-scale values for which the CI-implied estimate is no more
-than four times as supported under the normalized Wald reconstruction.
+than four times as supported under the normalized Wald reconstruction. A finite interval is
+returned only when each non-clipped endpoint independently reproduces the requested log-support
+boundary within the documented numerical tolerance; otherwise the call raises `ValidationError`
+instead of labeling a materially different representable float as that boundary.
 
 ## Minimal detectability example
 
@@ -150,13 +155,13 @@ probabilities = power_curve(
 )
 ```
 
-`critical` is the smallest positive working-scale effect whose exact selected-claim probability
-meets the target under the stated normal/Wald model. For the symmetric two-sided rule, call the
-solver with `claim_direction="negative"` to obtain the paired lower value. This mathematical
-detectability threshold is not a confidence bound, observed estimate, user-defined meaningful
-effect, clinically validated MCID, or study-specific sample-size result. The preserved
-`legacy_critical_effect_distance` is a nearby closed-form benchmark, not the exact two-tailed
-solution.
+`critical` is the smallest positive working-scale effect whose conservatively rounded binary64
+evaluation of the exact selected-claim probability meets the target under the stated normal/Wald
+model. For the symmetric two-sided rule, call the solver with `claim_direction="negative"` to
+obtain the paired lower value. This mathematical detectability threshold is not a confidence
+bound, observed estimate, user-defined meaningful effect, clinically validated MCID, or
+study-specific sample-size result. The preserved `legacy_critical_effect_distance` is a nearby
+closed-form benchmark, not the exact two-tailed solution.
 
 ## Minimal Type S/M example
 

@@ -28,6 +28,8 @@ Important constraints:
 - Pairwise support ordering is L(A)/L(B); retain the log result when exponentiation overflows.
 - Exact critical effects are repeated-study Wald detectability thresholds, not observed evidence,
   confidence bounds, validated meaningful effects, or study-specific sample-size results.
+- Finite support-interval endpoints are independently verified against their requested log-support
+  boundary and fail with ValidationError when binary64 quantization is materially inaccurate.
 - Type S/M quantities are repeated-study operating characteristics, not posterior probabilities.
 - Ratio measures are evaluated on the log working scale.
 - Serializable calculation outputs use finite numbers or None; selection-rule intervals use

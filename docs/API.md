@@ -91,6 +91,14 @@ the canonical log-cutoff interval with cutoff `-log(R)`. It contains values for 
 reconstructed estimate is no more than R times as supported under the normalized Wald likelihood.
 S−2 is exactly the special case `R = exp(2)`; a 2:1 interval is not an S−2 interval.
 
+For each non-clipped finite endpoint, both interval functions independently re-evaluate the
+MLE-to-endpoint log support with the exact-binary64 pairwise kernel. The achieved and requested
+values must agree at relative tolerance `1e-12` with no absolute-tolerance floor. A requested
+boundary that collapses to the center, skips to a materially different adjacent float, or otherwise
+cannot meet that check raises `ValidationError`. An endpoint intentionally clipped to the maximum
+finite range remains identified by its clipping flag and is not represented as the requested
+boundary.
+
 These APIs compare parameter values under a one-parameter Wald approximation. They do not recover
 the fitted model's exact profile likelihood and do not produce posterior probabilities or Bayes
 factors.
@@ -137,10 +145,10 @@ documented below. Scalar input returns a Python `float`; array-like input return
 the same shape. `power_curve` is the corresponding nonempty one-dimensional convenience.
 
 `critical_effect_for_target_probability` returns the smallest effect in the requested direction
-whose exact selected-claim probability meets the finite target strictly between zero and one. It
-uses stable integrated probability increments near the null, a one-sided quantile-domain objective
-away from that boundary, and explicit finite bracketing and monotonic bisection. One- and two-sided
-targets near one are solved in the unselected-probability domain to avoid subtractive roundoff.
+whose conservatively rounded exact-model selected-claim probability meets the finite target
+strictly between zero and one. It uses stable integrated probability increments near the null,
+stable tail or unselected-probability complements away from that boundary, and explicit finite
+bracketing with monotonic bisection.
 Inversion is intentionally limited to:
 
 ```text
@@ -154,19 +162,21 @@ error, signed standardized `critical_delta`, working-scale critical effect, and 
 probability. Unsupported inverse rules, incoherent one-sided directions, a target without a finite
 bracket, or an unrepresentable working-scale result raise `ValidationError`.
 
-The float64 precision routes are explicit. Targets satisfying
-`target - alpha <= 1e-8 * alpha` use the stable increment from the exact-null anchor. Targets
-satisfying `1 - target <= 1e-8 * (1 - alpha)` use the unselected-probability complement. Other
-one-sided targets use the normal-quantile ordering directly; other two-sided targets use the
-canonical selected-interval probability. Each bisection result must satisfy its route-specific
-objective while the immediately preceding positive float does not. The achieved probability is
-computed from the same stable objective and the solver fails closed if it cannot certify the
-target; it is not raised to the target after an independently rounded forward evaluation.
+The binary64 precision contract is independent of the target. Near the null, fixed
+Gauss-Legendre quadrature integrates the canonical positive probability derivative. Outside that
+neighborhood, one-sided tails are evaluated directly and two-sided selection uses the central
+unselected interval in a stable complement/log domain. Exact rational float addition/subtraction
+and an eight-ULP numerical guard round the reported probability conservatively. Each bisection
+result must satisfy this same public forward probability while the immediately preceding magnitude
+does not. `achieved_probability` is a direct call to the same kernel after working-scale
+composition, never a value raised to the target after an independently rounded calculation.
 
 For the three invertible p-value rules, forward probability at an exact zero standardized distance
 is bit-exact `alpha`. Near-null forward evaluation uses the same stable selection-interval increment
-as inversion for `abs(delta) <= 1e-2` instead of relying on rounded differences between nearly equal
-tail probabilities.
+as inversion for `abs(delta) <= 0.125` instead of relying on rounded differences between nearly
+equal tail probabilities. A nonzero critical effect that cannot be represented on the supplied
+working scale within relative tolerance `1e-12` fails closed; there is no absolute tolerance that
+could accept a result rounded back to the null.
 
 For ratio measures, these functions operate on the log working scale. Use the effect registry
 transformations to map returned critical effects to the natural scale; equal log distances are

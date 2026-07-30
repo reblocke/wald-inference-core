@@ -127,6 +127,27 @@ numerator and denominator, and describe all results as normalized Wald approxima
 exact fitted likelihoods, Bayes factors, or posterior probabilities. The legacy module and every
 pre-v0.2.0 calculation remain unchanged.
 
+## 2026-07-30: Verify finite support endpoints and fail closed when unrepresentable
+
+**Context:** At an extreme working-scale center, the analytic half-width can be smaller than or
+comparable to one binary64 spacing unit. Multiple requested support criteria can then round to the
+same adjacent endpoints even though those floats have one fixed, materially different support
+ratio. Finite-range clipping flags do not describe this condition because the endpoints themselves
+are finite.
+
+**Decision:** In v0.2.1, construct an exact-input fallback endpoint and independently certify every
+non-clipped support-interval endpoint with exact rational arithmetic over its binary64 inputs.
+Require agreement with the requested MLE-to-bound log support at relative tolerance `1e-12` and
+absolute tolerance `0`. Preserve the v0.2.0 endpoint bit pattern whenever it passes that
+certification, use the fallback when half-scaling erases a representable subnormal center, and
+raise `ValidationError` when neither endpoint is faithful. Continue returning explicitly flagged
+overflow-clipped endpoints without claiming that a clipped bound equals the requested boundary.
+
+**Consequences:** Inputs whose analytic boundaries are not accurately representable now fail closed
+instead of returning a misleading interval. The no-absolute-floor rule also protects near-zero
+cutoffs from silently collapsing to the center. Representable endpoints, formulas, root-public
+names, the legacy adapter, and frozen baseline values remain unchanged.
+
 ## 2026-07-30: Separate exact detectability from the legacy z-sum benchmark
 
 **Context:** A focused critical-effect app needs vectorized selected-claim probability and inverse
@@ -140,13 +161,15 @@ multiple numerical authorities.
 probability through the canonical selection intervals for all six existing rules. Restrict monotonic
 inversion to the two-sided, matching one-sided positive, and matching one-sided negative p-value
 rules. Normalize exact-null probability locally to alpha without changing the frozen selection
-module. Use the canonical interval-density derivative for stable near-null increments, analytic
-one-sided quantile ordering away from that boundary, and the unselected probability for one- and
-two-sided targets near one. Route targets within `1e-8` relative to alpha through the null-anchored
-increment and targets within `1e-8` relative to one through the complement. Require the returned
-magnitude to satisfy the selected numerical objective while its immediately preceding float does
-not, compute achieved probability from that same objective, and reject unsupported, uncertifiable,
-or unrepresentable results. Preserve
+module. Use fixed Gauss-Legendre integration of the canonical positive derivative for
+`abs(delta) <= 0.125`; outside that neighborhood, evaluate one-sided tails directly and two-sided
+unselected probability in a stable complement/log domain. Apply a small directed-rounding guard so
+the public float is a conservative representation of the exact model probability. Use this one
+public kernel for arrays, scalar calls, generic monotonic bisection, and achieved probability,
+regardless of target proximity to alpha or one. Require each returned magnitude to satisfy the
+public probability while its immediately preceding float does not. Compose and re-evaluate the
+working-scale effect, use only relative representability tolerance with no absolute floor, and
+reject unsupported, uncertifiable, or unrepresentable results. Preserve
 `legacy_critical_effect_distance` and `legacy_critical_effect_markers` unchanged as a separately
 labeled closed-form benchmark.
 

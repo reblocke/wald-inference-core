@@ -45,16 +45,16 @@ failure.
 
 - **Unit tests** cover transformations, reconstruction, observed functions, pairwise support and
   ratio-based support intervals, six-rule detectability probability, restricted critical-effect
-  inversion, selection rules, Type S/M, precision, error behavior, and the exact root and adapter
-  compatibility surfaces.
+  inversion, finite endpoint representability, selection rules, Type S/M, precision, error
+  behavior, and the exact root and adapter compatibility surfaces.
 - **Property tests** cover valid finite ranges, symmetry, identity/log equivalence, pairwise
-  antisymmetry, requested endpoint support, detectability monotonicity and symmetry, information
-  scaling, scalar/array consistency, and one-sided quantile-domain predecessor minimality across
-  low and high alpha values.
+  antisymmetry, fail-closed requested endpoint support, detectability monotonicity and symmetry,
+  information scaling, scalar/array consistency, and public-probability predecessor minimality
+  across low and high alpha values.
 - **Scientific-reference tests** compare formulas with independently expressed normal-distribution
-  identities or closed forms, including analytic one-sided, direct-tail two-sided, and
-  hard-coded mpmath one-sided quantile differences plus high-precision floating-boundary
-  detectability references.
+  identities or closed forms, including exact-rational evaluation of extreme binary64 support
+  neighbors, analytic one-sided and direct-tail two-sided detectability, hard-coded mpmath quantile
+  differences, and high-precision floating-boundary roots.
 - **Regression tests** compare every core-owned value with the frozen corpus and preserve exact
   finite/undefined conventions.
 - **Packaging tests** inspect wheel/sdist metadata and contents.
