@@ -1,7 +1,7 @@
 # Public API
 
 The distribution is `wald-inference`; import it as `wald_inference`. The names in
-`wald_inference.__all__` are the deliberate v0.1.0 public surface. Functions validate finite inputs
+`wald_inference.__all__` are the deliberate stable root surface. Functions validate finite inputs
 and raise `ValidationError` for invalid or unrepresentable values.
 
 ## Effects
@@ -201,16 +201,17 @@ ValidationError
 __version__
 ```
 
-`__version__` is `0.1.0`. Canonical numerical outputs intended for serialization contain finite
+`__version__` is `0.1.1`. Canonical numerical outputs intended for serialization contain finite
 values or documented `None`; invalid inputs do not return sentinel NaN or infinity. The documented
 `SelectionRuleSpec.intervals` infinities are structural open-tail boundaries, not calculated result
 values.
 
 ## Compatibility aliases
 
-Module-level compatibility aliases needed during workbench migration delegate to the canonical
-functions. They are not duplicated implementations and are intentionally omitted from the root
-`__all__` when a clearer canonical name exists. New consumers should use the names documented above.
+Module-level compatibility imports needed during workbench migration delegate to, or directly
+re-export, canonical definitions. They are not duplicated implementations and are intentionally
+omitted from the root `__all__` when a clearer canonical name exists. General consumers should use
+the names documented above.
 
 The narrow adapter-only surface is imported explicitly:
 
@@ -222,5 +223,30 @@ from wald_inference import legacy
 `from_working_scale`, `estimate_se`, `build_grid`, `confidence_curve`, `relative_likelihood`,
 `log_relative_likelihood`, and `summaries`. This includes historical raw coercion exceptions,
 NumPy overflow warnings, and nonfinite outputs for invalid direct calls. It exists only to rewire the
-integrated workbench without changing behavior and is excluded from the root `__all__`. New code
-must use the strict canonical functions instead.
+integrated workbench without changing behavior and is excluded from the root `__all__`.
+
+Version 0.1.1 also makes the workbench adapter's numerical configuration imports stable:
+
+```python
+from wald_inference.legacy import (
+    ASYMMETRY_RELATIVE_TOLERANCE,
+    DEFAULT_GRID_POINTS,
+    DEFAULT_SOLVER_TOLERANCE,
+    DEFAULT_SPAN_MULTIPLIER,
+    ESTIMATE_MATCH_ABSOLUTE_TOLERANCE,
+    ESTIMATE_MATCH_RELATIVE_TOLERANCE,
+    GRID_EXPANSION_PADDING_MULTIPLIER,
+    LOG_MAX_FLOAT,
+    MAX_FINITE_ABS_Z,
+    MAX_FINITE_SPAN,
+    MAX_FLOAT,
+    MAX_INFORMATION_MULTIPLIER,
+    Z80,
+    Z975,
+    asymmetry_warning,
+)
+```
+
+These are direct re-exports of the values and helper used by the canonical implementation, not
+copied constants or formulas. They are public for compatibility adapters; new numerical code should
+use the strict canonical functions rather than build behavior from these implementation settings.

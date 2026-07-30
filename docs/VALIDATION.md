@@ -44,7 +44,7 @@ failure.
 ## Test layers
 
 - **Unit tests** cover transformations, reconstruction, observed functions, selection rules,
-  Type S/M, precision, and error behavior.
+  Type S/M, precision, error behavior, and the exact root and adapter compatibility surfaces.
 - **Property tests** cover valid finite ranges, symmetry, identity/log equivalence, information
   scaling, and scalar/array consistency.
 - **Scientific-reference tests** compare formulas with independently expressed normal-distribution
@@ -85,11 +85,11 @@ The tag workflow:
 7. publishes SHA-256 checksums and the machine-readable parity report; and
 8. passes only those already-verified files to the write-enabled release job.
 
-The expected v0.1.0 assets are:
+The expected v0.1.1 assets are:
 
 ```text
-wald_inference-0.1.0-py3-none-any.whl
-wald_inference-0.1.0.tar.gz
+wald_inference-0.1.1-py3-none-any.whl
+wald_inference-0.1.1.tar.gz
 SHA256SUMS
 baseline-parity.json
 ```

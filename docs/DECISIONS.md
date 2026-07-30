@@ -91,3 +91,19 @@ to the same private formula kernels, and the legacy module is excluded from the 
 **Consequences:** The workbench adapter can migrate without semantic drift, including its null
 summary sentinels. New consumers must not depend on the legacy module, and the compatibility surface
 may be removed only after downstream adapters no longer require it.
+
+## 2026-07-29: Stabilize adapter configuration imports in the legacy module
+
+**Context:** The integrated workbench adapter also needs the frozen numerical bounds, defaults,
+tolerances, quantiles, solver limits, and asymmetry-warning helper. Importing those names from
+implementation submodules would couple the adapter to private module layout even though their
+values and behavior must remain fixed during migration.
+
+**Decision:** In v0.1.1, directly re-export the required existing definitions from
+`wald_inference.legacy`, document their exact names, and lock that module's `__all__`. Do not expand
+the root `wald_inference.__all__`, recompute any constant, or add a second warning implementation.
+
+**Consequences:** Backward-compatibility adapters may rely on the documented legacy imports while
+general consumers continue to use canonical root functions. Any future removal or value change
+requires an explicit versioned migration; this decision does not broaden the package's scientific
+scope or change numerical behavior.

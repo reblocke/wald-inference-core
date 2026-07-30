@@ -25,6 +25,7 @@ SMOKE_CODE = textwrap.dedent(
 
     import numpy as np
     import wald_inference
+    from wald_inference import legacy
     from wald_inference import (
         ValidationError,
         compatibility_curve,
@@ -53,11 +54,38 @@ SMOKE_CODE = textwrap.dedent(
         raise AssertionError(f"unexpected smoke value type: {type(value)!r}")
 
 
-    assert version("wald-inference") == "0.1.0"
-    assert wald_inference.__version__ == "0.1.0"
+    assert version("wald-inference") == "0.1.1"
+    assert wald_inference.__version__ == "0.1.1"
     assert wald_inference.__all__
     for exported_name in wald_inference.__all__:
         assert hasattr(wald_inference, exported_name), exported_name
+    assert legacy.__all__ == [
+        "ASYMMETRY_RELATIVE_TOLERANCE",
+        "DEFAULT_GRID_POINTS",
+        "DEFAULT_SOLVER_TOLERANCE",
+        "DEFAULT_SPAN_MULTIPLIER",
+        "ESTIMATE_MATCH_ABSOLUTE_TOLERANCE",
+        "ESTIMATE_MATCH_RELATIVE_TOLERANCE",
+        "GRID_EXPANSION_PADDING_MULTIPLIER",
+        "LOG_MAX_FLOAT",
+        "MAX_FINITE_ABS_Z",
+        "MAX_FINITE_SPAN",
+        "MAX_FLOAT",
+        "MAX_INFORMATION_MULTIPLIER",
+        "Z80",
+        "Z975",
+        "asymmetry_warning",
+        "build_grid",
+        "confidence_curve",
+        "estimate_se",
+        "from_working_scale",
+        "log_relative_likelihood",
+        "relative_likelihood",
+        "summaries",
+        "to_working_scale",
+    ]
+    for exported_name in legacy.__all__:
+        assert hasattr(legacy, exported_name), exported_name
 
     module_path = Path(wald_inference.__file__).resolve()
     environment_root = Path(sys.prefix).resolve()

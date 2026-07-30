@@ -4,9 +4,10 @@
 compatibility, normalized relative-support, selected-claim, Type S/M, and precision quantities from
 reported estimates and confidence intervals or explicitly specified repeated-study scenarios.
 
-The distribution is `wald-inference`; the import package is `wald_inference`. Version `0.1.0` is
+The distribution is `wald-inference`; the import package is `wald_inference`. Version `0.1.0` was
 the behavior-preserving extraction from the immutable
 [`conf_curve_likelihood` pre-split baseline](https://github.com/reblocke/conf_curve_likelihood/releases/tag/pre-split-baseline-2026-07-29).
+Version `0.1.1` preserves that numerical behavior and documents stable adapter-only imports.
 
 ## Question supported
 
@@ -57,11 +58,11 @@ For development from a clone:
 uv sync --locked --all-groups
 ```
 
-GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.1.0
+GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.1.1
 wheel:
 
 ```bash
-python -m pip install ./wald_inference-0.1.0-py3-none-any.whl
+python -m pip install ./wald_inference-0.1.1-py3-none-any.whl
 ```
 
 The release page is <https://github.com/reblocke/wald-inference-core/releases>. A downstream
@@ -168,8 +169,12 @@ direct inflation of the natural-scale ratio.
 - [Maintenance and releases](docs/MAINTENANCE.md)
 - [Privacy](docs/PRIVACY.md)
 
-The root `wald_inference.__all__` is the deliberate stable import surface. Downstream applications
-adapt domain objects into app contracts; they do not copy formulas.
+The root `wald_inference.__all__` is the deliberate stable root import surface. Downstream
+applications adapt domain objects into app contracts; they do not copy formulas.
+
+The documented `wald_inference.legacy` surface provides direct compatibility re-exports for the
+integrated workbench adapter without expanding the root API. General consumers should use the
+canonical root imports.
 
 ## Verification
 
@@ -191,7 +196,7 @@ privacy behavior.
 
 ## Version, citation, license, and contact
 
-- Version prepared for release: `0.1.0`
+- Version prepared for release: `0.1.1`
 - Citation metadata: [`CITATION.cff`](CITATION.cff)
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - License: MIT; see [`LICENSE`](LICENSE)

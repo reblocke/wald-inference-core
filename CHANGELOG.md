@@ -4,6 +4,27 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-29
+
+### Added
+
+- Documented stable imports under `wald_inference.legacy` for the numerical bounds, grid defaults,
+  reconstruction tolerances and warning helper, detectability quantiles, and solver limits needed
+  by the backward-compatible integrated workbench adapter.
+
+### Validation
+
+- Added an exact `wald_inference.legacy.__all__` contract, identity checks proving the adapter
+  imports are direct re-exports of the canonical definitions, and cold-wheel coverage of the
+  compatibility surface.
+- Retained the exact root `wald_inference.__all__` contract and frozen baseline-parity gate.
+
+### Scientific impact
+
+- None. This patch adds import stability and release metadata only; it does not change a formula,
+  constant value, validation rule, selection boundary, tolerance, effect registry entry, or
+  undefined-value convention.
+
 ## [0.1.0] - 2026-07-29
 
 ### Added
@@ -37,5 +58,6 @@ All notable changes to this project are documented here.
 - The package implements documented Wald approximations, not exact fitted-model likelihood,
   arbitrary non-Wald intervals, Bayesian inference, or design-specific sample-size calculations.
 
-[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/reblocke/wald-inference-core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/reblocke/wald-inference-core/releases/tag/v0.1.0

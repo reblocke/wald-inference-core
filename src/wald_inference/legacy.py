@@ -1,8 +1,9 @@
 """Frozen direct-call behavior for migration from :mod:`confcurve.core`.
 
 This module intentionally preserves historical coercion, warning, and
-nonfinite-output behavior. New consumers should use the strict canonical
-functions exported from :mod:`wald_inference`.
+nonfinite-output behavior. It also directly re-exports frozen configuration
+values needed by compatibility adapters. General consumers should use the
+strict canonical functions exported from :mod:`wald_inference`.
 """
 
 from __future__ import annotations
@@ -11,7 +12,15 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from .compatibility import ObservedResult, _legacy_confidence_curve, _legacy_summaries
+from .compatibility import (
+    LOG_MAX_FLOAT,
+    MAX_FINITE_ABS_Z,
+    MAX_FLOAT,
+    ObservedResult,
+    _legacy_confidence_curve,
+    _legacy_summaries,
+)
+from .detectability import Z80
 from .effects import (
     EffectResult,
     EffectValues,
@@ -21,6 +30,8 @@ from .effects import (
 from .grid import (
     DEFAULT_GRID_POINTS,
     DEFAULT_SPAN_MULTIPLIER,
+    GRID_EXPANSION_PADDING_MULTIPLIER,
+    MAX_FINITE_SPAN,
     _legacy_build_grid,
 )
 from .likelihood import (
@@ -28,9 +39,32 @@ from .likelihood import (
     _legacy_log_relative_likelihood,
     _legacy_relative_likelihood,
 )
-from .reconstruction import _legacy_estimate_se
+from .precision import DEFAULT_SOLVER_TOLERANCE, MAX_INFORMATION_MULTIPLIER
+from .reconstruction import (
+    ASYMMETRY_RELATIVE_TOLERANCE,
+    ESTIMATE_MATCH_ABSOLUTE_TOLERANCE,
+    ESTIMATE_MATCH_RELATIVE_TOLERANCE,
+    Z975,
+    _legacy_estimate_se,
+    asymmetry_warning,
+)
 
 __all__ = [
+    "ASYMMETRY_RELATIVE_TOLERANCE",
+    "DEFAULT_GRID_POINTS",
+    "DEFAULT_SOLVER_TOLERANCE",
+    "DEFAULT_SPAN_MULTIPLIER",
+    "ESTIMATE_MATCH_ABSOLUTE_TOLERANCE",
+    "ESTIMATE_MATCH_RELATIVE_TOLERANCE",
+    "GRID_EXPANSION_PADDING_MULTIPLIER",
+    "LOG_MAX_FLOAT",
+    "MAX_FINITE_ABS_Z",
+    "MAX_FINITE_SPAN",
+    "MAX_FLOAT",
+    "MAX_INFORMATION_MULTIPLIER",
+    "Z80",
+    "Z975",
+    "asymmetry_warning",
     "build_grid",
     "confidence_curve",
     "estimate_se",

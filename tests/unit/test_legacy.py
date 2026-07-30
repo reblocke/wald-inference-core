@@ -7,6 +7,11 @@ import numpy as np
 import pytest
 
 import wald_inference
+import wald_inference.compatibility as compatibility_module
+import wald_inference.detectability as detectability_module
+import wald_inference.grid as grid_module
+import wald_inference.precision as precision_module
+import wald_inference.reconstruction as reconstruction_module
 from wald_inference import legacy
 from wald_inference.compatibility import standardized_distance
 from wald_inference.effects import get_effect_spec, to_working_scale
@@ -23,6 +28,75 @@ def test_legacy_module_is_not_added_to_root_public_surface() -> None:
     assert "confidence_curve" not in wald_inference.__all__
     assert wald_inference.estimate_se is not legacy.estimate_se
     assert wald_inference.build_grid is not legacy.build_grid
+
+
+def test_legacy_public_api_is_exact_and_every_name_resolves() -> None:
+    expected = [
+        "ASYMMETRY_RELATIVE_TOLERANCE",
+        "DEFAULT_GRID_POINTS",
+        "DEFAULT_SOLVER_TOLERANCE",
+        "DEFAULT_SPAN_MULTIPLIER",
+        "ESTIMATE_MATCH_ABSOLUTE_TOLERANCE",
+        "ESTIMATE_MATCH_RELATIVE_TOLERANCE",
+        "GRID_EXPANSION_PADDING_MULTIPLIER",
+        "LOG_MAX_FLOAT",
+        "MAX_FINITE_ABS_Z",
+        "MAX_FINITE_SPAN",
+        "MAX_FLOAT",
+        "MAX_INFORMATION_MULTIPLIER",
+        "Z80",
+        "Z975",
+        "asymmetry_warning",
+        "build_grid",
+        "confidence_curve",
+        "estimate_se",
+        "from_working_scale",
+        "log_relative_likelihood",
+        "relative_likelihood",
+        "summaries",
+        "to_working_scale",
+    ]
+
+    assert legacy.__all__ == expected
+    assert all(hasattr(legacy, name) for name in expected)
+
+
+def test_legacy_adapter_constants_and_warning_are_exact_canonical_reexports() -> None:
+    expected_sources = {
+        "ASYMMETRY_RELATIVE_TOLERANCE": reconstruction_module,
+        "DEFAULT_GRID_POINTS": grid_module,
+        "DEFAULT_SOLVER_TOLERANCE": precision_module,
+        "DEFAULT_SPAN_MULTIPLIER": grid_module,
+        "ESTIMATE_MATCH_ABSOLUTE_TOLERANCE": reconstruction_module,
+        "ESTIMATE_MATCH_RELATIVE_TOLERANCE": reconstruction_module,
+        "GRID_EXPANSION_PADDING_MULTIPLIER": grid_module,
+        "LOG_MAX_FLOAT": compatibility_module,
+        "MAX_FINITE_ABS_Z": compatibility_module,
+        "MAX_FINITE_SPAN": grid_module,
+        "MAX_FLOAT": compatibility_module,
+        "MAX_INFORMATION_MULTIPLIER": precision_module,
+        "Z80": detectability_module,
+        "Z975": reconstruction_module,
+        "asymmetry_warning": reconstruction_module,
+    }
+
+    for name, source_module in expected_sources.items():
+        assert getattr(legacy, name) is getattr(source_module, name)
+
+    assert legacy.ASYMMETRY_RELATIVE_TOLERANCE == 0.02
+    assert legacy.DEFAULT_GRID_POINTS == 801
+    assert legacy.DEFAULT_SOLVER_TOLERANCE == 1e-8
+    assert legacy.DEFAULT_SPAN_MULTIPLIER == 4.5
+    assert legacy.ESTIMATE_MATCH_ABSOLUTE_TOLERANCE == 1e-12
+    assert legacy.ESTIMATE_MATCH_RELATIVE_TOLERANCE == 0.02
+    assert legacy.GRID_EXPANSION_PADDING_MULTIPLIER == 0.25
+    assert legacy.LOG_MAX_FLOAT == 709.782712893384
+    assert legacy.MAX_FINITE_ABS_Z == 1.3407807929942596e154
+    assert legacy.MAX_FINITE_SPAN == 4.4942328371557893e307
+    assert legacy.MAX_FLOAT == 1.7976931348623157e308
+    assert legacy.MAX_INFORMATION_MULTIPLIER == 1e12
+    assert legacy.Z80 == 0.8416212335729143
+    assert legacy.Z975 == 1.959963984540054
 
 
 def test_legacy_transformations_preserve_scalar_and_array_types() -> None:
