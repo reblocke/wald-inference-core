@@ -25,10 +25,12 @@ All notable changes to this project are documented here.
   targets one floating-point step above alpha and below one, and bit-exact null and near-null
   monotonicity contracts.
 - Added handoff-neighbor, high-alpha, high-probability, nonzero-null representability, and
-  public-forward coherence regressions. Direction-specific quadrature bounds and scale-aware
-  numerical guards keep roots on the conservative side of hard-coded high-precision references.
-  Replaced adaptive scalar quadrature with fixed stable quadrature, reducing a 10,000-point
-  near-null curve to well under one second in local validation.
+  public-forward coherence regressions. A guarded critical value, direction-specific tail
+  evaluation, and scale-aware probability guards keep roots on the conservative side of hard-coded
+  high-precision references across extreme finite alpha values; ordered-binary64 bracketing finds
+  the minimal representable working effect without a fixed ULP cap. Replaced adaptive scalar
+  quadrature with fixed stable quadrature, reducing a 10,000-point near-null curve to well under one
+  second in local validation.
 - Extended the exact root API, release metadata, distribution inspection, and cold-wheel smoke
   contracts for v0.3.0.
 - Retained the frozen baseline-parity gate for every pre-existing numerical output, including the

@@ -166,19 +166,24 @@ The binary64 precision contract is independent of the target. Near the null, fix
 Gauss-Legendre quadrature integrates the canonical positive probability derivative. Outside that
 neighborhood, one-sided tails are evaluated directly and two-sided selection uses the central
 unselected interval in a stable complement/log domain. Exact rational float addition/subtraction
-and direction-specific quadrature bounds round the reported probability conservatively. A
-64-ULP component guard, increased to 256 ULPs below `1e-8`, covers the normal-tail, quantile, and
-floating-point evaluation error demonstrated by independent high-precision stress tests. Each
-bisection result must satisfy this same public forward probability while the immediately preceding
-magnitude does not. `achieved_probability` is a direct call to the same kernel after working-scale
-composition, never a value raised to the target after an independently rounded calculation.
+and direction-specific tail evaluation round the reported probability conservatively. The kernel
+uses a four-ULP upward guard on the canonical critical value, a 64-ULP probability-component guard
+increased to 256 ULPs below `1e-8`, a lower quadrature bound for selected-direction near-null
+increments, and a guarded direct tail in the opposing one-sided direction. These bounds cover the
+normal-tail, quantile, and floating-point evaluation error demonstrated by independent
+high-precision stress tests down to extreme finite alpha values. Each bisection result must satisfy
+this same public forward probability while the immediately preceding magnitude does not.
+`achieved_probability` is a direct call to the same kernel after working-scale composition, never a
+value raised to the target after an independently rounded calculation.
 
 For the three invertible p-value rules, forward probability at an exact zero standardized distance
 is bit-exact `alpha`. Near-null forward evaluation uses the same stable selection-interval increment
 as inversion for `abs(delta) <= 0.125` instead of relying on rounded differences between nearly
 equal tail probabilities. A nonzero critical effect that cannot be represented on the supplied
-working scale within relative tolerance `1e-12` fails closed; there is no absolute tolerance that
-could accept a result rounded back to the null.
+working scale within relative tolerance `1e-12` fails closed. Representable working effects are
+searched on the ordered binary64 lattice and certified against the immediately preceding value;
+there is no fixed ULP adjustment cap or absolute tolerance that could reject an ordinary valid
+effect or accept a result rounded back to the null.
 
 For ratio measures, these functions operate on the log working scale. Use the effect registry
 transformations to map returned critical effects to the natural scale; equal log distances are

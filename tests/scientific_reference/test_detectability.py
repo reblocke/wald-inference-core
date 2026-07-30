@@ -97,6 +97,11 @@ def test_one_sided_inverse_matches_analytic_normal_quantiles(
             0.9991,
             4.402940714904462159111723469740108,
         ),
+        (
+            1e-200,
+            2.496545155288203e-175,
+            2.000000000000001069190949151041991,
+        ),
     ],
 )
 def test_one_sided_inverse_matches_mpmath_high_precision_quantile_differences(
@@ -114,7 +119,7 @@ def test_one_sided_inverse_matches_mpmath_high_precision_quantile_differences(
     )
 
     assert result.critical_delta >= expected_delta
-    assert result.critical_delta - expected_delta <= 6e-15
+    assert result.critical_delta - expected_delta <= 3e-14
     assert result.achieved_probability >= target
     preceding_delta = float(np.nextafter(result.critical_delta, 0.0))
     preceding_probability = selected_claim_probability(
@@ -177,6 +182,47 @@ def test_decreasing_one_sided_probability_is_below_high_precision_reference() ->
 
     assert probability <= high_precision_reference
     assert high_precision_reference - probability <= 1e-14
+
+
+@pytest.mark.parametrize(
+    ("alpha", "target", "high_precision_root"),
+    [
+        (1e-20, 1e-19, 0.3225255857803603471376218180554441),
+        (1e-100, 1e-99, 0.14064474537860772995384792687054),
+        (
+            1e-300,
+            5.873432047874387e-139,
+            12.000000000000000510425801817374325,
+        ),
+    ],
+)
+def test_extreme_two_sided_inverse_avoids_complement_rounding_plateaus(
+    alpha: float,
+    target: float,
+    high_precision_root: float,
+) -> None:
+    result = critical_effect_for_target_probability(
+        null_working=0.0,
+        standard_error=1.0,
+        alpha=alpha,
+        target_probability=target,
+        selection_rule="two_sided_p_lt_alpha",
+        claim_direction="positive",
+    )
+
+    assert result.critical_delta >= high_precision_root
+    assert result.critical_delta - high_precision_root <= 3e-14
+    assert result.achieved_probability >= target
+    preceding_delta = float(np.nextafter(result.critical_delta, 0.0))
+    preceding_probability = selected_claim_probability(
+        preceding_delta,
+        null_working=0.0,
+        standard_error=1.0,
+        alpha=alpha,
+        selection_rule="two_sided_p_lt_alpha",
+        claim_direction="positive",
+    )
+    assert preceding_probability < target
 
 
 @pytest.mark.parametrize(

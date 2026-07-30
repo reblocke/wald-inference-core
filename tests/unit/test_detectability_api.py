@@ -515,6 +515,41 @@ def test_unrepresentable_or_overflowing_working_scale_result_fails_explicitly() 
         )
 
 
+@pytest.mark.parametrize(
+    ("null_working", "standard_error", "alpha", "target_probability"),
+    [
+        (-1.0, 1.0, 1e-6, 0.0001009999),
+        (-1e100, 1e100, 0.9, 0.95),
+    ],
+)
+def test_representable_effect_search_is_not_limited_to_a_fixed_ulp_window(
+    null_working: float,
+    standard_error: float,
+    alpha: float,
+    target_probability: float,
+) -> None:
+    result = critical_effect_for_target_probability(
+        null_working=null_working,
+        standard_error=standard_error,
+        alpha=alpha,
+        target_probability=target_probability,
+        selection_rule="two_sided_p_lt_alpha",
+        claim_direction="positive",
+    )
+    preceding_effect = math.nextafter(result.critical_effect_working, null_working)
+    preceding_probability = selected_claim_probability(
+        preceding_effect,
+        null_working=null_working,
+        standard_error=standard_error,
+        alpha=alpha,
+        selection_rule="two_sided_p_lt_alpha",
+        claim_direction="positive",
+    )
+
+    assert result.achieved_probability >= target_probability
+    assert preceding_probability < target_probability
+
+
 def test_legacy_closed_form_benchmark_remains_distinct_and_unchanged() -> None:
     expected_distance = 2.8015852181129683
 
