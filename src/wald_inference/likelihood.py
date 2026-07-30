@@ -206,10 +206,16 @@ def support_comparison(
         se=se,
     )
     log_candidate = float(log_values[0])
-    log_reference = float(log_values[1])
     candidate_relative = float(np.exp(log_candidate))
     log_mle_to_candidate = -log_candidate
-    log_candidate_to_reference = log_candidate - log_reference
+    log_candidate_to_reference = float(
+        log_support_ratio(
+            candidate,
+            reference,
+            theta_hat=theta_hat,
+            se=se,
+        )
+    )
 
     return SupportComparison(
         candidate_working=candidate,

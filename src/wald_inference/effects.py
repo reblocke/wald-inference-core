@@ -189,7 +189,12 @@ def from_working_scale(effect_type: str, values: EffectValues) -> EffectResult:
     array = _strict_to_array(values)
     with np.errstate(over="ignore", invalid="ignore"):
         result = _from_working_scale_kernel(spec, values, array)
-    _require_finite(np.asarray(result, dtype=float), "Transformed values")
+    transformed = np.asarray(result, dtype=float)
+    _require_finite(transformed, "Transformed values")
+    if spec.positive_only and np.any(transformed <= 0.0):
+        raise ValidationError(
+            f"{spec.label} values must be representable as strictly positive on the natural scale."
+        )
     return result
 
 

@@ -13,8 +13,10 @@ from .selection import (
     DEFAULT_SELECTION_RULE,
     _coerce_finite_float,
     _requires_threshold,
+    _two_sided_critical_z,
     _validate_alpha,
     _validate_se,
+    selection_rule_spec,
 )
 from .type_sm import (
     DEFAULT_NEAR_NULL_DELTA,
@@ -195,6 +197,39 @@ def _precision_result(
     )
 
 
+def _estimate_exceeds_transition_se(
+    *,
+    current_se: float,
+    alpha: float,
+    selection_rule: str,
+    claim_direction: str,
+    null_working: float,
+    threshold_working: float | None,
+) -> float | None:
+    """Return the reachable SE where the estimate-exceeds cutoff changes branch."""
+
+    if selection_rule != "estimate_exceeds_mcid_and_p_lt_alpha" or threshold_working is None:
+        return None
+
+    spec = selection_rule_spec(
+        selection_rule=selection_rule,
+        alpha=alpha,
+        null_working=null_working,
+        se=current_se,
+        claim_direction=claim_direction,
+        threshold_working=threshold_working,
+    )
+    assert spec.threshold_delta is not None
+    threshold_to_critical_ratio = abs(spec.threshold_delta) / _two_sided_critical_z(alpha)
+    if threshold_to_critical_ratio >= 1.0:
+        return None
+
+    transition_se = float(current_se * threshold_to_critical_ratio)
+    if not np.isfinite(transition_se) or transition_se <= 0.0:
+        return None
+    return transition_se
+
+
 def _solve_required_se_for_condition(
     *,
     true_effect_working: float,
@@ -229,10 +264,30 @@ def _solve_required_se_for_condition(
 
     fail_se = current_se
     pass_se: float | None = None
+    used_transition = False
     max_precision_gain = float(np.sqrt(MAX_INFORMATION_MULTIPLIER))
     min_se = current_se / max_precision_gain
     candidate_se = current_se
+    transition_se = _estimate_exceeds_transition_se(
+        current_se=current_se,
+        alpha=alpha,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+        null_working=null_working,
+        threshold_working=threshold_working,
+    )
+    if transition_se is not None and min_se <= transition_se < current_se:
+        transition_metric = metric_at(transition_se)
+        if is_satisfied(transition_metric):
+            pass_se = transition_se
+            used_transition = True
+        else:
+            fail_se = transition_se
+            candidate_se = transition_se
+
     for _ in range(80):
+        if pass_se is not None:
+            break
         candidate_se /= 2.0
         if candidate_se < min_se:
             candidate_se = min_se
@@ -262,7 +317,12 @@ def _solve_required_se_for_condition(
             break
 
     achieved_metric = metric_at(pass_se)
-    return pass_se, achieved_metric, "Estimated by monotonic bisection over the Wald SE."
+    note = (
+        "Estimated by bisection after evaluating the selection-rule transition in the Wald SE."
+        if used_transition
+        else "Estimated by monotonic bisection over the Wald SE."
+    )
+    return pass_se, achieved_metric, note
 
 
 def _validate_binding_relative_tolerance(binding_relative_tolerance: float) -> float:

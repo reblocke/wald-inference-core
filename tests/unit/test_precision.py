@@ -5,7 +5,9 @@ import sys
 from collections.abc import Callable
 
 import pytest
+from scipy.stats import norm
 
+from wald_inference import design_metrics_for_true_effects
 from wald_inference.errors import ValidationError
 from wald_inference.precision import (
     approximate_wald_ci_width,
@@ -73,6 +75,61 @@ def test_required_precision_power_target_tightens_se_when_current_probability_is
         and result.required_information_multiplier > 1.0
     )
     assert result.achieved_power == pytest.approx(0.8)
+
+
+@pytest.mark.parametrize(
+    ("true_effect", "claim_direction", "threshold"),
+    [
+        (0.4, "positive", 1.0),
+        (-0.4, "negative", -1.0),
+    ],
+)
+def test_threshold_transition_prevents_skipping_a_feasible_power_band(
+    true_effect: float,
+    claim_direction: str,
+    threshold: float,
+) -> None:
+    [result] = precision_target_results(
+        true_effect,
+        null_working=0.0,
+        current_se=5.0,
+        selection_rule="estimate_exceeds_mcid_and_p_lt_alpha",
+        claim_direction=claim_direction,
+        threshold_working=threshold,
+        target_power=0.1,
+    )
+
+    assert result.required_se is not None
+    expected_required_se = abs(true_effect) / (norm.isf(0.025) - norm.isf(0.1))
+    assert result.required_se == pytest.approx(expected_required_se, rel=1e-8, abs=0.0)
+    assert result.achieved_power == pytest.approx(0.1)
+    assert "selection-rule transition" in result.note
+
+    [just_less_information] = design_metrics_for_true_effects(
+        [true_effect],
+        null_working=0.0,
+        se=result.required_se * (1.0 + 1e-6),
+        selection_rule="estimate_exceeds_mcid_and_p_lt_alpha",
+        claim_direction=claim_direction,
+        threshold_working=threshold,
+    )
+    assert just_less_information.selected_claim_probability < 0.1
+
+
+def test_unattainable_threshold_rule_power_remains_explicitly_infeasible() -> None:
+    [result] = precision_target_results(
+        0.4,
+        null_working=0.0,
+        current_se=5.0,
+        selection_rule="estimate_exceeds_mcid_and_p_lt_alpha",
+        claim_direction="positive",
+        threshold_working=1.0,
+        target_power=0.2,
+    )
+
+    assert result.required_se is None
+    assert result.achieved_power is None
+    assert "supported information range" in result.note
 
 
 def test_precision_target_order_and_frozen_b06_values() -> None:

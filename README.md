@@ -15,7 +15,9 @@ finite floating-point endpoint cannot accurately represent its requested support
 `0.3.0` adds selected-claim probability curves and certified directed critical-effect inversion
 while retaining the legacy z-sum benchmark separately. Version `0.4.0` adds typed joint
 precision-guardrail and assumed-effect sensitivity results while preserving every existing
-per-target calculation.
+per-target calculation. Version `0.4.1` repairs threshold-transition bracketing in inverse
+precision and makes structured pairwise comparisons reuse the canonical exact-binary64 support
+ratio. It also fails closed on natural-ratio underflow.
 
 ## Question supported
 
@@ -72,11 +74,11 @@ For development from a clone:
 uv sync --locked --all-groups
 ```
 
-GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.4.0
+GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.4.1
 wheel:
 
 ```bash
-python -m pip install ./wald_inference-0.4.0-py3-none-any.whl
+python -m pip install ./wald_inference-0.4.1-py3-none-any.whl
 ```
 
 The release page is <https://github.com/reblocke/wald-inference-core/releases>. A downstream
@@ -275,7 +277,7 @@ privacy behavior.
 
 ## Version, citation, license, and contact
 
-- Version prepared for release: `0.4.0`
+- Version prepared for release: `0.4.1`
 - Citation metadata: [`CITATION.cff`](CITATION.cff)
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - License: MIT; see [`LICENSE`](LICENSE)

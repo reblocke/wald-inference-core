@@ -244,6 +244,10 @@ def test_legacy_likelihoods_preserve_unrepresentable_log_behavior() -> None:
     assert log_relative == -math.inf
 
 
+def test_legacy_ratio_back_transform_preserves_underflow_behavior() -> None:
+    assert legacy.from_working_scale("odds_ratio", -746.0) == 0.0
+
+
 def test_legacy_summaries_need_wrapper_for_nonfinite_direct_calls() -> None:
     assert legacy.summaries(0.0, math.inf, 1.0) == {
         "null_relative_likelihood": 1.0,

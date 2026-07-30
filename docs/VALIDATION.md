@@ -95,11 +95,11 @@ The tag workflow:
 7. publishes SHA-256 checksums and the machine-readable parity report; and
 8. passes only those already-verified files to the write-enabled release job.
 
-The expected v0.4.0 assets are:
+The expected v0.4.1 assets are:
 
 ```text
-wald_inference-0.4.0-py3-none-any.whl
-wald_inference-0.4.0.tar.gz
+wald_inference-0.4.1-py3-none-any.whl
+wald_inference-0.4.1.tar.gz
 SHA256SUMS
 baseline-parity.json
 ```

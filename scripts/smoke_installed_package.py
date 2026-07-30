@@ -31,6 +31,7 @@ SMOKE_CODE = textwrap.dedent(
         compatibility_curve,
         critical_effect_for_target_probability,
         design_metrics_for_true_effects,
+        from_working_scale,
         get_effect_spec,
         joint_precision_result,
         log_support_ratio,
@@ -62,8 +63,8 @@ SMOKE_CODE = textwrap.dedent(
         raise AssertionError(f"unexpected smoke value type: {type(value)!r}")
 
 
-    assert version("wald-inference") == "0.4.0"
-    assert wald_inference.__version__ == "0.4.0"
+    assert version("wald-inference") == "0.4.1"
+    assert wald_inference.__version__ == "0.4.1"
     assert wald_inference.__all__
     for exported_name in wald_inference.__all__:
         assert hasattr(wald_inference, exported_name), exported_name
@@ -164,6 +165,13 @@ SMOKE_CODE = textwrap.dedent(
         is None
     )
     assert float(log_support_ratio(0.0, 40.0, theta_hat=0.0, se=1.0)) == 800.0
+    try:
+        from_working_scale("odds_ratio", -746.0)
+    except ValidationError as exc:
+        assert "representable as strictly positive" in str(exc)
+    else:
+        raise AssertionError("underflowing ratio back-transform did not raise ValidationError")
+    assert legacy.from_working_scale("odds_ratio", -746.0) == 0.0
     try:
         support_interval_for_ratio(
             float.fromhex("0x1.1ccf385ebc8a0p+1023"),

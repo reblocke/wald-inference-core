@@ -303,6 +303,47 @@ def test_support_comparison_returns_none_when_display_ratio_overflows() -> None:
     assert comparison.likelihood_ratio_candidate_to_reference is None
 
 
+def test_support_comparison_preserves_large_symmetric_pairwise_difference() -> None:
+    comparison = support_comparison(
+        candidate_working=1e100,
+        reference_working=-1e100,
+        theta_hat=1.0,
+        se=1.0,
+    )
+
+    assert comparison.log_likelihood_ratio_candidate_to_reference == 2e100
+    assert comparison.likelihood_ratio_candidate_to_reference is None
+    assert comparison.log_likelihood_ratio_candidate_to_reference == float(
+        log_support_ratio(
+            1e100,
+            -1e100,
+            theta_hat=1.0,
+            se=1.0,
+        )
+    )
+
+
+def test_support_comparison_preserves_adjacent_large_pairwise_difference() -> None:
+    candidate = 1e150
+    reference = math.nextafter(candidate, math.inf)
+    comparison = support_comparison(
+        candidate_working=candidate,
+        reference_working=reference,
+        theta_hat=0.0,
+        se=1.0,
+    )
+
+    assert comparison.likelihood_ratio_candidate_to_reference is None
+    assert comparison.log_likelihood_ratio_candidate_to_reference == float(
+        log_support_ratio(
+            candidate,
+            reference,
+            theta_hat=0.0,
+            se=1.0,
+        )
+    )
+
+
 def test_log_support_ratio_is_ordered_and_antisymmetric() -> None:
     a_to_b = log_support_ratio(1.0, 0.0, theta_hat=0.25, se=0.5)
     b_to_a = log_support_ratio(0.0, 1.0, theta_hat=0.25, se=0.5)

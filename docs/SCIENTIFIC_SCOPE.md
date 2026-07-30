@@ -44,6 +44,8 @@ The result records whether the estimate was reconstructed or validated, the tran
 null, the standard error and method, relative interval asymmetry, and warnings. Finite-range
 protection is part of the contract: invalid or unrepresentable derived values raise
 `ValidationError` rather than leaking `NaN` or infinity.
+For a ratio effect, exponential underflow to natural zero is also unrepresentable because the
+registry domain is strictly positive; the strict public back-transform fails closed.
 
 This reconstruction cannot recover the original model, likelihood, covariance structure, variance
 estimator, degrees-of-freedom correction, or study design.
@@ -195,6 +197,12 @@ Inverse precision calculations solve for a required standard error that meets a 
 selected-claim-probability, maximum Type S, or maximum Type M target at a specified true effect and
 selection rule. A precision result reports required standard error, information multiplier,
 approximate 95% working-scale confidence-interval width, achieved metrics, and an explanatory note.
+The required standard error is the largest qualifying value at or below the current standard
+error, so it represents the least additional information. Under the estimate-exceeds-threshold
+rule, the selected-claim probability can peak where the active significance and threshold cutoffs
+cross when the assumed truth is short of the threshold. The inverse solver evaluates that exact
+transition and bisects only within a monotone segment; it does not assume the full precision path is
+monotone.
 
 Targets are solved independently. If every mandatory target has a finite solution, the joint
 requirement is the smallest required SE, equivalently the largest relative information multiplier.

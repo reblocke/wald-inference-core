@@ -212,3 +212,33 @@ constraints, and sensitivity without copying forward or inverse formulas. Joint 
 results remain conditional one-parameter Wald calculations. Relative information is not declared
 to be sample size; study-design projection, UI, plotting, and exports remain downstream concerns.
 All pre-v0.4.0 numerical outputs and the legacy adapter remain unchanged.
+
+## 2026-07-30: Search inverse precision by selection-rule segment
+
+**Context:** The v0.4.0 per-target solver bracketed a passing standard error by repeatedly halving
+the current value. For `estimate_exceeds_mcid_and_p_lt_alpha`, the selected cutoff is the maximum
+of the two-sided significance boundary and the standardized claim threshold. When the assumed true
+effect is in the claim direction but short of that threshold, selected-claim probability can rise
+and then fall as precision increases. A halving step could jump over the finite feasible band and
+report no solution.
+
+**Decision:** In v0.4.1, preserve all forward metric and selection-rule definitions. Before the
+ordinary halving search, evaluate the exact branch transition
+`SE = abs(threshold - null) / z_(1-alpha/2)` whenever it lies within the supported information
+range. If that transition meets the target, bisect between it and the failing current standard
+error; otherwise continue below it. Every bisection therefore remains within one monotone segment,
+and the returned solution remains the largest qualifying standard error at or below the current
+value. Retain ordinary-path result notes and values.
+
+Also make `support_comparison` delegate its candidate-to-reference log ratio to
+`log_support_ratio`, while retaining the candidate-versus-MLE fields and the existing finite-range
+validation of both candidate and reference log likelihoods.
+
+Make strict public ratio back-transformation reject exponential underflow to natural zero while
+leaving `wald_inference.legacy` unchanged.
+
+**Consequences:** Feasible threshold-conditioned power bands are no longer skipped, including the
+negative-direction mirror. Extreme finite pairwise comparisons share the exact-binary64 authority
+already exposed by the scalar/vector ratio API. The forward Wald model, thresholds, default
+tolerances, Type S/M definitions, candidate-versus-MLE comparison fields, and legacy adapter are
+unchanged. Strict ratio outputs remain inside the registry domain.
