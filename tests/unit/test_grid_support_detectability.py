@@ -210,6 +210,15 @@ def test_near_zero_cutoff_is_verified_without_an_absolute_tolerance_floor() -> N
         )
 
 
+def test_near_zero_cutoff_uses_exact_boundary_certification() -> None:
+    with pytest.raises(ValidationError, match="cannot represent the requested"):
+        support_interval(
+            1e100,
+            1e250,
+            log_relative_likelihood_cutoff=-math.ulp(0.0),
+        )
+
+
 def test_minimum_subnormal_standard_error_retains_representable_s_minus_2_bounds() -> None:
     smallest_subnormal = math.ulp(0.0)
     interval = support_interval(0.0, smallest_subnormal)
@@ -228,6 +237,38 @@ def test_minimum_subnormal_standard_error_retains_representable_s_minus_2_bounds
             )
             == 2.0
         )
+
+
+def test_minimum_subnormal_center_is_preserved_when_constructing_bounds() -> None:
+    smallest_subnormal = math.ulp(0.0)
+    interval = support_interval(smallest_subnormal, smallest_subnormal)
+
+    assert interval.range_working == (-smallest_subnormal, 3.0 * smallest_subnormal)
+    assert interval.working_clipped is False
+    for endpoint in interval.range_working:
+        assert (
+            float(
+                log_support_ratio(
+                    smallest_subnormal,
+                    endpoint,
+                    theta_hat=smallest_subnormal,
+                    se=smallest_subnormal,
+                )
+            )
+            == 2.0
+        )
+
+
+def test_zero_cutoff_preserves_a_minimum_subnormal_center() -> None:
+    smallest_subnormal = math.ulp(0.0)
+    interval = support_interval(
+        smallest_subnormal,
+        smallest_subnormal,
+        log_relative_likelihood_cutoff=0.0,
+    )
+
+    assert interval.range_working == (smallest_subnormal, smallest_subnormal)
+    assert interval.working_clipped is False
 
 
 def test_support_comparison_matches_log_domain_algebra() -> None:

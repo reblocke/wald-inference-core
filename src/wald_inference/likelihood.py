@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from fractions import Fraction
-from math import isclose, isfinite
+from math import isfinite
 
 import numpy as np
 
@@ -25,7 +25,8 @@ from .types import SupportComparison, SupportInterval
 MAX_FLOAT = float(np.finfo(float).max)
 S_MINUS_2_SUPPORT_CUTOFF = -2.0
 S_MINUS_2_DISTANCE = 2.0
-_SUPPORT_ENDPOINT_RELATIVE_TOLERANCE = 1e-12
+_MAX_FLOAT_EXACT = Fraction.from_float(MAX_FLOAT)
+_SUPPORT_ENDPOINT_RELATIVE_TOLERANCE = Fraction(1, 1_000_000_000_000)
 
 LikelihoodValues = float | Sequence[float] | np.ndarray
 
@@ -222,15 +223,29 @@ def support_comparison(
     )
 
 
-def _finite_support_endpoint(
+def _legacy_support_endpoint(
     theta_hat: float,
     half_distance: float,
-    direction: float,
+    direction: int,
 ) -> tuple[float, bool]:
     half_endpoint = (theta_hat * 0.5) + (direction * half_distance)
     if not np.isfinite(half_endpoint) or abs(half_endpoint) > (MAX_FLOAT * 0.5):
         return (MAX_FLOAT if direction > 0 else -MAX_FLOAT), True
     return float(half_endpoint * 2.0), False
+
+
+def _exact_support_endpoint(
+    theta_hat: float,
+    distance: float,
+    se: float,
+    direction: int,
+) -> tuple[float, bool]:
+    center_exact = Fraction.from_float(theta_hat)
+    distance_exact = Fraction.from_float(distance) * Fraction.from_float(se)
+    endpoint_exact = center_exact + (direction * distance_exact)
+    if endpoint_exact < -_MAX_FLOAT_EXACT or endpoint_exact > _MAX_FLOAT_EXACT:
+        return (MAX_FLOAT if direction > 0 else -MAX_FLOAT), True
+    return float(endpoint_exact), False
 
 
 def _verify_support_endpoint(
@@ -243,37 +258,84 @@ def _verify_support_endpoint(
 ) -> None:
     """Fail closed when a finite endpoint cannot represent its requested boundary."""
 
-    try:
-        achieved_log_ratio = float(
-            log_support_ratio(
-                theta_hat,
-                endpoint,
-                theta_hat=theta_hat,
-                se=se,
-            )
-        )
-    except ValidationError as exc:
-        raise ValidationError(
-            f"{side.capitalize()} support interval endpoint cannot represent the requested "
-            "log-relative-likelihood cutoff at finite floating-point precision."
-        ) from exc
+    center_exact = Fraction.from_float(theta_hat)
+    endpoint_exact = Fraction.from_float(endpoint)
+    standard_error_exact = Fraction.from_float(se)
+    delta_exact = endpoint_exact - center_exact
+    achieved_log_ratio = (delta_exact * delta_exact) / (
+        2 * standard_error_exact * standard_error_exact
+    )
+    requested_log_ratio = -Fraction.from_float(cutoff)
 
-    requested_log_ratio = -cutoff
-    # The exact-binary64 pairwise kernel above independently re-evaluates the
-    # returned endpoint. A relative comparison scales with the requested log
-    # support. Deliberately omitting an absolute floor prevents a near-zero
-    # cutoff from being accepted as zero after endpoint quantization.
-    if not isclose(
-        achieved_log_ratio,
-        requested_log_ratio,
-        rel_tol=_SUPPORT_ENDPOINT_RELATIVE_TOLERANCE,
-        abs_tol=0.0,
-    ):
+    # Keep the comparison exact through certification. Converting either
+    # quantity back to binary64 can collapse materially different subnormal
+    # log-support values onto the same float. Deliberately omitting an absolute
+    # floor also prevents a near-zero cutoff from being accepted as zero after
+    # endpoint quantization.
+    boundary_error = abs(achieved_log_ratio - requested_log_ratio)
+    tolerance = abs(requested_log_ratio) * _SUPPORT_ENDPOINT_RELATIVE_TOLERANCE
+    if boundary_error > tolerance:
+        try:
+            achieved_cutoff = -float(achieved_log_ratio)
+        except OverflowError:
+            achieved_cutoff = -float("inf")
         raise ValidationError(
             f"{side.capitalize()} support interval endpoint cannot represent the requested "
             "log-relative-likelihood cutoff at finite floating-point precision "
-            f"(requested {cutoff!r}, achieved {-achieved_log_ratio!r})."
+            f"(requested {cutoff!r}, achieved {achieved_cutoff!r})."
         )
+
+
+def _select_support_endpoint(
+    theta_hat: float,
+    distance: float,
+    half_distance: float,
+    se: float,
+    cutoff: float,
+    *,
+    side: str,
+    direction: int,
+) -> tuple[float, bool]:
+    exact_endpoint, exact_clipped = _exact_support_endpoint(
+        theta_hat,
+        distance,
+        se,
+        direction,
+    )
+    if exact_clipped:
+        return exact_endpoint, True
+
+    # Preserve the established v0.2.0 binary64 endpoint whenever its
+    # independently certified boundary remains accurate. Fall back to the
+    # exact-input construction when half-scaling erases a subnormal center or
+    # otherwise produces an unfaithful endpoint.
+    legacy_endpoint, legacy_clipped = _legacy_support_endpoint(
+        theta_hat,
+        half_distance,
+        direction,
+    )
+    if not legacy_clipped:
+        try:
+            _verify_support_endpoint(
+                legacy_endpoint,
+                side=side,
+                theta_hat=theta_hat,
+                se=se,
+                cutoff=cutoff,
+            )
+        except ValidationError:
+            pass
+        else:
+            return legacy_endpoint, False
+
+    _verify_support_endpoint(
+        exact_endpoint,
+        side=side,
+        theta_hat=theta_hat,
+        se=se,
+        cutoff=cutoff,
+    )
+    return exact_endpoint, False
 
 
 def support_interval(
@@ -304,28 +366,24 @@ def support_interval(
     with np.errstate(over="ignore", invalid="ignore"):
         half_distance = (distance * 0.5) * standard_error
 
-    lower_working, lower_clipped = _finite_support_endpoint(
+    lower_working, lower_clipped = _select_support_endpoint(
         center,
+        distance,
         half_distance,
-        -1.0,
+        standard_error,
+        cutoff,
+        side="lower",
+        direction=-1,
     )
-    upper_working, upper_clipped = _finite_support_endpoint(
+    upper_working, upper_clipped = _select_support_endpoint(
         center,
+        distance,
         half_distance,
-        1.0,
+        standard_error,
+        cutoff,
+        side="upper",
+        direction=1,
     )
-    for side, endpoint, clipped in (
-        ("lower", lower_working, lower_clipped),
-        ("upper", upper_working, upper_clipped),
-    ):
-        if not clipped:
-            _verify_support_endpoint(
-                endpoint,
-                side=side,
-                theta_hat=center,
-                se=standard_error,
-                cutoff=cutoff,
-            )
 
     return SupportInterval(
         support_cutoff=cutoff,
