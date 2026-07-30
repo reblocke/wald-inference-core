@@ -8,9 +8,13 @@ Maintainer: Brian Locke (@reblocke)
 
 Purpose:
 Pure-Python numerical utilities for documented one-parameter normal/Wald reconstruction,
-compatibility, normalized relative support, selected-claim, Type S/M, and precision calculations.
+compatibility, normalized relative support, exact detectability, selected-claim, Type S/M, and
+precision calculations.
 The public relative-support APIs include log-domain pairwise comparisons and support intervals for
 finite MLE-to-bound ratios greater than one; S−2 is the special case R = exp(2).
+The public detectability APIs evaluate all six canonical selection rules forward and invert only the
+two-sided and matching one-sided p-value rules. The fixed z-sum marker remains a separate legacy
+closed-form benchmark.
 
 Start with:
 - README.md
@@ -22,6 +26,8 @@ Start with:
 Important constraints:
 - This package does not recover exact fitted-model likelihood.
 - Pairwise support ordering is L(A)/L(B); retain the log result when exponentiation overflows.
+- Exact critical effects are repeated-study Wald detectability thresholds, not observed evidence,
+  confidence bounds, validated meaningful effects, or study-specific sample-size results.
 - Type S/M quantities are repeated-study operating characteristics, not posterior probabilities.
 - Ratio measures are evaluated on the log working scale.
 - Serializable calculation outputs use finite numbers or None; selection-rule intervals use

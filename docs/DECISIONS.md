@@ -126,3 +126,25 @@ formulas. They must retain and label the log ratio when exponentiation overflows
 numerator and denominator, and describe all results as normalized Wald approximations rather than
 exact fitted likelihoods, Bayes factors, or posterior probabilities. The legacy module and every
 pre-v0.2.0 calculation remain unchanged.
+
+## 2026-07-29: Separate exact detectability from the legacy z-sum benchmark
+
+**Context:** A focused critical-effect app needs vectorized selected-claim probability and inverse
+detectability thresholds. The frozen integrated calculation instead provides only the fixed
+`alpha=0.05`, nominal-80% z-sum marker, which is close to but not exactly the solution of the
+two-tailed probability equation. Reimplementing selection tails in each downstream app would create
+multiple numerical authorities.
+
+**Decision:** In v0.3.0, add root-public `selected_claim_probability`, `power_curve`,
+`critical_effect_for_target_probability`, and immutable `CriticalEffectResult`. Route every forward
+probability through the canonical selection intervals for all six existing rules. Restrict monotonic
+inversion to the two-sided, matching one-sided positive, and matching one-sided negative p-value
+rules; use explicit finite bracketing and bisection, and reject unsupported or unrepresentable
+results. Preserve `legacy_critical_effect_distance` and `legacy_critical_effect_markers` unchanged
+as a separately labeled closed-form benchmark.
+
+**Consequences:** Downstream applications can calculate exact Wald detectability without copying
+selection formulas and can compose log-scale results through the effect registry. They must keep
+the exact result distinct from the legacy benchmark, meaningful-effect inputs, confidence bounds,
+observed estimates, and study-specific sample-size calculations. The six selection rules and all
+pre-v0.3.0 outputs remain unchanged.

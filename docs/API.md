@@ -95,7 +95,67 @@ These APIs compare parameter values under a one-parameter Wald approximation. Th
 the fitted model's exact profile likelihood and do not produce posterior probabilities or Bayes
 factors.
 
-## Detectability benchmark
+## Exact detectability
+
+```python
+selected_claim_probability(
+    true_effect_working,
+    *,
+    null_working,
+    standard_error,
+    alpha=0.05,
+    selection_rule="two_sided_p_lt_alpha",
+    claim_direction="positive",
+    threshold_working=None,
+)
+power_curve(
+    true_effects_working,
+    *,
+    null_working,
+    standard_error,
+    alpha=0.05,
+    selection_rule="two_sided_p_lt_alpha",
+    claim_direction="positive",
+    threshold_working=None,
+)
+CriticalEffectResult
+critical_effect_for_target_probability(
+    *,
+    null_working,
+    standard_error,
+    alpha=0.05,
+    target_probability=0.80,
+    selection_rule="two_sided_p_lt_alpha",
+    claim_direction="positive",
+)
+```
+
+`selected_claim_probability` evaluates the canonical selection intervals under a future
+standard-normal Wald statistic centered at
+`delta = (true_effect_working - null_working) / standard_error`. It supports all six selection rules
+documented below. Scalar input returns a Python `float`; array-like input returns a NumPy array with
+the same shape. `power_curve` is the corresponding nonempty one-dimensional convenience.
+
+`critical_effect_for_target_probability` returns the smallest effect in the requested direction
+whose exact selected-claim probability meets the finite target strictly between zero and one. It
+uses explicit finite bracketing and monotonic bisection. Inversion is intentionally limited to:
+
+```text
+two_sided_p_lt_alpha             positive or negative branch
+one_sided_positive_p_lt_alpha    positive branch
+one_sided_negative_p_lt_alpha    negative branch
+```
+
+The immutable `CriticalEffectResult` records the rule, direction, alpha, target, null, standard
+error, signed standardized `critical_delta`, working-scale critical effect, and achieved
+probability. Unsupported inverse rules, incoherent one-sided directions, a target without a finite
+bracket, or an unrepresentable working-scale result raise `ValidationError`.
+
+For ratio measures, these functions operate on the log working scale. Use the effect registry
+transformations to map returned critical effects to the natural scale; equal log distances are
+multiplicatively rather than arithmetically symmetric.
+
+## Legacy detectability benchmark
 
 ```python
 legacy_critical_effect_distance(se)
@@ -220,7 +280,7 @@ ValidationError
 __version__
 ```
 
-`__version__` is `0.2.0`. Canonical numerical outputs intended for serialization contain finite
+`__version__` is `0.3.0`. Canonical numerical outputs intended for serialization contain finite
 values or documented `None`; invalid inputs do not return sentinel NaN or infinity. The documented
 `SelectionRuleSpec.intervals` infinities are structural open-tail boundaries, not calculated result
 values.

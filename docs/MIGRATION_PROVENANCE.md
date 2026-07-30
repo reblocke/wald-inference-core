@@ -78,6 +78,21 @@ No external code, figure, table, dataset, or substantial publication text was ad
 extension. The existing Zampieri et al. reference below supports the S−2 and relative-support
 terminology but is not a source-code or numerical fixture dependency.
 
+## Post-extraction v0.3.0 detectability extension
+
+The v0.3.0 selected-claim probability, vectorized power-curve, and exact critical-effect APIs are
+additive post-extraction work. Forward probabilities delegate to the same canonical selection
+interval kernels already used by the frozen Type S/M implementation. The inverse solver evaluates
+those kernels with explicit bracketing and monotonic bisection; it does not introduce a second
+normal-tail formula. The frozen legacy z-sum functions remain unchanged and continue to be covered
+by exact parity tests.
+
+No external code, figure, table, dataset, or substantial publication text was added for this
+extension. Independent tests express the documented normal-tail identities and analytic one-sided
+quantiles. The Perugini et al. reference below supplies critical-effect-size design context but is
+not a source-code, numerical-fixture, or semantic authority over the transparent implemented
+definitions.
+
 ## Canonical metadata
 
 The source repository owner explicitly selected `Brian Locke` as the canonical public author and

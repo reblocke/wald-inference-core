@@ -172,6 +172,21 @@ class SelectionRuleSpec:
 
 
 @dataclass(frozen=True)
+class CriticalEffectResult:
+    """Exact detectability threshold for one selected-claim rule and direction."""
+
+    selection_rule: SelectionRule
+    claim_direction: ClaimDirection
+    alpha: float
+    target_probability: float
+    null_working: float
+    standard_error: float
+    critical_delta: float
+    critical_effect_working: float
+    achieved_probability: float
+
+
+@dataclass(frozen=True)
 class DesignMetric:
     """Repeated-study design metric for one assumed true effect."""
 
