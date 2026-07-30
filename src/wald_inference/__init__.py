@@ -20,9 +20,12 @@ from .errors import ValidationError
 from .grid import build_grid, max_safe_grid_span
 from .likelihood import (
     log_relative_likelihood,
+    log_support_ratio,
     relative_likelihood,
     support_comparison,
     support_interval,
+    support_interval_for_ratio,
+    support_ratio,
 )
 from .precision import (
     approximate_wald_ci_width,
@@ -56,7 +59,7 @@ from .types import (
     WaldReconstruction,
 )
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __all__ = [
     "DEFAULT_CLAIM_DIRECTION",
@@ -87,6 +90,7 @@ __all__ = [
     "legacy_critical_effect_distance",
     "legacy_critical_effect_markers",
     "log_relative_likelihood",
+    "log_support_ratio",
     "max_safe_grid_span",
     "precision_target_results",
     "reconstruct_wald_from_95_ci",
@@ -99,6 +103,8 @@ __all__ = [
     "standardized_distance",
     "support_comparison",
     "support_interval",
+    "support_interval_for_ratio",
+    "support_ratio",
     "to_working_scale",
     "wald_point_summary",
 ]

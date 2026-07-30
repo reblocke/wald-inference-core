@@ -12,10 +12,13 @@ from wald_inference import (
     get_effect_spec,
     information_scaled_standard_error,
     legacy_critical_effect_markers,
+    log_support_ratio,
     reconstruct_wald_from_95_ci,
     selection_rule_spec,
     support_comparison,
     support_interval,
+    support_interval_for_ratio,
+    support_ratio,
     to_working_scale,
     wald_point_summary,
 )
@@ -48,7 +51,24 @@ HUGE_INTEGER = 10**10000
             theta_hat=0.0,
             se=1.0,
         ),
+        lambda: log_support_ratio(
+            HUGE_INTEGER,
+            0.0,
+            theta_hat=0.0,
+            se=1.0,
+        ),
+        lambda: support_ratio(
+            HUGE_INTEGER,
+            0.0,
+            theta_hat=0.0,
+            se=1.0,
+        ),
         lambda: support_interval(HUGE_INTEGER, 1.0),
+        lambda: support_interval_for_ratio(
+            0.0,
+            1.0,
+            mle_to_bound_ratio=HUGE_INTEGER,
+        ),
         lambda: wald_point_summary(0.0, 1.0, HUGE_INTEGER),
     ],
 )

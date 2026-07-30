@@ -33,6 +33,7 @@ def test_root_public_api_is_exact_and_every_name_resolves() -> None:
         "legacy_critical_effect_distance",
         "legacy_critical_effect_markers",
         "log_relative_likelihood",
+        "log_support_ratio",
         "max_safe_grid_span",
         "precision_target_results",
         "reconstruct_wald_from_95_ci",
@@ -45,6 +46,8 @@ def test_root_public_api_is_exact_and_every_name_resolves() -> None:
         "standardized_distance",
         "support_comparison",
         "support_interval",
+        "support_interval_for_ratio",
+        "support_ratio",
         "to_working_scale",
         "wald_point_summary",
     ]

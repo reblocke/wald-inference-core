@@ -18,8 +18,11 @@ from wald_inference.errors import ValidationError
 from wald_inference.grid import build_grid, max_safe_grid_span
 from wald_inference.likelihood import (
     log_relative_likelihood,
+    log_support_ratio,
     support_comparison,
     support_interval,
+    support_interval_for_ratio,
+    support_ratio,
 )
 
 
@@ -147,6 +150,232 @@ def test_support_comparison_returns_none_when_display_ratio_overflows() -> None:
 
     assert comparison.log_likelihood_ratio_candidate_to_reference == pytest.approx(800.0)
     assert comparison.likelihood_ratio_candidate_to_reference is None
+
+
+def test_log_support_ratio_is_ordered_and_antisymmetric() -> None:
+    a_to_b = log_support_ratio(1.0, 0.0, theta_hat=0.25, se=0.5)
+    b_to_a = log_support_ratio(0.0, 1.0, theta_hat=0.25, se=0.5)
+
+    assert float(a_to_b) == pytest.approx(-1.0)
+    assert float(b_to_a) == pytest.approx(1.0)
+    assert float(a_to_b) == pytest.approx(-float(b_to_a))
+    assert float(log_support_ratio(1.0, 1.0, theta_hat=0.25, se=0.5)) == 0.0
+
+
+def test_log_support_ratio_is_stable_for_huge_equal_or_symmetric_candidates() -> None:
+    huge = 1e155
+
+    assert float(log_support_ratio(huge, huge, theta_hat=0.0, se=1.0)) == 0.0
+    assert support_ratio(huge, huge, theta_hat=0.0, se=1.0) == 1.0
+    assert float(log_support_ratio(huge, -huge, theta_hat=0.0, se=1.0)) == 0.0
+    assert support_ratio(huge, -huge, theta_hat=0.0, se=1.0) == 1.0
+
+
+def test_log_support_ratio_avoids_cancellation_for_adjacent_large_candidates() -> None:
+    candidate_a = 1e10
+    candidate_b = math.nextafter(candidate_a, math.inf)
+    expected = 0.5 * (candidate_b - candidate_a) * (candidate_a + candidate_b)
+
+    observed = float(
+        log_support_ratio(
+            candidate_a,
+            candidate_b,
+            theta_hat=0.0,
+            se=1.0,
+        )
+    )
+
+    assert expected == 19073.486328125
+    assert observed == expected
+
+
+def test_log_support_ratio_preserves_a_tiny_center_between_symmetric_candidates() -> None:
+    assert float(
+        log_support_ratio(
+            1.0,
+            -1.0,
+            theta_hat=1e-20,
+            se=1e-10,
+        )
+    ) == pytest.approx(2.0)
+    assert float(
+        log_support_ratio(
+            1e10,
+            -1e10,
+            theta_hat=1e-7,
+            se=1.0,
+        )
+    ) == pytest.approx(2000.0)
+
+
+def test_log_support_ratio_preserves_minimum_subnormal_inputs() -> None:
+    smallest_subnormal = float.fromhex("0x0.0000000000001p-1022")
+
+    assert (
+        float(
+            log_support_ratio(
+                0.0,
+                smallest_subnormal,
+                theta_hat=0.0,
+                se=smallest_subnormal,
+            )
+        )
+        == 0.5
+    )
+    assert support_ratio(
+        0.0,
+        smallest_subnormal,
+        theta_hat=0.0,
+        se=smallest_subnormal,
+    ) == pytest.approx(math.exp(0.5))
+    assert (
+        float(
+            log_support_ratio(
+                0.0,
+                smallest_subnormal,
+                theta_hat=smallest_subnormal,
+                se=smallest_subnormal,
+            )
+        )
+        == -0.5
+    )
+
+
+def test_log_support_ratio_broadcasts_candidate_arrays() -> None:
+    candidate_a = np.asarray([-0.5, 0.25, 1.0])
+    candidate_b = np.asarray([[0.0], [0.5]])
+    observed = log_support_ratio(
+        candidate_a,
+        candidate_b,
+        theta_hat=0.25,
+        se=0.5,
+    )
+    expected = -0.5 * np.square((candidate_a - 0.25) / 0.5) + 0.5 * np.square(
+        (candidate_b - 0.25) / 0.5
+    )
+
+    assert observed.shape == (2, 3)
+    assert observed == pytest.approx(expected)
+
+
+def test_log_support_ratio_rejects_incompatible_array_shapes() -> None:
+    with pytest.raises(ValidationError, match="broadcast-compatible"):
+        log_support_ratio(
+            np.zeros((2, 3)),
+            np.zeros((4,)),
+            theta_hat=0.0,
+            se=1.0,
+        )
+
+
+@pytest.mark.parametrize(
+    ("candidate_a", "candidate_b"),
+    [
+        (math.nan, 0.0),
+        (0.0, math.inf),
+        ([0.0, math.nan], 0.0),
+        ("not-numeric", 0.0),
+    ],
+)
+def test_log_support_ratio_rejects_nonfinite_or_nonnumeric_candidates(
+    candidate_a: object,
+    candidate_b: object,
+) -> None:
+    with pytest.raises(ValidationError):
+        log_support_ratio(  # type: ignore[arg-type]
+            candidate_a,
+            candidate_b,
+            theta_hat=0.0,
+            se=1.0,
+        )
+
+
+@pytest.mark.parametrize("candidate", [math.nan, math.inf, "not-numeric", [0.0]])
+def test_scalar_support_ratio_rejects_invalid_candidates(candidate: object) -> None:
+    with pytest.raises(ValidationError, match="Support comparison values must be finite"):
+        support_ratio(  # type: ignore[arg-type]
+            candidate,
+            0.0,
+            theta_hat=0.0,
+            se=1.0,
+        )
+
+
+def test_support_ratio_retains_log_result_when_exponentiation_overflows() -> None:
+    log_ratio = float(log_support_ratio(0.0, 40.0, theta_hat=0.0, se=1.0))
+
+    assert log_ratio == pytest.approx(800.0)
+    assert support_ratio(0.0, 40.0, theta_hat=0.0, se=1.0) is None
+    assert support_ratio(40.0, 0.0, theta_hat=0.0, se=1.0) == 0.0
+    assert support_ratio(0.0, 0.0, theta_hat=0.0, se=1.0) == 1.0
+
+
+@pytest.mark.parametrize("ratio", [2.0, 4.0, 8.0, 3.5])
+def test_support_interval_for_ratio_uses_requested_mle_to_bound_ratio(
+    ratio: float,
+) -> None:
+    interval = support_interval_for_ratio(
+        theta_hat=1.0,
+        se=0.25,
+        mle_to_bound_ratio=ratio,
+    )
+    expected_distance = math.sqrt(2.0 * math.log(ratio))
+
+    assert interval.support_cutoff == pytest.approx(-math.log(ratio))
+    assert interval.relative_likelihood_cutoff == pytest.approx(1.0 / ratio)
+    assert interval.likelihood_ratio_mle_to_bound == pytest.approx(ratio)
+    assert interval.range_working == pytest.approx(
+        (
+            1.0 - (0.25 * expected_distance),
+            1.0 + (0.25 * expected_distance),
+        )
+    )
+
+
+def test_support_interval_for_ratio_preserves_s_minus_2_and_width_ordering() -> None:
+    s_minus_2 = support_interval(theta_hat=0.42, se=0.157)
+    by_ratio = support_interval_for_ratio(
+        theta_hat=0.42,
+        se=0.157,
+        mle_to_bound_ratio=math.exp(2.0),
+    )
+    narrow = support_interval_for_ratio(
+        theta_hat=0.42,
+        se=0.157,
+        mle_to_bound_ratio=2.0,
+    )
+    wide = support_interval_for_ratio(
+        theta_hat=0.42,
+        se=0.157,
+        mle_to_bound_ratio=8.0,
+    )
+
+    assert by_ratio == s_minus_2
+    assert (wide.upper_working - wide.lower_working) > (narrow.upper_working - narrow.lower_working)
+
+
+@pytest.mark.parametrize(
+    "ratio",
+    [
+        1.0,
+        0.0,
+        -2.0,
+        math.nan,
+        math.inf,
+        "not-a-ratio",
+        pytest.param(10**10000, id="oversized-integer"),
+    ],
+)
+def test_support_interval_for_ratio_rejects_invalid_ratio(ratio: object) -> None:
+    with pytest.raises(
+        ValidationError,
+        match="MLE-to-bound support ratio must be finite and greater than 1",
+    ):
+        support_interval_for_ratio(
+            theta_hat=0.0,
+            se=1.0,
+            mle_to_bound_ratio=ratio,  # type: ignore[arg-type]
+        )
 
 
 @pytest.mark.parametrize("cutoff", [0.1, math.nan, math.inf])

@@ -66,6 +66,18 @@ the core-owned calculation while the new package exposes domain objects rather t
 The golden fixtures are generated characterization outputs from the recorded source. They are not
 independent empirical or theoretical reference data.
 
+## Post-extraction v0.2.0 support extension
+
+The v0.2.0 pairwise-support and MLE-to-bound-ratio APIs are additive post-extraction work, not
+copied functions from the frozen integrated source. They expose algebraic consequences of the
+existing canonical log-relative-likelihood function and delegate interval construction to the
+existing log-cutoff implementation. The frozen corpus remains the authority for all pre-existing
+outputs; independent normal-kernel identities and property tests validate the new relationships.
+
+No external code, figure, table, dataset, or substantial publication text was added for this
+extension. The existing Zampieri et al. reference below supports the S−2 and relative-support
+terminology but is not a source-code or numerical fixture dependency.
+
 ## Canonical metadata
 
 The source repository owner explicitly selected `Brian Locke` as the canonical public author and

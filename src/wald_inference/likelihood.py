@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from fractions import Fraction
 from math import isfinite
 
 import numpy as np
@@ -11,6 +12,8 @@ from .compatibility import (
     LOG_MAX_FLOAT,
     ObservedResult,
     _standardized_distance_kernel,
+    _strict_to_array,
+    _validate_center_and_se,
     standardized_distance,
 )
 from .compatibility import (
@@ -83,6 +86,107 @@ def _exp_or_none(log_value: float | None) -> float | None:
     return float(np.exp(log_value))
 
 
+def _log_support_ratio_kernel(
+    candidate_a: np.ndarray,
+    candidate_b: np.ndarray,
+    *,
+    theta_hat: float,
+    se: float,
+) -> ObservedResult:
+    try:
+        candidate_a, candidate_b = np.broadcast_arrays(candidate_a, candidate_b)
+    except ValueError as exc:
+        raise ValidationError("Support-ratio values must be broadcast-compatible.") from exc
+
+    # For L(A) / L(B), the direct difference of the two log kernels is
+    #
+    #   ((B - theta_hat)^2 - (A - theta_hat)^2) / (2 * se^2).
+    #
+    # Evaluating those squares separately can overflow or catastrophically
+    # cancel even when their difference is finite. Scaling first is also not
+    # sufficient: it can erase subnormal values or a small nonzero center
+    # before symmetric candidates cancel. Fraction.from_float preserves the
+    # exact binary64 inputs, so this factorization rounds only once when each
+    # completed log ratio is converted back to binary64.
+    center = Fraction.from_float(theta_hat)
+    standard_error = Fraction.from_float(se)
+    denominator = 2 * standard_error * standard_error
+    log_ratio = np.empty(candidate_a.shape, dtype=float)
+
+    try:
+        for index in np.ndindex(candidate_a.shape):
+            candidate_a_exact = Fraction.from_float(float(candidate_a[index]))
+            candidate_b_exact = Fraction.from_float(float(candidate_b[index]))
+            numerator = (candidate_b_exact - candidate_a_exact) * (
+                candidate_a_exact + candidate_b_exact - (2 * center)
+            )
+            log_ratio[index] = float(numerator / denominator)
+    except OverflowError as exc:
+        raise ValidationError("Log support ratio exceeds the finite floating-point range.") from exc
+
+    return log_ratio[()] if log_ratio.ndim == 0 else log_ratio
+
+
+def log_support_ratio(
+    candidate_a_working: LikelihoodValues,
+    candidate_b_working: LikelihoodValues,
+    *,
+    theta_hat: float,
+    se: float,
+) -> ObservedResult:
+    """Return finite log L(A)/L(B) under the normalized Wald reconstruction."""
+
+    candidate_a = _strict_to_array(candidate_a_working)
+    candidate_b = _strict_to_array(candidate_b_working)
+    if not np.isfinite(candidate_a).all() or not np.isfinite(candidate_b).all():
+        raise ValidationError("Evaluation points must be finite.")
+    center, standard_error = _validate_center_and_se(theta_hat, se)
+    return _log_support_ratio_kernel(
+        candidate_a,
+        candidate_b,
+        theta_hat=center,
+        se=standard_error,
+    )
+
+
+def _coerce_support_pair(
+    candidate_a_working: float,
+    candidate_b_working: float,
+) -> tuple[float, float]:
+    try:
+        candidate_a = float(candidate_a_working)
+        candidate_b = float(candidate_b_working)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValidationError("Support comparison values must be finite.") from exc
+    if not isfinite(candidate_a) or not isfinite(candidate_b):
+        raise ValidationError("Support comparison values must be finite.")
+    return candidate_a, candidate_b
+
+
+def support_ratio(
+    candidate_a_working: float,
+    candidate_b_working: float,
+    *,
+    theta_hat: float,
+    se: float,
+) -> float | None:
+    """Return L(A)/L(B), or ``None`` when exponentiation would overflow."""
+
+    candidate_a, candidate_b = _coerce_support_pair(
+        candidate_a_working,
+        candidate_b_working,
+    )
+    log_ratio = float(
+        log_support_ratio(
+            candidate_a,
+            candidate_b,
+            theta_hat=theta_hat,
+            se=se,
+        )
+    )
+    return _exp_or_none(log_ratio)
+
+
 def support_comparison(
     candidate_working: float,
     reference_working: float,
@@ -92,13 +196,7 @@ def support_comparison(
 ) -> SupportComparison:
     """Compare candidate support with the MLE and with a reference value."""
 
-    try:
-        candidate = float(candidate_working)
-        reference = float(reference_working)
-    except (TypeError, ValueError, OverflowError) as exc:
-        raise ValidationError("Support comparison values must be finite.") from exc
-    if not isfinite(candidate) or not isfinite(reference):
-        raise ValidationError("Support comparison values must be finite.")
+    candidate, reference = _coerce_support_pair(candidate_working, reference_working)
 
     log_values = log_relative_likelihood(
         np.asarray([candidate, reference]),
@@ -180,4 +278,28 @@ def support_interval(
         upper_working=upper_working,
         lower_clipped=lower_clipped,
         upper_clipped=upper_clipped,
+    )
+
+
+def support_interval_for_ratio(
+    theta_hat: float,
+    se: float,
+    *,
+    mle_to_bound_ratio: float,
+) -> SupportInterval:
+    """Return effects no more than a chosen ratio less supported than the MLE."""
+
+    try:
+        ratio = float(mle_to_bound_ratio)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValidationError(
+            "MLE-to-bound support ratio must be finite and greater than 1."
+        ) from exc
+    if not isfinite(ratio) or ratio <= 1.0:
+        raise ValidationError("MLE-to-bound support ratio must be finite and greater than 1.")
+
+    return support_interval(
+        theta_hat,
+        se,
+        log_relative_likelihood_cutoff=-float(np.log(ratio)),
     )

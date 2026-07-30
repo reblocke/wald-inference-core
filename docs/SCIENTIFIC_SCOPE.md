@@ -58,14 +58,34 @@ z(theta) = (theta - theta_hat) / SE
 compatibility(theta) = 2 * Normal.sf(abs(z(theta)))
 log_relative_likelihood(theta) = -0.5 * z(theta)^2
 relative_likelihood(theta) = exp(log_relative_likelihood(theta))
+log_support_ratio(A, B) =
+    log_relative_likelihood(A) - log_relative_likelihood(B)
 ```
 
 The relative likelihood is normalized to one at the reconstructed estimate. It is a Wald
 approximation, not the exact profile likelihood from the fitted model.
 
-The evidential S−2 support interval uses working-scale endpoints
-`\(\hat{\theta} \pm 2SE\)`. Pairwise support comparisons are algebraic consequences of the same
-log-relative-likelihood function; they are not separately fitted likelihoods.
+A positive `log_support_ratio(A, B)` means A is more supported than B; reversing A and B reverses
+the sign. Exponentiating gives `L(A) / L(B)` when that value is representable. This ordering is part
+of the result and must not be collapsed into an unlabeled “likelihood ratio.”
+
+For a finite MLE-to-bound support criterion `R > 1`, the included effects satisfy:
+
+```text
+log_relative_likelihood(theta) >= -log(R)
+abs(z(theta)) <= sqrt(2 * log(R))
+endpoint = theta_hat +/- SE * sqrt(2 * log(R))
+```
+
+The evidential S−2 support interval is the special case `R = exp(2)`, with working-scale endpoints
+`\(\hat{\theta} \pm 2SE\)`. A 2:1 support interval is not S−2. The S−2 terminology and support
+interpretation follow the Zampieri et al. methodology source recorded in
+[migration provenance](MIGRATION_PROVENANCE.md#methodology-references-carried-forward).
+
+Pairwise ratios and support intervals are algebraic consequences of the same
+log-relative-likelihood function; they are not separately fitted likelihoods. Compatibility values
+instead map the same absolute Wald distance to a two-sided tail area. Neither quantity is a
+posterior probability, and a relative-support ratio is not a Bayes factor.
 
 ## Detectability benchmark
 

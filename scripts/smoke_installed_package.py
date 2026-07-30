@@ -31,9 +31,12 @@ SMOKE_CODE = textwrap.dedent(
         compatibility_curve,
         design_metrics_for_true_effects,
         get_effect_spec,
+        log_support_ratio,
         precision_target_results,
         reconstruct_wald_from_95_ci,
         relative_likelihood,
+        support_interval_for_ratio,
+        support_ratio,
     )
 
 
@@ -54,8 +57,8 @@ SMOKE_CODE = textwrap.dedent(
         raise AssertionError(f"unexpected smoke value type: {type(value)!r}")
 
 
-    assert version("wald-inference") == "0.1.1"
-    assert wald_inference.__version__ == "0.1.1"
+    assert version("wald-inference") == "0.2.0"
+    assert wald_inference.__version__ == "0.2.0"
     assert wald_inference.__all__
     for exported_name in wald_inference.__all__:
         assert hasattr(wald_inference, exported_name), exported_name
@@ -119,6 +122,43 @@ SMOKE_CODE = textwrap.dedent(
     assert math.isclose(float(compatibility[1]), 1.0)
     assert math.isclose(float(compatibility[2]), 0.05, rel_tol=1e-12, abs_tol=1e-14)
     assert math.isclose(float(likelihood[1]), 1.0)
+
+    support_interval = support_interval_for_ratio(
+        reconstruction.estimate_working,
+        reconstruction.standard_error,
+        mle_to_bound_ratio=4.0,
+    )
+    assert math.isclose(support_interval.likelihood_ratio_mle_to_bound, 4.0)
+    for endpoint in support_interval.range_working:
+        endpoint_log_ratio = float(
+            log_support_ratio(
+                reconstruction.estimate_working,
+                endpoint,
+                theta_hat=reconstruction.estimate_working,
+                se=reconstruction.standard_error,
+            )
+        )
+        assert math.isclose(endpoint_log_ratio, math.log(4.0), rel_tol=1e-12)
+    assert math.isclose(
+        support_ratio(
+            reconstruction.estimate_working,
+            support_interval.lower_working,
+            theta_hat=reconstruction.estimate_working,
+            se=reconstruction.standard_error,
+        ),
+        4.0,
+        rel_tol=1e-12,
+    )
+    assert (
+        support_ratio(
+            0.0,
+            40.0,
+            theta_hat=0.0,
+            se=1.0,
+        )
+        is None
+    )
+    assert float(log_support_ratio(0.0, 40.0, theta_hat=0.0, se=1.0)) == 800.0
 
     design = design_metrics_for_true_effects(
         [0.0, 0.3],
