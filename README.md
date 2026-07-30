@@ -9,7 +9,8 @@ the behavior-preserving extraction from the immutable
 [`conf_curve_likelihood` pre-split baseline](https://github.com/reblocke/conf_curve_likelihood/releases/tag/pre-split-baseline-2026-07-29).
 Version `0.1.1` preserves that numerical behavior and documents stable adapter-only imports.
 Version `0.2.0` adds generic pairwise support ratios and MLE-to-bound support intervals without
-changing the preserved calculations.
+changing the preserved calculations. Version `0.2.1` makes those interval APIs fail closed when a
+finite floating-point endpoint cannot accurately represent its requested support boundary.
 
 ## Question supported
 
@@ -61,11 +62,11 @@ For development from a clone:
 uv sync --locked --all-groups
 ```
 
-GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.2.0
+GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.2.1
 wheel:
 
 ```bash
-python -m pip install ./wald_inference-0.2.0-py3-none-any.whl
+python -m pip install ./wald_inference-0.2.1-py3-none-any.whl
 ```
 
 The release page is <https://github.com/reblocke/wald-inference-core/releases>. A downstream
@@ -116,7 +117,10 @@ four_to_one_interval = support_interval_for_ratio(
 `compatibility[1]` and `support[1]` are one at the reconstructed estimate. The endpoint
 compatibilities are approximately `0.05` under the 95% Wald reconstruction.
 `four_to_one_interval` contains working-scale values for which the CI-implied estimate is no more
-than four times as supported under the normalized Wald reconstruction.
+than four times as supported under the normalized Wald reconstruction. A finite interval is
+returned only when each non-clipped endpoint independently reproduces the requested log-support
+boundary within the documented numerical tolerance; otherwise the call raises `ValidationError`
+instead of labeling a materially different representable float as that boundary.
 
 ## Minimal Type S/M example
 
@@ -207,7 +211,7 @@ privacy behavior.
 
 ## Version, citation, license, and contact
 
-- Version prepared for release: `0.2.0`
+- Version prepared for release: `0.2.1`
 - Citation metadata: [`CITATION.cff`](CITATION.cff)
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - License: MIT; see [`LICENSE`](LICENSE)

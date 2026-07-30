@@ -82,6 +82,14 @@ The evidential S−2 support interval is the special case `R = exp(2)`, with wor
 interpretation follow the Zampieri et al. methodology source recorded in
 [migration provenance](MIGRATION_PROVENANCE.md#methodology-references-carried-forward).
 
+Because a binary64 float grid is discrete, a finite analytic boundary is not always representable
+at extreme ratios of `theta_hat` to `SE`. Every non-clipped returned endpoint is therefore
+re-evaluated using the exact binary64 values in the pairwise log-support identity and must match
+the requested log support at relative tolerance `1e-12`, with no absolute floor. If it does not,
+the interval is rejected with `ValidationError`; the package does not silently label the nearest
+float as a different evidential boundary. Deliberately overflow-clipped endpoints remain explicit
+through their clipping flags.
+
 Pairwise ratios and support intervals are algebraic consequences of the same
 log-relative-likelihood function; they are not separately fitted likelihoods. Compatibility values
 instead map the same absolute Wald distance to a two-sided tail area. Neither quantity is a

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from fractions import Fraction
-from math import isfinite
+from math import isclose, isfinite
 
 import numpy as np
 
@@ -25,6 +25,7 @@ from .types import SupportComparison, SupportInterval
 MAX_FLOAT = float(np.finfo(float).max)
 S_MINUS_2_SUPPORT_CUTOFF = -2.0
 S_MINUS_2_DISTANCE = 2.0
+_SUPPORT_ENDPOINT_RELATIVE_TOLERANCE = 1e-12
 
 LikelihoodValues = float | Sequence[float] | np.ndarray
 
@@ -232,6 +233,49 @@ def _finite_support_endpoint(
     return float(half_endpoint * 2.0), False
 
 
+def _verify_support_endpoint(
+    endpoint: float,
+    *,
+    side: str,
+    theta_hat: float,
+    se: float,
+    cutoff: float,
+) -> None:
+    """Fail closed when a finite endpoint cannot represent its requested boundary."""
+
+    try:
+        achieved_log_ratio = float(
+            log_support_ratio(
+                theta_hat,
+                endpoint,
+                theta_hat=theta_hat,
+                se=se,
+            )
+        )
+    except ValidationError as exc:
+        raise ValidationError(
+            f"{side.capitalize()} support interval endpoint cannot represent the requested "
+            "log-relative-likelihood cutoff at finite floating-point precision."
+        ) from exc
+
+    requested_log_ratio = -cutoff
+    # The exact-binary64 pairwise kernel above independently re-evaluates the
+    # returned endpoint. A relative comparison scales with the requested log
+    # support. Deliberately omitting an absolute floor prevents a near-zero
+    # cutoff from being accepted as zero after endpoint quantization.
+    if not isclose(
+        achieved_log_ratio,
+        requested_log_ratio,
+        rel_tol=_SUPPORT_ENDPOINT_RELATIVE_TOLERANCE,
+        abs_tol=0.0,
+    ):
+        raise ValidationError(
+            f"{side.capitalize()} support interval endpoint cannot represent the requested "
+            "log-relative-likelihood cutoff at finite floating-point precision "
+            f"(requested {cutoff!r}, achieved {-achieved_log_ratio!r})."
+        )
+
+
 def support_interval(
     theta_hat: float,
     se: float,
@@ -270,6 +314,19 @@ def support_interval(
         half_distance,
         1.0,
     )
+    for side, endpoint, clipped in (
+        ("lower", lower_working, lower_clipped),
+        ("upper", upper_working, upper_clipped),
+    ):
+        if not clipped:
+            _verify_support_endpoint(
+                endpoint,
+                side=side,
+                theta_hat=center,
+                se=standard_error,
+                cutoff=cutoff,
+            )
+
     return SupportInterval(
         support_cutoff=cutoff,
         relative_likelihood_cutoff=float(np.exp(cutoff)),

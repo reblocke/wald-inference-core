@@ -91,6 +91,14 @@ the canonical log-cutoff interval with cutoff `-log(R)`. It contains values for 
 reconstructed estimate is no more than R times as supported under the normalized Wald likelihood.
 S−2 is exactly the special case `R = exp(2)`; a 2:1 interval is not an S−2 interval.
 
+For each non-clipped finite endpoint, both interval functions independently re-evaluate the
+MLE-to-endpoint log support with the exact-binary64 pairwise kernel. The achieved and requested
+values must agree at relative tolerance `1e-12` with no absolute-tolerance floor. A requested
+boundary that collapses to the center, skips to a materially different adjacent float, or otherwise
+cannot meet that check raises `ValidationError`. An endpoint intentionally clipped to the maximum
+finite range remains identified by its clipping flag and is not represented as the requested
+boundary.
+
 These APIs compare parameter values under a one-parameter Wald approximation. They do not recover
 the fitted model's exact profile likelihood and do not produce posterior probabilities or Bayes
 factors.
@@ -220,7 +228,7 @@ ValidationError
 __version__
 ```
 
-`__version__` is `0.2.0`. Canonical numerical outputs intended for serialization contain finite
+`__version__` is `0.2.1`. Canonical numerical outputs intended for serialization contain finite
 values or documented `None`; invalid inputs do not return sentinel NaN or infinity. The documented
 `SelectionRuleSpec.intervals` infinities are structural open-tail boundaries, not calculated result
 values.

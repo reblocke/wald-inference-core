@@ -13,6 +13,7 @@ from wald_inference.compatibility import (
     wald_point_summary,
 )
 from wald_inference.effects import from_working_scale, to_working_scale
+from wald_inference.errors import ValidationError
 from wald_inference.likelihood import (
     log_support_ratio,
     relative_likelihood,
@@ -153,16 +154,31 @@ def test_support_interval_has_requested_log_support_at_finite_endpoints(
     se: float,
     cutoff: float,
 ) -> None:
-    interval = support_interval(
-        theta_hat,
-        se,
-        log_relative_likelihood_cutoff=cutoff,
-    )
+    try:
+        interval = support_interval(
+            theta_hat,
+            se,
+            log_relative_likelihood_cutoff=cutoff,
+        )
+    except ValidationError as exc:
+        assert "support interval endpoint cannot represent the requested" in str(exc)
+        return
+
     assert interval.working_clipped is False
     distance = math.sqrt(-2.0 * cutoff)
     expected_lower = theta_hat - (distance * se)
     expected_upper = theta_hat + (distance * se)
     assert interval.range_working == pytest.approx((expected_lower, expected_upper))
+    for endpoint in interval.range_working:
+        endpoint_log_ratio = float(
+            log_support_ratio(
+                theta_hat,
+                endpoint,
+                theta_hat=theta_hat,
+                se=se,
+            )
+        )
+        assert math.isclose(endpoint_log_ratio, -cutoff, rel_tol=1e-12, abs_tol=0.0)
 
 
 @given(
@@ -291,11 +307,15 @@ def test_ratio_support_interval_endpoints_have_requested_pairwise_support(
     se: float,
     ratio: float,
 ) -> None:
-    interval = support_interval_for_ratio(
-        theta_hat,
-        se,
-        mle_to_bound_ratio=ratio,
-    )
+    try:
+        interval = support_interval_for_ratio(
+            theta_hat,
+            se,
+            mle_to_bound_ratio=ratio,
+        )
+    except ValidationError as exc:
+        assert "support interval endpoint cannot represent the requested" in str(exc)
+        return
 
     assert interval.working_clipped is False
     for endpoint in interval.range_working:
@@ -307,7 +327,12 @@ def test_ratio_support_interval_endpoints_have_requested_pairwise_support(
                 se=se,
             )
         )
-        assert endpoint_log_ratio == pytest.approx(math.log(ratio))
+        assert math.isclose(
+            endpoint_log_ratio,
+            math.log(ratio),
+            rel_tol=1e-12,
+            abs_tol=0.0,
+        )
 
 
 @given(

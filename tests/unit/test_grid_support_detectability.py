@@ -24,6 +24,7 @@ from wald_inference.likelihood import (
     support_interval_for_ratio,
     support_ratio,
 )
+from wald_inference.reconstruction import reconstruct_wald_from_95_ci
 
 
 def test_grid_is_odd_symmetric_and_contains_the_estimate() -> None:
@@ -84,6 +85,10 @@ def test_max_safe_grid_span_keeps_endpoints_and_z_finite() -> None:
 def test_s_minus_2_interval_matches_preserved_support_definition() -> None:
     interval = support_interval(theta_hat=0.42, se=0.157)
 
+    assert interval.range_working == (
+        float.fromhex("0x1.b22d0e5604188p-4"),
+        float.fromhex("0x1.77ced916872b0p-1"),
+    )
     assert interval.support_cutoff == -2.0
     assert interval.relative_likelihood_cutoff == pytest.approx(math.exp(-2.0))
     assert interval.likelihood_ratio_mle_to_bound == pytest.approx(math.exp(2.0))
@@ -118,6 +123,111 @@ def test_s_minus_2_interval_clips_unrepresentable_endpoint() -> None:
     assert interval.upper_working == sys.float_info.max
     assert interval.lower_clipped is False
     assert interval.upper_clipped is True
+
+
+@pytest.mark.parametrize("ratio", [2.0, 4.0, math.exp(2.0), 8.0])
+def test_ratio_support_interval_fails_closed_for_quantized_extreme_boundaries(
+    ratio: float,
+) -> None:
+    reconstruction = reconstruct_wald_from_95_ci(
+        "mean_difference",
+        lower=float.fromhex("0x1.1ccf385ebc89fp+1023"),
+        upper=float.fromhex("0x1.1ccf385ebc8a1p+1023"),
+    )
+
+    assert reconstruction.estimate_working == float.fromhex("0x1.1ccf385ebc8a0p+1023")
+    assert reconstruction.standard_error == 1.0183045837972807e292
+    with pytest.raises(
+        ValidationError,
+        match="support interval endpoint cannot represent the requested "
+        "log-relative-likelihood cutoff",
+    ):
+        support_interval_for_ratio(
+            reconstruction.estimate_working,
+            reconstruction.standard_error,
+            mle_to_bound_ratio=ratio,
+        )
+
+
+@pytest.mark.parametrize("cutoff", [-math.log(2.0), -math.log(4.0), -2.0, -math.log(8.0)])
+def test_log_cutoff_support_interval_fails_closed_for_quantized_extreme_boundaries(
+    cutoff: float,
+) -> None:
+    center = float.fromhex("0x1.1ccf385ebc8a0p+1023")
+    standard_error = 1.0183045837972807e292
+
+    with pytest.raises(
+        ValidationError,
+        match="support interval endpoint cannot represent the requested "
+        "log-relative-likelihood cutoff",
+    ):
+        support_interval(
+            center,
+            standard_error,
+            log_relative_likelihood_cutoff=cutoff,
+        )
+
+
+def test_quantized_extreme_neighbors_have_one_fixed_support_ratio() -> None:
+    center = float.fromhex("0x1.1ccf385ebc8a0p+1023")
+    standard_error = 1.0183045837972807e292
+    neighbors = (
+        float.fromhex("0x1.1ccf385ebc89fp+1023"),
+        float.fromhex("0x1.1ccf385ebc8a1p+1023"),
+    )
+
+    for endpoint in neighbors:
+        achieved_log_ratio = float(
+            log_support_ratio(
+                center,
+                endpoint,
+                theta_hat=center,
+                se=standard_error,
+            )
+        )
+        assert achieved_log_ratio == 1.920729410347063
+        assert math.exp(achieved_log_ratio) == 6.825935561925903
+
+
+def test_near_zero_cutoff_is_verified_without_an_absolute_tolerance_floor() -> None:
+    smallest_subnormal = math.ulp(0.0)
+    representable = support_interval(
+        0.0,
+        1.0,
+        log_relative_likelihood_cutoff=-smallest_subnormal,
+    )
+
+    assert representable.lower_working == -float.fromhex("0x1.6a09e667f3bcdp-537")
+    assert representable.upper_working == float.fromhex("0x1.6a09e667f3bcdp-537")
+    for endpoint in representable.range_working:
+        assert float(log_support_ratio(0.0, endpoint, theta_hat=0.0, se=1.0)) == smallest_subnormal
+
+    with pytest.raises(ValidationError, match="cannot represent the requested"):
+        support_interval(
+            1.0,
+            1.0,
+            log_relative_likelihood_cutoff=-smallest_subnormal,
+        )
+
+
+def test_minimum_subnormal_standard_error_retains_representable_s_minus_2_bounds() -> None:
+    smallest_subnormal = math.ulp(0.0)
+    interval = support_interval(0.0, smallest_subnormal)
+
+    assert interval.range_working == (-2.0 * smallest_subnormal, 2.0 * smallest_subnormal)
+    assert interval.working_clipped is False
+    for endpoint in interval.range_working:
+        assert (
+            float(
+                log_support_ratio(
+                    0.0,
+                    endpoint,
+                    theta_hat=0.0,
+                    se=smallest_subnormal,
+                )
+            )
+            == 2.0
+        )
 
 
 def test_support_comparison_matches_log_domain_algebra() -> None:
@@ -329,6 +439,19 @@ def test_support_interval_for_ratio_uses_requested_mle_to_bound_ratio(
             1.0 - (0.25 * expected_distance),
             1.0 + (0.25 * expected_distance),
         )
+    )
+
+
+def test_four_to_one_interval_preserves_v0_2_0_binary_endpoints() -> None:
+    interval = support_interval_for_ratio(
+        theta_hat=0.35,
+        se=0.2,
+        mle_to_bound_ratio=4.0,
+    )
+
+    assert interval.range_working == (
+        float.fromhex("0x1.162b8bb1c22d0p-6"),
+        float.fromhex("0x1.5db50a08d8550p-1"),
     )
 
 

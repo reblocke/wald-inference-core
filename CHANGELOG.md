@@ -4,6 +4,32 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-30
+
+### Fixed
+
+- Made `support_interval` and `support_interval_for_ratio` fail closed when finite binary64
+  endpoint quantization produces a materially different support boundary.
+- Independently re-evaluate every non-clipped endpoint with the exact-binary64 pairwise log-support
+  kernel and require relative agreement at `1e-12` with no absolute-tolerance floor.
+- Preserved deliberately overflow-clipped endpoints and their explicit flags, without claiming that
+  the clipped value equals the requested analytic boundary.
+
+### Validation
+
+- Added the exact hexadecimal `theta_hat=1e308` adjacent-float regression: criteria from 2:1 through
+  8:1 previously collapsed to endpoints whose actual ratio was `6.825935561925903`.
+- Added unit, property, independent rational scientific-reference, near-zero cutoff, minimum
+  subnormal standard-error, clipping, and cold-wheel regressions.
+- Retained exact root and legacy API contracts and zero-difference frozen parity across all 23,095
+  compared values.
+
+### Scientific impact
+
+- Analytic Wald formulas and all accurately representable interval endpoints are unchanged.
+  Extreme scale combinations that cannot encode the requested boundary now raise `ValidationError`
+  rather than returning a finite but scientifically mislabeled interval.
+
 ## [0.2.0] - 2026-07-29
 
 ### Added
@@ -85,7 +111,8 @@ All notable changes to this project are documented here.
 - The package implements documented Wald approximations, not exact fitted-model likelihood,
   arbitrary non-Wald intervals, Bayesian inference, or design-specific sample-size calculations.
 
-[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/reblocke/wald-inference-core/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/reblocke/wald-inference-core/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/reblocke/wald-inference-core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/reblocke/wald-inference-core/releases/tag/v0.1.0
