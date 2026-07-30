@@ -164,12 +164,14 @@ rules. Normalize exact-null probability locally to alpha without changing the fr
 module. Use fixed Gauss-Legendre integration of the canonical positive derivative for
 `abs(delta) <= 0.125`; outside that neighborhood, evaluate one-sided tails directly and two-sided
 unselected probability in a stable complement/log domain. Apply a small directed-rounding guard so
-the public float is a conservative representation of the exact model probability. Use this one
-public kernel for arrays, scalar calls, generic monotonic bisection, and achieved probability,
-regardless of target proximity to alpha or one. Require each returned magnitude to satisfy the
-public probability while its immediately preceding float does not. Compose and re-evaluate the
-working-scale effect, use only relative representability tolerance with no absolute floor, and
-reject unsupported, uncertifiable, or unrepresentable results. Preserve
+the public float is a conservative representation of the exact model probability: use the lower
+quadrature bound for increasing probabilities, the upper bound for decreasing probabilities, and
+a 64-ULP component guard increased to 256 ULPs below `1e-8`. Use this one public kernel for arrays,
+scalar calls, generic monotonic bisection, and achieved probability, regardless of target proximity
+to alpha or one. Require each returned magnitude to satisfy the public probability while its
+immediately preceding float does not. Compose and re-evaluate the working-scale effect, use only
+relative representability tolerance with no absolute floor, and reject unsupported, uncertifiable,
+or unrepresentable results. Preserve
 `legacy_critical_effect_distance` and `legacy_critical_effect_markers` unchanged as a separately
 labeled closed-form benchmark.
 

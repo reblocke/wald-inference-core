@@ -166,9 +166,11 @@ The binary64 precision contract is independent of the target. Near the null, fix
 Gauss-Legendre quadrature integrates the canonical positive probability derivative. Outside that
 neighborhood, one-sided tails are evaluated directly and two-sided selection uses the central
 unselected interval in a stable complement/log domain. Exact rational float addition/subtraction
-and an eight-ULP numerical guard round the reported probability conservatively. Each bisection
-result must satisfy this same public forward probability while the immediately preceding magnitude
-does not. `achieved_probability` is a direct call to the same kernel after working-scale
+and direction-specific quadrature bounds round the reported probability conservatively. A
+64-ULP component guard, increased to 256 ULPs below `1e-8`, covers the normal-tail, quantile, and
+floating-point evaluation error demonstrated by independent high-precision stress tests. Each
+bisection result must satisfy this same public forward probability while the immediately preceding
+magnitude does not. `achieved_probability` is a direct call to the same kernel after working-scale
 composition, never a value raised to the target after an independently rounded calculation.
 
 For the three invertible p-value rules, forward probability at an exact zero standardized distance

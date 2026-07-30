@@ -92,6 +92,11 @@ def test_one_sided_inverse_matches_analytic_normal_quantiles(
             1e-10,
             0.6731429228970757335137790556967245,
         ),
+        (
+            0.1,
+            0.9991,
+            4.402940714904462159111723469740108,
+        ),
     ],
 )
 def test_one_sided_inverse_matches_mpmath_high_precision_quantile_differences(
@@ -108,12 +113,19 @@ def test_one_sided_inverse_matches_mpmath_high_precision_quantile_differences(
         claim_direction="positive",
     )
 
-    assert result.critical_delta == pytest.approx(
-        expected_delta,
-        rel=0.0,
-        abs=7e-16,
-    )
+    assert result.critical_delta >= expected_delta
+    assert result.critical_delta - expected_delta <= 6e-15
     assert result.achieved_probability >= target
+    preceding_delta = float(np.nextafter(result.critical_delta, 0.0))
+    preceding_probability = selected_claim_probability(
+        preceding_delta,
+        null_working=0.0,
+        standard_error=1.0,
+        alpha=alpha,
+        selection_rule="one_sided_positive_p_lt_alpha",
+        claim_direction="positive",
+    )
+    assert preceding_probability < target
 
 
 @pytest.mark.parametrize(
@@ -140,7 +152,8 @@ def test_two_sided_exact_inverse_matches_independent_reference_values(
     )
 
     assert result.critical_delta == pytest.approx(expected_delta, rel=0.0, abs=2e-13)
-    assert direct_probability == pytest.approx(target, abs=1e-15)
+    assert direct_probability >= target
+    assert direct_probability - target <= 8e-15
     preceding_delta = float(np.nextafter(result.critical_delta, 0.0))
     preceding_probability = selected_claim_probability(
         preceding_delta,
@@ -149,6 +162,21 @@ def test_two_sided_exact_inverse_matches_independent_reference_values(
         alpha=0.05,
     )
     assert preceding_probability < target
+
+
+def test_decreasing_one_sided_probability_is_below_high_precision_reference() -> None:
+    probability = selected_claim_probability(
+        -0.125,
+        null_working=0.0,
+        standard_error=1.0,
+        alpha=0.5,
+        selection_rule="one_sided_positive_p_lt_alpha",
+        claim_direction="positive",
+    )
+    high_precision_reference = 0.45026177516988710702069
+
+    assert probability <= high_precision_reference
+    assert high_precision_reference - probability <= 1e-14
 
 
 @pytest.mark.parametrize(

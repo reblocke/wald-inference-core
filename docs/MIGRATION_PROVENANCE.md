@@ -100,9 +100,12 @@ z-sum functions remain unchanged and continue to be covered by exact parity test
 
 No external code, figure, table, dataset, or substantial publication text was added for this
 extension. Independent tests express the documented normal-tail identities and analytic one-sided
-quantiles. The Perugini et al. reference below supplies critical-effect-size design context but is
-not a source-code, numerical-fixture, or semantic authority over the transparent implemented
-definitions.
+quantiles. Independent release-gate stress also compares thousands of null-adjacent, handoff,
+ordinary, high-alpha, and extreme-tail forward and inverse cases with high-precision normal
+probabilities; the committed suite freezes the resulting boundary regressions without adding
+mpmath as a runtime dependency. The Perugini et al. reference below supplies critical-effect-size
+design context but is not a source-code, numerical-fixture, or semantic authority over the
+transparent implemented definitions.
 
 ## Canonical metadata
 

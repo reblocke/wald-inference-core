@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from fractions import Fraction
-from math import exp, isfinite, log1p, nextafter, sinh, sqrt
+from math import exp, expm1, isfinite, log1p, nextafter, sinh, sqrt
 
 import numpy as np
 from scipy.stats import norm
@@ -30,7 +30,8 @@ MAX_SOLVER_DELTA = 1e6
 MAX_BRACKET_STEPS = 80
 MAX_BISECTION_STEPS = 200
 STABLE_INCREMENT_MAX_ABS_DELTA = 0.125
-NUMERICAL_GUARD_ULPS = 8
+NUMERICAL_GUARD_ULPS = 64
+EXTREME_TAIL_GUARD_ULPS = 256
 _INVERSE_SQRT_TWO_PI = 1.0 / sqrt(2.0 * np.pi)
 _MAX_FLOAT_EXACT = Fraction.from_float(float(np.finfo(float).max))
 _GAUSS_16_NODES, _GAUSS_16_WEIGHTS = np.polynomial.legendre.leggauss(16)
@@ -182,8 +183,24 @@ def _lower_probability_increment(first: float, second: float) -> float:
     increment = min(first, second)
     if increment <= 0.0:
         return 0.0
-    guarded = increment * (1.0 - (NUMERICAL_GUARD_ULPS * np.finfo(float).eps))
-    return _step_toward(guarded, 0.0, steps=NUMERICAL_GUARD_ULPS)
+    guard_steps = _guard_steps_for_probability_component(increment)
+    guarded = increment * (1.0 - (guard_steps * np.finfo(float).eps))
+    return _step_toward(guarded, 0.0, steps=guard_steps)
+
+
+def _upper_probability_increment(first: float, second: float) -> float:
+    increment = max(first, second)
+    if increment <= 0.0:
+        return 0.0
+    guard_steps = _guard_steps_for_probability_component(increment)
+    guarded = increment * (1.0 + (guard_steps * np.finfo(float).eps))
+    return _step_toward(guarded, float("inf"), steps=guard_steps)
+
+
+def _guard_steps_for_probability_component(value: float) -> int:
+    if value < 1e-8:
+        return EXTREME_TAIL_GUARD_ULPS
+    return NUMERICAL_GUARD_ULPS
 
 
 def _normal_pdf(value: float) -> float:
@@ -247,7 +264,9 @@ def _stable_one_sided_increment(
         nodes=_GAUSS_32_NODES,
         weights=_GAUSS_32_WEIGHTS,
     )
-    return _lower_probability_increment(first, second)
+    if increasing:
+        return _lower_probability_increment(first, second)
+    return _upper_probability_increment(first, second)
 
 
 def _stable_two_sided_increment(
@@ -272,25 +291,30 @@ def _stable_two_sided_increment(
 def _lower_probability_from_complement(complement: float) -> float:
     if complement <= 0.0:
         return nextafter(1.0, 0.0)
+    guard_steps = _guard_steps_for_probability_component(complement)
     conservative_complement = _step_toward(
         complement,
         float("inf"),
-        steps=NUMERICAL_GUARD_ULPS,
+        steps=guard_steps,
     )
     return _floor_probability(Fraction(1, 1) - Fraction.from_float(conservative_complement))
+
+
+def _lower_direct_probability(probability: float) -> float:
+    if probability <= 0.0:
+        return 0.0
+    guard_steps = _guard_steps_for_probability_component(probability)
+    return _step_toward(
+        probability,
+        0.0,
+        steps=guard_steps,
+    )
 
 
 def _direct_one_sided_probability(critical_z: float, directed_delta: float) -> float:
     selected_z = directed_delta - critical_z
     if selected_z <= 0.0:
-        probability = float(norm.cdf(selected_z))
-        if probability <= 0.0:
-            return 0.0
-        return _step_toward(
-            probability,
-            0.0,
-            steps=NUMERICAL_GUARD_ULPS,
-        )
+        return _lower_direct_probability(float(norm.cdf(selected_z)))
     complement = float(norm.cdf(-selected_z))
     return _lower_probability_from_complement(complement)
 
@@ -313,12 +337,6 @@ def _one_sided_probability(spec: SelectionRuleSpec, delta: float) -> float:
             magnitude,
             increasing=increasing,
         )
-        if not increasing and increment > 0.0:
-            increment = _step_toward(
-                increment,
-                float("inf"),
-                steps=NUMERICAL_GUARD_ULPS,
-            )
         return _probability_from_null(
             spec.alpha,
             increment,
@@ -343,7 +361,21 @@ def _one_sided_probability(spec: SelectionRuleSpec, delta: float) -> float:
     return min(boundary_probability, direct_probability)
 
 
-def _central_interval_probability(
+def _central_interval_log_probability(
+    critical_z: float,
+    magnitude: float,
+) -> float:
+    upper_log_cdf = float(norm.logcdf(critical_z - magnitude))
+    lower_log_cdf = float(norm.logcdf(-critical_z - magnitude))
+    if lower_log_cdf == float("-inf"):
+        return upper_log_cdf
+    ratio = exp(lower_log_cdf - upper_log_cdf)
+    if ratio >= 1.0:
+        return float("-inf")
+    return upper_log_cdf + log1p(-ratio)
+
+
+def _direct_two_sided_probability(
     critical_z: float,
     magnitude: float,
 ) -> float:
@@ -356,19 +388,21 @@ def _central_interval_probability(
         ):
             centered_value = (critical_z * float(node)) - magnitude
             weighted_density += float(weight) * _normal_pdf(centered_value)
-        probability = critical_z * weighted_density
+        complement = min(1.0, max(0.0, critical_z * weighted_density))
+        return _lower_probability_from_complement(complement)
+
+    log_complement = _central_interval_log_probability(
+        critical_z,
+        magnitude,
+    )
+    probability = -expm1(log_complement)
+    if probability <= 0.5:
+        return _lower_direct_probability(probability)
+    if log_complement == float("-inf"):
+        complement = 0.0
     else:
-        upper_log_cdf = float(norm.logcdf(critical_z - magnitude))
-        lower_log_cdf = float(norm.logcdf(-critical_z - magnitude))
-        if lower_log_cdf == float("-inf"):
-            probability = exp(upper_log_cdf)
-        else:
-            ratio = exp(lower_log_cdf - upper_log_cdf)
-            if ratio >= 1.0:
-                probability = 0.0
-            else:
-                probability = exp(upper_log_cdf + log1p(-ratio))
-    return min(1.0, max(0.0, probability))
+        complement = exp(log_complement)
+    return _lower_probability_from_complement(complement)
 
 
 def _two_sided_probability(spec: SelectionRuleSpec, delta: float) -> float:
@@ -392,8 +426,10 @@ def _two_sided_probability(spec: SelectionRuleSpec, delta: float) -> float:
         spec,
         STABLE_INCREMENT_MAX_ABS_DELTA,
     )
-    complement = _central_interval_probability(critical_z, magnitude)
-    direct_probability = _lower_probability_from_complement(complement)
+    direct_probability = _direct_two_sided_probability(
+        critical_z,
+        magnitude,
+    )
     return max(boundary_probability, direct_probability)
 
 

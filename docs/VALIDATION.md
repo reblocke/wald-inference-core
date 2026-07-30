@@ -54,7 +54,7 @@ failure.
 - **Scientific-reference tests** compare formulas with independently expressed normal-distribution
   identities or closed forms, including exact-rational evaluation of extreme binary64 support
   neighbors, analytic one-sided and direct-tail two-sided detectability, hard-coded mpmath quantile
-  differences, and high-precision floating-boundary roots.
+  differences, conservative-sided high-precision roots, and floating-boundary roots.
 - **Regression tests** compare every core-owned value with the frozen corpus and preserve exact
   finite/undefined conventions.
 - **Packaging tests** inspect wheel/sdist metadata and contents.
