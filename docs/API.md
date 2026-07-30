@@ -292,12 +292,70 @@ precision_target_results(
     near_null_delta=1e-12,
     z975=1.959963984540054,
 )
+JointPrecisionResult
+joint_precision_result(
+    true_effect_working,
+    *,
+    null_working,
+    current_se,
+    alpha=0.05,
+    target_power=None,
+    max_type_s=None,
+    max_type_m=None,
+    selection_rule="two_sided_p_lt_alpha",
+    claim_direction="positive",
+    threshold_working=None,
+    near_null_delta=1e-12,
+    z975=1.959963984540054,
+    binding_relative_tolerance=1e-8,
+)
+precision_sensitivity(
+    true_effects_working,
+    *,
+    null_working,
+    current_se,
+    alpha=0.05,
+    target_power=None,
+    max_type_s=None,
+    max_type_m=None,
+    selection_rule="two_sided_p_lt_alpha",
+    claim_direction="positive",
+    threshold_working=None,
+    near_null_delta=1e-12,
+    z975=1.959963984540054,
+    binding_relative_tolerance=1e-8,
+)
 solve_required_precision(...)
 ```
 
 `precision_target_results` returns one immutable row per requested target in stable order.
-`solve_required_precision` returns the strictest aggregate solution and returns all-`None` fields if
-any requested target lacks a finite solution.
+`PrecisionTargetResult.feasible` is true exactly when the row has a finite solution;
+`current_precision_sufficient` is true exactly when its multiplier is `1.0`; and
+`achieved_selected_claim_probability` is the explicit read-only name for the historical
+`achieved_power` field. These properties do not change the preserved dataclass fields or serialized
+v0.1-v0.3 row contract.
+
+`joint_precision_result` requires at least one guardrail and returns an immutable
+`JointPrecisionResult`. It first calls the same per-target solvers. If every target is feasible, the
+joint SE is the smallest target SE and the joint information multiplier is the largest target
+multiplier. A target binds when its multiplier is equal to the joint multiplier under
+`math.isclose(..., rel_tol=binding_relative_tolerance, abs_tol=0.0)`; the default relative
+tolerance is `1e-8`, and ties retain stable target order. When current precision meets every
+guardrail, the joint and per-target multipliers are exactly `1.0`.
+
+If any requested mandatory target is infeasible, the joint numeric fields are `None`,
+`binding_targets` is empty, and every feasible and infeasible target row is preserved in
+`target_results`. The joint note names the infeasible target(s), assumed effect, selection rule,
+direction, and applicable near-null, threshold, or finite-bracket condition. Near-null Type S/M
+quantities remain undefined rather than being coerced.
+
+`precision_sensitivity` maps a nonempty one-dimensional finite effect sequence to joint results in
+input order, preserving duplicates and explicit infeasible gaps. It is a deterministic scalar-map
+convenience, not a distribution over true effects.
+
+The legacy `solve_required_precision` dictionary remains available. It returns the same strictest
+aggregate values and returns all-`None` fields if no target is requested or any requested target
+lacks a finite solution.
 
 The following preserved two-sided delta solvers are also public:
 
@@ -314,7 +372,7 @@ ValidationError
 __version__
 ```
 
-`__version__` is `0.3.0`. Canonical numerical outputs intended for serialization contain finite
+`__version__` is `0.4.0`. Canonical numerical outputs intended for serialization contain finite
 values or documented `None`; invalid inputs do not return sentinel NaN or infinity. The documented
 `SelectionRuleSpec.intervals` infinities are structural open-tail boundaries, not calculated result
 values.

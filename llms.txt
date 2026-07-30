@@ -15,6 +15,10 @@ finite MLE-to-bound ratios greater than one; S−2 is the special case R = exp(2
 The public detectability APIs evaluate all six canonical selection rules forward and invert only the
 two-sided and matching one-sided p-value rules. The fixed z-sum marker remains a separate legacy
 closed-form benchmark.
+The public joint-precision API solves each mandatory guardrail through the preserved per-target
+solver, reports the strictest finite SE and binding target(s), and propagates any infeasible target
+without discarding rows. The sensitivity API maps this result deterministically across explicitly
+assumed working-scale true effects.
 
 Start with:
 - README.md
@@ -31,6 +35,10 @@ Important constraints:
 - Finite support-interval endpoints are independently verified against their requested log-support
   boundary and fail with ValidationError when binary64 quantization is materially inaccurate.
 - Type S/M quantities are repeated-study operating characteristics, not posterior probabilities.
+- Joint precision is feasible only when all requested mandatory guardrails are feasible; current
+  sufficiency has multiplier exactly 1.0.
+- Relative information is not automatically sample size and sensitivity inputs are not a
+  probability distribution over the true effect.
 - Ratio measures are evaluated on the log working scale.
 - Serializable calculation outputs use finite numbers or None; selection-rule intervals use
   infinities only as mathematical open-tail sentinels.

@@ -107,6 +107,21 @@ mpmath as a runtime dependency. The Perugini et al. reference below supplies cri
 design context but is not a source-code, numerical-fixture, or semantic authority over the
 transparent implemented definitions.
 
+## Post-extraction v0.4.0 joint precision extension
+
+The v0.4.0 joint precision and sensitivity APIs are additive post-extraction work derived from the
+authored CC-MIG-08 migration requirement. `joint_precision_result` delegates each mandatory
+guardrail to the frozen per-target precision API and only aggregates its typed rows; it does not
+copy a selected-claim, Type S, Type M, information-scaling, or inverse formula.
+`precision_sensitivity` is an ordered deterministic map of that scalar joint API. The preserved
+B06/B07 corpus remains the authority for all pre-existing row values, notes, infeasibility, and
+legacy aggregate behavior.
+
+No external code, dataset, figure, table, numerical fixture, or substantial publication text was
+added for this extension. Unit, property, scientific-reference, frozen-parity, packaging, and
+cold-wheel tests cover the new semantics. The migration requirement is product-authority context,
+not a third-party code or scientific-data source.
+
 ## Canonical metadata
 
 The source repository owner explicitly selected `Brian Locke` as the canonical public author and

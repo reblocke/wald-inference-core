@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+import math
+from collections.abc import Callable, Sequence
 
 import numpy as np
 
@@ -11,17 +12,20 @@ from .selection import (
     DEFAULT_CLAIM_DIRECTION,
     DEFAULT_SELECTION_RULE,
     _coerce_finite_float,
+    _requires_threshold,
     _validate_alpha,
     _validate_se,
 )
 from .type_sm import (
     DEFAULT_NEAR_NULL_DELTA,
+    _coerce_true_effect_array,
     _validate_design_inputs,
     design_metrics_for_true_effects,
 )
-from .types import DesignMetric, PrecisionTargetResult
+from .types import DesignMetric, JointPrecisionResult, PrecisionTargetResult
 
 DEFAULT_SOLVER_TOLERANCE = 1e-8
+DEFAULT_BINDING_RELATIVE_TOLERANCE = 1e-8
 MAX_INFORMATION_MULTIPLIER = 1e12
 DEFAULT_95_CI_CRITICAL_VALUE = 1.959963984540054
 
@@ -261,6 +265,240 @@ def _solve_required_se_for_condition(
     return pass_se, achieved_metric, "Estimated by monotonic bisection over the Wald SE."
 
 
+def _validate_binding_relative_tolerance(binding_relative_tolerance: float) -> float:
+    tolerance = _coerce_finite_float(
+        binding_relative_tolerance,
+        label="Binding relative tolerance",
+    )
+    if tolerance < 0 or tolerance >= 1:
+        raise ValidationError("Binding relative tolerance must be finite and in [0, 1).")
+    return tolerance
+
+
+def _infeasible_joint_note(
+    *,
+    true_effect_working: float,
+    selection_rule: str,
+    claim_direction: str,
+    threshold_working: float | None,
+    near_null_delta: float,
+    current_se: float,
+    infeasible_results: tuple[PrecisionTargetResult, ...],
+) -> str:
+    target_names = ", ".join(result.target for result in infeasible_results)
+    details = [
+        (
+            f"Mandatory target(s) infeasible: {target_names}. "
+            f"The assumed true effect is {true_effect_working!r} on the working scale under "
+            f"selection rule {selection_rule!r} and {claim_direction!r} claim direction."
+        )
+    ]
+    if any("near the null" in result.note for result in infeasible_results):
+        details.append(
+            "The assumed effect is at or near the null under near-null tolerance "
+            f"{near_null_delta!r} and current SE {current_se!r}."
+        )
+    if threshold_working is not None and _requires_threshold(selection_rule):
+        beyond_threshold = (
+            true_effect_working > threshold_working
+            if claim_direction == "positive"
+            else true_effect_working < threshold_working
+        )
+        threshold_relation = "is beyond" if beyond_threshold else "is not beyond"
+        details.append(
+            f"It {threshold_relation} the claim threshold {threshold_working!r} in the selected "
+            "direction."
+        )
+    if any("supported information range" in result.note for result in infeasible_results):
+        details.append(
+            "No finite bracket was found within the supported maximum relative information "
+            f"multiplier {MAX_INFORMATION_MULTIPLIER!r}."
+        )
+    details.append("Per-target results are preserved.")
+    return "No finite joint solution under the selected assumptions. " + " ".join(details)
+
+
+def _joint_precision_from_results(
+    *,
+    true_effect_working: float,
+    current_se: float,
+    selection_rule: str,
+    claim_direction: str,
+    threshold_working: float | None,
+    near_null_delta: float,
+    binding_relative_tolerance: float,
+    results: list[PrecisionTargetResult],
+) -> JointPrecisionResult:
+    target_results = tuple(results)
+    infeasible_results = tuple(result for result in target_results if not result.feasible)
+    if infeasible_results:
+        return JointPrecisionResult(
+            true_effect_working=true_effect_working,
+            feasible=False,
+            required_se=None,
+            required_information_multiplier=None,
+            approx_95_ci_width_working=None,
+            achieved_selected_claim_probability=None,
+            achieved_type_s=None,
+            achieved_type_m=None,
+            binding_targets=(),
+            current_precision_sufficient=False,
+            target_results=target_results,
+            note=_infeasible_joint_note(
+                true_effect_working=true_effect_working,
+                selection_rule=selection_rule,
+                claim_direction=claim_direction,
+                threshold_working=threshold_working,
+                near_null_delta=near_null_delta,
+                current_se=current_se,
+                infeasible_results=infeasible_results,
+            ),
+        )
+
+    strictest = min(
+        target_results,
+        key=lambda result: result.required_se if result.required_se is not None else float("inf"),
+    )
+    assert strictest.required_information_multiplier is not None
+    joint_multiplier = strictest.required_information_multiplier
+    current_precision_sufficient = all(
+        result.current_precision_sufficient for result in target_results
+    )
+    if current_precision_sufficient:
+        joint_multiplier = 1.0
+    binding_targets = tuple(
+        result.target
+        for result in target_results
+        if result.required_information_multiplier is not None
+        and math.isclose(
+            result.required_information_multiplier,
+            joint_multiplier,
+            rel_tol=binding_relative_tolerance,
+            abs_tol=0.0,
+        )
+    )
+    binding_names = ", ".join(binding_targets)
+    if current_precision_sufficient:
+        note = (
+            "Current precision already satisfies all requested guardrails; the joint information "
+            "multiplier is exactly 1.0. Binding target(s) within relative "
+            f"information-multiplier tolerance {binding_relative_tolerance!r}: {binding_names}."
+        )
+    else:
+        note = (
+            "Finite joint solution uses the strictest per-target precision. Binding target(s) "
+            "within relative information-multiplier tolerance "
+            f"{binding_relative_tolerance!r}: {binding_names}."
+        )
+    return JointPrecisionResult(
+        true_effect_working=true_effect_working,
+        feasible=True,
+        required_se=strictest.required_se,
+        required_information_multiplier=joint_multiplier,
+        approx_95_ci_width_working=strictest.approx_95_ci_width_working,
+        achieved_selected_claim_probability=strictest.achieved_power,
+        achieved_type_s=strictest.achieved_type_s,
+        achieved_type_m=strictest.achieved_type_m,
+        binding_targets=binding_targets,
+        current_precision_sufficient=current_precision_sufficient,
+        target_results=target_results,
+        note=note,
+    )
+
+
+def joint_precision_result(
+    true_effect_working: float,
+    *,
+    null_working: float,
+    current_se: float,
+    alpha: float = 0.05,
+    target_power: float | None = None,
+    max_type_s: float | None = None,
+    max_type_m: float | None = None,
+    selection_rule: str = DEFAULT_SELECTION_RULE,
+    claim_direction: str = DEFAULT_CLAIM_DIRECTION,
+    threshold_working: float | None = None,
+    near_null_delta: float = DEFAULT_NEAR_NULL_DELTA,
+    z975: float = DEFAULT_95_CI_CRITICAL_VALUE,
+    binding_relative_tolerance: float = DEFAULT_BINDING_RELATIVE_TOLERANCE,
+) -> JointPrecisionResult:
+    """Return the strictest joint result across mandatory precision guardrails.
+
+    Every requested target is solved independently by
+    :func:`precision_target_results`. If any target is infeasible, the joint
+    result is infeasible while all target rows remain available for inspection.
+    """
+
+    tolerance = _validate_binding_relative_tolerance(binding_relative_tolerance)
+    results = precision_target_results(
+        true_effect_working,
+        null_working=null_working,
+        current_se=current_se,
+        alpha=alpha,
+        target_power=target_power,
+        max_type_s=max_type_s,
+        max_type_m=max_type_m,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+        threshold_working=threshold_working,
+        near_null_delta=near_null_delta,
+        z975=z975,
+    )
+    if not results:
+        raise ValidationError("At least one precision guardrail is required.")
+    return _joint_precision_from_results(
+        true_effect_working=float(true_effect_working),
+        current_se=float(current_se),
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+        threshold_working=(None if threshold_working is None else float(threshold_working)),
+        near_null_delta=float(near_null_delta),
+        binding_relative_tolerance=tolerance,
+        results=results,
+    )
+
+
+def precision_sensitivity(
+    true_effects_working: Sequence[float] | np.ndarray,
+    *,
+    null_working: float,
+    current_se: float,
+    alpha: float = 0.05,
+    target_power: float | None = None,
+    max_type_s: float | None = None,
+    max_type_m: float | None = None,
+    selection_rule: str = DEFAULT_SELECTION_RULE,
+    claim_direction: str = DEFAULT_CLAIM_DIRECTION,
+    threshold_working: float | None = None,
+    near_null_delta: float = DEFAULT_NEAR_NULL_DELTA,
+    z975: float = DEFAULT_95_CI_CRITICAL_VALUE,
+    binding_relative_tolerance: float = DEFAULT_BINDING_RELATIVE_TOLERANCE,
+) -> list[JointPrecisionResult]:
+    """Return deterministic joint precision results across assumed true effects."""
+
+    true_effects = _coerce_true_effect_array(true_effects_working)
+    if true_effects.size == 0:
+        raise ValidationError("At least one design true effect is required for sensitivity.")
+    return [
+        joint_precision_result(
+            float(true_effect),
+            null_working=null_working,
+            current_se=current_se,
+            alpha=alpha,
+            target_power=target_power,
+            max_type_s=max_type_s,
+            max_type_m=max_type_m,
+            selection_rule=selection_rule,
+            claim_direction=claim_direction,
+            threshold_working=threshold_working,
+            near_null_delta=near_null_delta,
+            z975=z975,
+            binding_relative_tolerance=binding_relative_tolerance,
+        )
+        for true_effect in true_effects
+    ]
+
+
 def solve_required_precision(
     true_effect_working: float,
     *,
@@ -306,14 +544,23 @@ def solve_required_precision(
             "achieved_type_s": None,
             "achieved_type_m": None,
         }
-    strictest = min(results, key=lambda result: result.required_se or float("inf"))
+    joint = _joint_precision_from_results(
+        true_effect_working=float(true_effect_working),
+        current_se=float(current_se),
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+        threshold_working=(None if threshold_working is None else float(threshold_working)),
+        near_null_delta=float(near_null_delta),
+        binding_relative_tolerance=DEFAULT_BINDING_RELATIVE_TOLERANCE,
+        results=results,
+    )
     return {
-        "required_se": strictest.required_se,
-        "required_information_multiplier": strictest.required_information_multiplier,
-        "approx_95_ci_width_working": strictest.approx_95_ci_width_working,
-        "achieved_power": strictest.achieved_power,
-        "achieved_type_s": strictest.achieved_type_s,
-        "achieved_type_m": strictest.achieved_type_m,
+        "required_se": joint.required_se,
+        "required_information_multiplier": joint.required_information_multiplier,
+        "approx_95_ci_width_working": joint.approx_95_ci_width_working,
+        "achieved_power": joint.achieved_selected_claim_probability,
+        "achieved_type_s": joint.achieved_type_s,
+        "achieved_type_m": joint.achieved_type_m,
     }
 
 

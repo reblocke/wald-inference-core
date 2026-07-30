@@ -13,7 +13,7 @@ from pathlib import Path
 
 PROJECT_NAME = "wald-inference"
 IMPORT_NAME = "wald_inference"
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 AUTHOR = "Brian Locke"
 LICENSE_EXPRESSION = "MIT"
 REPOSITORY = "https://github.com/reblocke/wald-inference-core"
@@ -163,7 +163,7 @@ def check_metadata(root: Path, expected_tag: str | None) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument("--tag", help="Expected release tag, for example v0.3.0")
+    parser.add_argument("--tag", help="Expected release tag, for example v0.4.0")
     args = parser.parse_args()
 
     failures = check_metadata(args.root.resolve(), args.tag)
