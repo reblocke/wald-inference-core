@@ -335,6 +335,13 @@ solve_required_precision(...)
 `achieved_power` field. These properties do not change the preserved dataclass fields or serialized
 v0.1-v0.3 row contract.
 
+Each target returns the largest standard error at or below `current_se` that meets the requested
+condition, thereby requiring the least additional information. For
+`estimate_exceeds_mcid_and_p_lt_alpha`, the solver evaluates the exact standard error where the
+active cutoff switches between the two-sided significance boundary and the standardized claim
+threshold before it bisects a monotone segment. This preserves feasible power bands that need not
+extend to arbitrarily small standard errors when the assumed truth does not exceed the threshold.
+
 `joint_precision_result` requires at least one guardrail and returns an immutable
 `JointPrecisionResult`. It first calls the same per-target solvers. If every target is feasible, the
 joint SE is the smallest target SE and the joint information multiplier is the largest target
@@ -372,7 +379,7 @@ ValidationError
 __version__
 ```
 
-`__version__` is `0.4.0`. Canonical numerical outputs intended for serialization contain finite
+`__version__` is `0.4.1`. Canonical numerical outputs intended for serialization contain finite
 values or documented `None`; invalid inputs do not return sentinel NaN or infinity. The documented
 `SelectionRuleSpec.intervals` infinities are structural open-tail boundaries, not calculated result
 values.

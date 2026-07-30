@@ -4,6 +4,36 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-30
+
+### Fixed
+
+- Evaluate the exact active-cutoff transition for
+  `estimate_exceeds_mcid_and_p_lt_alpha` before inverse-precision bracketing. This prevents a
+  halving step from skipping a finite feasible power band when the assumed true effect is in the
+  selected direction but does not exceed the claim threshold.
+- Route the candidate-to-reference field in `support_comparison` through the canonical
+  exact-binary64 `log_support_ratio` implementation. Extreme finite candidates no longer lose a
+  representable pairwise log ratio through subtraction of separately rounded log likelihoods.
+
+### Validation
+
+- Added positive and negative threshold-transition regressions that certify the largest feasible
+  standard error, plus an unattainable-target control.
+- Added extreme symmetric and adjacent-candidate regressions proving that `support_comparison` and
+  `log_support_ratio` share one pairwise numerical authority.
+- Retained the existing ordinary-path precision values and notes, candidate-versus-MLE comparison
+  fields, root API, legacy adapter, and frozen baseline-parity contract.
+
+### Scientific impact
+
+- Forward selected-claim probabilities, selection boundaries, and Type S/M definitions are
+  unchanged. The precision repair changes only previously false no-solution results in the
+  affected threshold-conditioned power cases.
+- The pairwise repair changes only finite extreme-value comparisons affected by catastrophic
+  cancellation. It does not recover a fitted-model likelihood or change the normalized Wald
+  interpretation.
+
 ## [0.4.0] - 2026-07-30
 
 ### Added
@@ -196,7 +226,8 @@ All notable changes to this project are documented here.
 - The package implements documented Wald approximations, not exact fitted-model likelihood,
   arbitrary non-Wald intervals, Bayesian inference, or design-specific sample-size calculations.
 
-[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/reblocke/wald-inference-core/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/reblocke/wald-inference-core/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/reblocke/wald-inference-core/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/reblocke/wald-inference-core/compare/v0.2.0...v0.2.1
