@@ -218,3 +218,39 @@ class PrecisionTargetResult:
     achieved_type_s: float | None
     achieved_type_m: float | None
     note: str
+
+    @property
+    def feasible(self) -> bool:
+        """Whether this mandatory target has a finite supported solution."""
+
+        return self.required_se is not None
+
+    @property
+    def current_precision_sufficient(self) -> bool:
+        """Whether the target is met without increasing information."""
+
+        return self.required_information_multiplier == 1.0
+
+    @property
+    def achieved_selected_claim_probability(self) -> float | None:
+        """Explicit alias for the historical ``achieved_power`` field."""
+
+        return self.achieved_power
+
+
+@dataclass(frozen=True)
+class JointPrecisionResult:
+    """Joint precision requirement across mandatory per-target guardrails."""
+
+    true_effect_working: float
+    feasible: bool
+    required_se: float | None
+    required_information_multiplier: float | None
+    approx_95_ci_width_working: float | None
+    achieved_selected_claim_probability: float | None
+    achieved_type_s: float | None
+    achieved_type_m: float | None
+    binding_targets: tuple[str, ...]
+    current_precision_sufficient: bool
+    target_results: tuple[PrecisionTargetResult, ...]
+    note: str

@@ -33,6 +33,8 @@ from .likelihood import (
 from .precision import (
     approximate_wald_ci_width,
     information_scaled_standard_error,
+    joint_precision_result,
+    precision_sensitivity,
     precision_target_results,
     solve_required_delta_for_power,
     solve_required_delta_for_type_m,
@@ -54,6 +56,7 @@ from .types import (
     CriticalEffectResult,
     DesignMetric,
     EffectSpec,
+    JointPrecisionResult,
     PrecisionTargetResult,
     SelectionRuleSpec,
     StandardErrorEstimate,
@@ -63,7 +66,7 @@ from .types import (
     WaldReconstruction,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "DEFAULT_CLAIM_DIRECTION",
@@ -74,6 +77,7 @@ __all__ = [
     "DesignMetric",
     "EFFECT_SPECS",
     "EffectSpec",
+    "JointPrecisionResult",
     "PrecisionTargetResult",
     "SelectionRuleSpec",
     "StandardErrorEstimate",
@@ -93,12 +97,14 @@ __all__ = [
     "from_working_scale",
     "get_effect_spec",
     "information_scaled_standard_error",
+    "joint_precision_result",
     "legacy_critical_effect_distance",
     "legacy_critical_effect_markers",
     "log_relative_likelihood",
     "log_support_ratio",
     "max_safe_grid_span",
     "power_curve",
+    "precision_sensitivity",
     "precision_target_results",
     "reconstruct_wald_from_95_ci",
     "relative_likelihood",

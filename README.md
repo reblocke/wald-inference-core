@@ -13,7 +13,9 @@ Version `0.2.0` adds generic pairwise support ratios and MLE-to-bound support in
 changing the preserved calculations. Version `0.2.1` makes those interval APIs fail closed when a
 finite floating-point endpoint cannot accurately represent its requested support boundary. Version
 `0.3.0` adds selected-claim probability curves and certified directed critical-effect inversion
-while retaining the legacy z-sum benchmark separately.
+while retaining the legacy z-sum benchmark separately. Version `0.4.0` adds typed joint
+precision-guardrail and assumed-effect sensitivity results while preserving every existing
+per-target calculation.
 
 ## Question supported
 
@@ -40,7 +42,8 @@ particular study.
 - preserves the legacy z-sum critical-effect benchmark as a distinct closed-form benchmark;
 - represents six selected-claim rules and computes selected-claim probability, Type S, Type M, and
   observed exaggeration; and
-- evaluates information scaling and inverse precision targets.
+- evaluates information scaling, inverse precision targets, joint guardrails, and assumed-effect
+  sensitivity.
 
 Canonical calculation results intended for serialization contain finite numbers or intentional
 `None`. `SelectionRuleSpec.intervals` uses positive and negative infinity only as mathematical
@@ -69,11 +72,11 @@ For development from a clone:
 uv sync --locked --all-groups
 ```
 
-GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.3.0
+GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.4.0
 wheel:
 
 ```bash
-python -m pip install ./wald_inference-0.3.0-py3-none-any.whl
+python -m pip install ./wald_inference-0.4.0-py3-none-any.whl
 ```
 
 The release page is <https://github.com/reblocke/wald-inference-core/releases>. A downstream
@@ -189,10 +192,18 @@ exaggeration are `None`.
 Continuing from the same reconstruction:
 
 ```python
-from wald_inference import precision_target_results
+from wald_inference import joint_precision_result, precision_sensitivity
 
-targets = precision_target_results(
+joint = joint_precision_result(
     0.2,
+    null_working=reconstruction.null_working,
+    current_se=reconstruction.standard_error,
+    target_power=0.80,
+    max_type_s=0.01,
+    max_type_m=1.25,
+)
+sensitivity = precision_sensitivity(
+    [0.1, 0.2, 0.3],
     null_working=reconstruction.null_working,
     current_se=reconstruction.standard_error,
     target_power=0.80,
@@ -201,9 +212,17 @@ targets = precision_target_results(
 )
 ```
 
-Each `PrecisionTargetResult` records required standard error, relative information multiplier,
-approximate 95% working-scale interval width, achieved metrics, and a note. The calculation does not
-translate relative information into a study-specific sample size.
+`joint.target_results` preserves one immutable `PrecisionTargetResult` per mandatory guardrail.
+Each row exposes feasibility, required standard error, relative information multiplier, approximate
+95% working-scale interval width, achieved metrics, and its solver note. The joint result is
+feasible only when every requested target is feasible; it uses the smallest required SE, reports
+all constraints tied within the documented relative multiplier tolerance, and reports multiplier
+`1.0` exactly when current precision satisfies every target. Sensitivity results retain input
+effect order and make no-solution gaps explicit.
+
+The information multiplier is relative information under the Wald scaling
+`SE_new = SE_current / sqrt(multiplier)`. It is not automatically a sample-size multiplier and this
+package does not translate it into a study-specific sample size.
 
 ## Working scales
 
@@ -256,7 +275,7 @@ privacy behavior.
 
 ## Version, citation, license, and contact
 
-- Version prepared for release: `0.3.0`
+- Version prepared for release: `0.4.0`
 - Citation metadata: [`CITATION.cff`](CITATION.cff)
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - License: MIT; see [`LICENSE`](LICENSE)

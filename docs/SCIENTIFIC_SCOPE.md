@@ -196,9 +196,29 @@ selected-claim-probability, maximum Type S, or maximum Type M target at a specif
 selection rule. A precision result reports required standard error, information multiplier,
 approximate 95% working-scale confidence-interval width, achieved metrics, and an explanatory note.
 
-Infeasible or unrepresentable targets return the documented no-solution result or raise
-`ValidationError` according to whether the input is valid but unattainable or invalid. The package
-does not translate an information multiplier into sample size for a particular study design.
+Targets are solved independently. If every mandatory target has a finite solution, the joint
+requirement is the smallest required SE, equivalently the largest relative information multiplier.
+All targets whose multipliers agree with that joint requirement within the documented relative
+tolerance are binding. A multiplier of exactly `1.0` means current precision is sufficient; the
+solver does not recommend reducing information.
+
+If any mandatory target is infeasible, the overall joint result has no finite solution even when
+other targets remain feasible. Their rows are preserved to make the source of infeasibility
+visible. At or near the null, undefined Type S/M guardrails remain infeasible. Threshold-conditioned
+and direction-conditioned rules may also make a requested probability unattainable in the
+precision limit. Valid but unattainable or unrepresentable targets return documented no-solution
+results; invalid inputs raise `ValidationError`.
+
+Sensitivity is a deterministic set of these conditional calculations across explicitly supplied
+assumed true effects. The sequence is not a posterior, prior, sampling distribution, or uncertainty
+distribution over the true effect. For ratio measures, target effects and sensitivity values are on
+the log working scale and should be transformed through the effect registry for natural-scale
+display.
+
+Relative information does not, by itself, specify sample size. Translating a multiplier into a
+sample size requires an additional study-design assumption—such as proportional information with
+allocation, event rates, clustering, attrition, censoring, covariance adjustment, and other design
+features held fixed—which this package neither supplies nor validates.
 
 ## Conditioning and interpretation
 

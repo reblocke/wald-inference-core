@@ -34,7 +34,7 @@ def _write_test_sdist(
             format=tarfile.PAX_FORMAT,
         ) as archive,
     ):
-        root = tarfile.TarInfo("wald_inference-0.3.0")
+        root = tarfile.TarInfo("wald_inference-0.4.0")
         root.type = tarfile.DIRTYPE
         root.mode = 0o755
         root.mtime = timestamp
@@ -43,7 +43,7 @@ def _write_test_sdist(
         archive.addfile(root)
 
         payload = b"reproducible source\n"
-        source = tarfile.TarInfo("wald_inference-0.3.0/example.txt")
+        source = tarfile.TarInfo("wald_inference-0.4.0/example.txt")
         source.mode = 0o644
         source.mtime = timestamp + 1
         source.uid = uid
@@ -74,8 +74,8 @@ def test_sdist_normalization_removes_build_time_and_owner_metadata(tmp_path: Pat
     with tarfile.open(first, mode="r:gz") as archive:
         members = archive.getmembers()
         assert [member.name for member in members] == [
-            "wald_inference-0.3.0",
-            "wald_inference-0.3.0/example.txt",
+            "wald_inference-0.4.0",
+            "wald_inference-0.4.0/example.txt",
         ]
         assert all(member.mtime == source_date_epoch for member in members)
         assert all(member.uid == 0 and member.gid == 0 for member in members)

@@ -182,3 +182,33 @@ selection formulas and can compose log-scale results through the effect registry
 the exact result distinct from the legacy benchmark, meaningful-effect inputs, confidence bounds,
 observed estimates, and study-specific sample-size calculations. The six selection rules and all
 pre-v0.3.0 outputs remain unchanged.
+
+## 2026-07-30: Aggregate precision guardrails without changing per-target authority
+
+**Context:** A focused inverse-precision app needs a typed joint result, binding constraints, and
+assumed-effect sensitivity. The released v0.3.0 API solves individual probability, Type S, and Type
+M precision targets but leaves aggregation and infeasibility interpretation to downstream code.
+Reimplementing either target formulas or aggregation independently in each app would create
+divergent numerical and semantic authorities.
+
+**Decision:** In v0.4.0, retain `precision_target_results` as the numerical authority and add
+root-public immutable `JointPrecisionResult`, `joint_precision_result`, and
+`precision_sensitivity`. Solve each requested target independently through the existing forward
+metrics and monotonic SE solver. If all mandatory targets are feasible, choose the smallest
+required SE and largest information multiplier and report all multipliers tied under relative
+tolerance `1e-8` with zero absolute tolerance. Clamp neither a target nor the joint requirement
+below current information: current sufficiency remains exactly `1.0`. If any mandatory target is
+infeasible, return no joint numeric solution while preserving every target row and naming the
+relevant target and assumptions. Preserve near-null undefined Type S/M behavior. Make sensitivity
+a deterministic ordered scalar map, not a new numerical solver.
+
+Add read-only feasibility, current-sufficiency, and selected-claim-probability aliases to
+`PrecisionTargetResult`; do not change its existing dataclass fields, serialized form, notes, or
+B06/B07 values. Keep the legacy `solve_required_precision` dictionary behavior, including its
+all-`None` no-target and mandatory-infeasibility results.
+
+**Consequences:** Downstream apps receive one typed authority for joint feasibility, binding
+constraints, and sensitivity without copying forward or inverse formulas. Joint and sensitivity
+results remain conditional one-parameter Wald calculations. Relative information is not declared
+to be sample size; study-design projection, UI, plotting, and exports remain downstream concerns.
+All pre-v0.4.0 numerical outputs and the legacy adapter remain unchanged.

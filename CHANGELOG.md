@@ -4,6 +4,50 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-30
+
+### Added
+
+- Added immutable root-public `JointPrecisionResult` and `joint_precision_result`, which summarize
+  mandatory selected-claim-probability, Type S, and Type M guardrails through the preserved
+  per-target solvers.
+- Added deterministic root-public `precision_sensitivity` for a nonempty one-dimensional sequence
+  of finite assumed working-scale true effects.
+- Added read-only per-target feasibility, current-sufficiency, and explicit
+  `achieved_selected_claim_probability` properties without changing the frozen
+  `PrecisionTargetResult` dataclass fields.
+
+### Joint semantics
+
+- The feasible joint result uses the smallest required SE and largest relative information
+  multiplier, reports every binding target within default relative multiplier tolerance `1e-8`,
+  and returns multiplier `1.0` exactly when current precision satisfies all targets.
+- Any infeasible mandatory target makes the joint result infeasible while preserving every
+  per-target row. Notes name the target(s) and selected-effect/rule assumptions and identify
+  applicable near-null, threshold, or finite-bracketing conditions.
+- Sensitivity retains input order and duplicates and represents infeasible effects as explicit
+  no-solution gaps rather than interpolated values.
+
+### Validation
+
+- Added unit, property, and scientific-reference coverage for strictest-envelope and tie behavior,
+  current sufficiency, mandatory infeasibility propagation, near-null and threshold behavior,
+  finite strict JSON, deterministic scalar/sensitivity equivalence, target ordering, achieved
+  forward metrics, information and CI-width identities, expected sensitivity monotonicity, and
+  log-ratio/CI reconstruction composition.
+- Extended the exact root API, release metadata, distribution inspection, and cold-wheel smoke
+  contracts for v0.4.0.
+- Retained zero-difference frozen parity across all 23,095 pre-existing values, including B06/B07
+  precision rows, notes, undefined values, and legacy dictionary aggregates.
+
+### Scientific impact
+
+- The joint and sensitivity results are repeated-study Wald calculations conditioned on explicit
+  assumed true effects, selection rules, thresholds, and guardrails. They are not evidence about an
+  observed estimate or distributions over the true effect.
+- Relative information follows `SE_new = SE_current / sqrt(multiplier)` and is not automatically a
+  sample-size multiplier or a formal study-design calculation.
+
 ## [0.3.0] - 2026-07-30
 
 ### Added
@@ -152,7 +196,8 @@ All notable changes to this project are documented here.
 - The package implements documented Wald approximations, not exact fitted-model likelihood,
   arbitrary non-Wald intervals, Bayesian inference, or design-specific sample-size calculations.
 
-[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/reblocke/wald-inference-core/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/reblocke/wald-inference-core/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/reblocke/wald-inference-core/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/reblocke/wald-inference-core/compare/v0.1.1...v0.2.0

@@ -32,7 +32,9 @@ SMOKE_CODE = textwrap.dedent(
         critical_effect_for_target_probability,
         design_metrics_for_true_effects,
         get_effect_spec,
+        joint_precision_result,
         log_support_ratio,
+        precision_sensitivity,
         precision_target_results,
         power_curve,
         reconstruct_wald_from_95_ci,
@@ -60,8 +62,8 @@ SMOKE_CODE = textwrap.dedent(
         raise AssertionError(f"unexpected smoke value type: {type(value)!r}")
 
 
-    assert version("wald-inference") == "0.3.0"
-    assert wald_inference.__version__ == "0.3.0"
+    assert version("wald-inference") == "0.4.0"
+    assert wald_inference.__version__ == "0.4.0"
     assert wald_inference.__all__
     for exported_name in wald_inference.__all__:
         assert hasattr(wald_inference, exported_name), exported_name
@@ -217,12 +219,68 @@ SMOKE_CODE = textwrap.dedent(
     assert len(precision) == 1
     assert precision[0].required_se is not None
     assert precision[0].required_information_multiplier is not None
+    assert precision[0].feasible
+    assert (
+        precision[0].achieved_selected_claim_probability
+        == precision[0].achieved_power
+    )
+
+    joint_precision = joint_precision_result(
+        0.2,
+        null_working=reconstruction.null_working,
+        current_se=reconstruction.standard_error,
+        target_power=0.8,
+        max_type_s=0.01,
+        max_type_m=1.25,
+    )
+    assert joint_precision.feasible
+    assert joint_precision.required_se == min(
+        row.required_se
+        for row in joint_precision.target_results
+        if row.required_se is not None
+    )
+    assert joint_precision.binding_targets
+
+    current_sufficient_joint = joint_precision_result(
+        1.0,
+        null_working=0.0,
+        current_se=0.1,
+        target_power=0.8,
+        max_type_s=0.01,
+        max_type_m=1.25,
+    )
+    assert current_sufficient_joint.current_precision_sufficient
+    assert current_sufficient_joint.required_information_multiplier == 1.0
+
+    infeasible_joint_precision = joint_precision_result(
+        0.0,
+        null_working=reconstruction.null_working,
+        current_se=reconstruction.standard_error,
+        max_type_m=1.25,
+    )
+    assert not infeasible_joint_precision.feasible
+    assert infeasible_joint_precision.required_se is None
+    assert len(infeasible_joint_precision.target_results) == 1
+
+    sensitivity = precision_sensitivity(
+        [0.2, 0.0, 0.4],
+        null_working=reconstruction.null_working,
+        current_se=reconstruction.standard_error,
+        target_power=0.8,
+    )
+    assert [item.true_effect_working for item in sensitivity] == [0.2, 0.0, 0.4]
+    assert [item.feasible for item in sensitivity] == [True, False, True]
 
     assert_finite_or_none(asdict(reconstruction))
     for item in design:
         assert_finite_or_none(asdict(item))
     assert_finite_or_none(asdict(critical_effect))
     for item in precision:
+        assert_finite_or_none(asdict(item))
+    assert_finite_or_none(asdict(joint_precision))
+    assert_finite_or_none(asdict(current_sufficient_joint))
+    assert_finite_or_none(asdict(infeasible_joint_precision))
+    for item in sensitivity:
         assert_finite_or_none(asdict(item))
 
     try:
