@@ -1,0 +1,7 @@
+{
+  "design_enabled": true,
+  "design_plausible_range_lower": -0.2,
+  "effect_type": "mean_difference",
+  "lower": 0.11,
+  "upper": 0.73
+}

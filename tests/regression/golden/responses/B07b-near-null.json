@@ -1,0 +1,257 @@
+{
+  "response": {
+    "design": {
+      "config": {
+        "alpha": 0.05,
+        "approx_design_ci_width_working": 6.2,
+        "claim_direction": "positive",
+        "claim_threshold_display": null,
+        "claim_threshold_working": null,
+        "current_ci_width_working": 0.62,
+        "current_se_working": 0.15816617164664273,
+        "design_se_working": 1.5816617164664273,
+        "enabled": true,
+        "estimate_working": 0.42,
+        "information_multiplier": 0.01,
+        "near_null_delta": 1e-12,
+        "null_working": 0.0,
+        "plausible_range_display": null,
+        "plausible_range_working": null,
+        "se_working": 1.5816617164664273,
+        "selection_rule": "two_sided_p_lt_alpha",
+        "selection_rule_label": "Two-sided p < alpha against the null",
+        "type_m_scale_note": "Type M is a working-scale exaggeration ratio on the additive scale."
+      },
+      "grid": {
+        "delta": {
+          "all_numeric_values_finite": true,
+          "first": -0.3051585218112968,
+          "last": 0.8362455369769889,
+          "length": 401,
+          "none_count": 0
+        },
+        "expected_selected_abs_z": {
+          "all_numeric_values_finite": true,
+          "first": 2.362597296866384,
+          "last": 2.4573919343103388,
+          "length": 401,
+          "none_count": 0
+        },
+        "observed_exaggeration": {
+          "all_numeric_values_finite": true,
+          "first": 0.8701821794347665,
+          "last": 0.31754251095052843,
+          "length": 401,
+          "none_count": 0
+        },
+        "power": {
+          "all_numeric_values_finite": true,
+          "first": 0.060734564203805984,
+          "last": 0.13315153731724336,
+          "length": 401,
+          "none_count": 0
+        },
+        "true_effect_display": {
+          "all_numeric_values_finite": true,
+          "first": -0.48265755140241345,
+          "last": 1.3226575514024135,
+          "length": 401,
+          "none_count": 0
+        },
+        "true_effect_working": {
+          "all_numeric_values_finite": true,
+          "first": -0.48265755140241345,
+          "last": 1.3226575514024135,
+          "length": 401,
+          "none_count": 0
+        },
+        "type_m": {
+          "all_numeric_values_finite": true,
+          "first": 7.742196687947522,
+          "last": 2.938600955879253,
+          "length": 401,
+          "none_count": 0
+        },
+        "type_s": {
+          "all_numeric_values_finite": true,
+          "first": 0.1935072983226099,
+          "last": 0.01941617379451629,
+          "length": 401,
+          "none_count": 0
+        }
+      },
+      "precision_targets": [
+        {
+          "achieved_power": null,
+          "achieved_type_m": null,
+          "achieved_type_s": null,
+          "approx_95_ci_width_working": null,
+          "note": "No finite meaningful precision target is defined at or near the null.",
+          "requested_value": 0.8,
+          "required_information_multiplier": null,
+          "required_se": null,
+          "target": "Power",
+          "target_effect_display": 1e-14,
+          "target_effect_working": 1e-14
+        }
+      ],
+      "scenarios": [
+        {
+          "delta": 0.0,
+          "label": "Null",
+          "note": "Type S/M undefined at null; selected-claim probability is rule-dependent and shown in the Power column.",
+          "observed_exaggeration": null,
+          "power": 0.04999999999999996,
+          "source": "null",
+          "true_effect_display": 0.0,
+          "true_effect_working": 0.0,
+          "type_m": null,
+          "type_s": null
+        },
+        {
+          "delta": 0.265543507582846,
+          "label": "CI-implied estimate as truth",
+          "note": "Optimistic/circular: uses the observed estimate as the assumed true effect.",
+          "observed_exaggeration": 1.0,
+          "power": 0.058116299937334484,
+          "source": "ci_implied_estimate",
+          "true_effect_display": 0.42,
+          "true_effect_working": 0.42,
+          "type_m": 8.876610691704055,
+          "type_s": 0.2240953808417267
+        },
+        {
+          "delta": 7.586957359509886e-13,
+          "label": "Assumed true effect: 1.2e-12",
+          "note": null,
+          "observed_exaggeration": null,
+          "power": 0.04999999999999996,
+          "source": "custom_true_effect",
+          "true_effect_display": 1.2e-12,
+          "true_effect_working": 1.2e-12,
+          "type_m": null,
+          "type_s": null
+        }
+      ],
+      "warnings": [
+        "Design calibration treats x-axis values as assumed true effects; it is not a posterior probability about the observed estimate.",
+        "Type S/M are undefined at or very near the null because the true-effect direction or magnitude denominator is zero.",
+        "Selected-claim rule: Two-sided p < alpha against the null.",
+        "The information multiplier changes only the hypothetical design SE; observed confidence and likelihood reconstruction are unchanged.",
+        "Precision target 'Power' did not have a finite solution under the selected claim rule."
+      ]
+    },
+    "grid": {
+      "compatibility": {
+        "all_numeric_values_finite": true,
+        "first": 1.1497107883483104e-08,
+        "last": 1.1497107883483025e-08,
+        "length": 401,
+        "none_count": 0
+      },
+      "effect_display": {
+        "all_numeric_values_finite": true,
+        "first": -0.48265755140241345,
+        "last": 1.3226575514024135,
+        "length": 401,
+        "none_count": 0
+      },
+      "effect_working": {
+        "all_numeric_values_finite": true,
+        "first": -0.48265755140241345,
+        "last": 1.3226575514024135,
+        "length": 401,
+        "none_count": 0
+      },
+      "log_relative_likelihood": {
+        "all_numeric_values_finite": true,
+        "first": -16.285040317729656,
+        "last": -16.28504031772966,
+        "length": 401,
+        "none_count": 0
+      },
+      "relative_likelihood": {
+        "all_numeric_values_finite": true,
+        "first": 8.462464355892339e-08,
+        "last": 8.462464355892309e-08,
+        "length": 401,
+        "none_count": 0
+      },
+      "z": {
+        "all_numeric_values_finite": true,
+        "first": -5.7070202939414285,
+        "last": 5.707020293941429,
+        "length": 401,
+        "none_count": 0
+      }
+    },
+    "meta": {
+      "default_null_applied": true,
+      "display_axis_scale": "working",
+      "display_range_active": false,
+      "display_range_display": null,
+      "display_range_working": null,
+      "effect_spec": {
+        "default_null": 0.0,
+        "family": "additive",
+        "key": "mean_difference",
+        "label": "Mean difference",
+        "positive_only": false,
+        "working_scale": "identity"
+      },
+      "estimate_source": "inferred_from_ci",
+      "grid_points": 401,
+      "relative_asymmetry": 0.0,
+      "s_minus_2_interval": {
+        "likelihood_ratio_mle_to_bound": 7.38905609893065,
+        "range_display": [
+          0.10366765670671452,
+          0.7363323432932855
+        ],
+        "range_working": [
+          0.10366765670671452,
+          0.7363323432932855
+        ],
+        "relative_likelihood_cutoff": 0.1353352832366127,
+        "support_cutoff": -2.0
+      },
+      "se_method": "ci_width",
+      "show_cutoffs": true,
+      "threshold_support_summaries": [],
+      "thresholds_display": [],
+      "thresholds_working": []
+    },
+    "summary": {
+      "ci_display": [
+        0.11,
+        0.73
+      ],
+      "ci_working": [
+        0.11,
+        0.73
+      ],
+      "critical_effect_distance_working": 0.4431160084907528,
+      "critical_effect_markers_display": [
+        -0.4431160084907528,
+        0.4431160084907528
+      ],
+      "critical_effect_markers_working": [
+        -0.4431160084907528,
+        0.4431160084907528
+      ],
+      "estimate_display": 0.42,
+      "estimate_working": 0.42,
+      "likelihood_ratio_mle_to_null": 33.976452833755374,
+      "log_likelihood_ratio_mle_to_null": 3.52566772097005,
+      "log_null_relative_likelihood": -3.52566772097005,
+      "null_display": 0.0,
+      "null_relative_likelihood": 0.02943214834382319,
+      "null_working": 0.0,
+      "null_z_value": -2.65543507582846,
+      "two_sided_wald_p_value": 0.007920617864625943,
+      "working_scale_se": 0.15816617164664273
+    },
+    "warnings": []
+  },
+  "status": "success"
+}

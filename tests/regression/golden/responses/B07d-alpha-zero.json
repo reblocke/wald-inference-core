@@ -1,0 +1,5 @@
+{
+  "error_type": "ValidationError",
+  "message": "Design alpha must be finite and between 0 and 1.",
+  "status": "error"
+}

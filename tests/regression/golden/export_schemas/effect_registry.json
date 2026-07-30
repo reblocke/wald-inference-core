@@ -1,0 +1,89 @@
+{
+  "key_order": [
+    "odds_ratio",
+    "risk_ratio",
+    "hazard_ratio",
+    "incidence_rate_ratio",
+    "ratio_of_means",
+    "mean_difference",
+    "risk_difference",
+    "rate_difference",
+    "regression_coefficient"
+  ],
+  "schema_version": 1,
+  "source_commit": "830756ecb11b4e8161f8dfe1fc75afc346ef4467",
+  "specs": [
+    {
+      "default_null": 1.0,
+      "family": "ratio",
+      "key": "odds_ratio",
+      "label": "Odds ratio",
+      "positive_only": true,
+      "working_scale": "log"
+    },
+    {
+      "default_null": 1.0,
+      "family": "ratio",
+      "key": "risk_ratio",
+      "label": "Risk ratio",
+      "positive_only": true,
+      "working_scale": "log"
+    },
+    {
+      "default_null": 1.0,
+      "family": "ratio",
+      "key": "hazard_ratio",
+      "label": "Hazard ratio",
+      "positive_only": true,
+      "working_scale": "log"
+    },
+    {
+      "default_null": 1.0,
+      "family": "ratio",
+      "key": "incidence_rate_ratio",
+      "label": "Incidence rate ratio",
+      "positive_only": true,
+      "working_scale": "log"
+    },
+    {
+      "default_null": 1.0,
+      "family": "ratio",
+      "key": "ratio_of_means",
+      "label": "Ratio of means",
+      "positive_only": true,
+      "working_scale": "log"
+    },
+    {
+      "default_null": 0.0,
+      "family": "additive",
+      "key": "mean_difference",
+      "label": "Mean difference",
+      "positive_only": false,
+      "working_scale": "identity"
+    },
+    {
+      "default_null": 0.0,
+      "family": "additive",
+      "key": "risk_difference",
+      "label": "Risk difference",
+      "positive_only": false,
+      "working_scale": "identity"
+    },
+    {
+      "default_null": 0.0,
+      "family": "additive",
+      "key": "rate_difference",
+      "label": "Rate difference",
+      "positive_only": false,
+      "working_scale": "identity"
+    },
+    {
+      "default_null": 0.0,
+      "family": "additive",
+      "key": "regression_coefficient",
+      "label": "Regression coefficient",
+      "positive_only": false,
+      "working_scale": "identity"
+    }
+  ]
+}

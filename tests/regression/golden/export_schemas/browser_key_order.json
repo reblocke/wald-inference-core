@@ -1,0 +1,142 @@
+{
+  "$": [
+    "meta",
+    "summary",
+    "warnings",
+    "grid",
+    "design"
+  ],
+  "$.design": [
+    "config",
+    "grid",
+    "scenarios",
+    "precision_targets",
+    "warnings"
+  ],
+  "$.design.config": [
+    "enabled",
+    "alpha",
+    "selection_rule",
+    "selection_rule_label",
+    "claim_direction",
+    "claim_threshold_display",
+    "claim_threshold_working",
+    "se_working",
+    "current_se_working",
+    "design_se_working",
+    "information_multiplier",
+    "current_ci_width_working",
+    "approx_design_ci_width_working",
+    "null_working",
+    "estimate_working",
+    "near_null_delta",
+    "type_m_scale_note",
+    "plausible_range_display",
+    "plausible_range_working"
+  ],
+  "$.design.grid": [
+    "true_effect_display",
+    "true_effect_working",
+    "delta",
+    "power",
+    "type_s",
+    "type_m",
+    "expected_selected_abs_z",
+    "observed_exaggeration"
+  ],
+  "$.design.precision_targets[]": [
+    "target",
+    "requested_value",
+    "target_effect_display",
+    "target_effect_working",
+    "required_se",
+    "required_information_multiplier",
+    "approx_95_ci_width_working",
+    "achieved_power",
+    "achieved_type_s",
+    "achieved_type_m",
+    "note"
+  ],
+  "$.design.scenarios[]": [
+    "label",
+    "source",
+    "true_effect_display",
+    "true_effect_working",
+    "delta",
+    "power",
+    "type_s",
+    "type_m",
+    "observed_exaggeration",
+    "note"
+  ],
+  "$.grid": [
+    "effect_display",
+    "effect_working",
+    "z",
+    "compatibility",
+    "relative_likelihood",
+    "log_relative_likelihood"
+  ],
+  "$.meta": [
+    "effect_spec",
+    "display_axis_scale",
+    "estimate_source",
+    "default_null_applied",
+    "grid_points",
+    "show_cutoffs",
+    "se_method",
+    "relative_asymmetry",
+    "thresholds_display",
+    "thresholds_working",
+    "display_range_active",
+    "display_range_display",
+    "display_range_working",
+    "threshold_support_summaries",
+    "s_minus_2_interval"
+  ],
+  "$.meta.effect_spec": [
+    "key",
+    "label",
+    "family",
+    "working_scale",
+    "default_null",
+    "positive_only"
+  ],
+  "$.meta.s_minus_2_interval": [
+    "support_cutoff",
+    "relative_likelihood_cutoff",
+    "likelihood_ratio_mle_to_bound",
+    "range_display",
+    "range_working"
+  ],
+  "$.meta.threshold_support_summaries[]": [
+    "threshold_display",
+    "threshold_working",
+    "relative_likelihood",
+    "log_relative_likelihood",
+    "likelihood_ratio_mle_to_threshold",
+    "log_likelihood_ratio_mle_to_threshold",
+    "likelihood_ratio_threshold_to_null",
+    "log_likelihood_ratio_threshold_to_null",
+    "direction_from_estimate",
+    "direction_from_null"
+  ],
+  "$.summary": [
+    "estimate_display",
+    "estimate_working",
+    "ci_display",
+    "ci_working",
+    "null_display",
+    "null_working",
+    "working_scale_se",
+    "null_relative_likelihood",
+    "log_null_relative_likelihood",
+    "likelihood_ratio_mle_to_null",
+    "log_likelihood_ratio_mle_to_null",
+    "two_sided_wald_p_value",
+    "null_z_value",
+    "critical_effect_markers_display",
+    "critical_effect_markers_working",
+    "critical_effect_distance_working"
+  ]
+}

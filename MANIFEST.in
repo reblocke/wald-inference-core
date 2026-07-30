@@ -1,0 +1,16 @@
+include .python-version
+include AGENTS.md
+include CHANGELOG.md
+include CITATION.cff
+include LICENSE
+include Makefile
+include README.md
+include llms.txt
+include uv.lock
+recursive-include docs *.md
+recursive-include scripts *.py
+recursive-include tests *.json *.md *.py
+prune provenance-import
+global-exclude .DS_Store
+global-exclude *.py[cod]
+global-exclude __pycache__

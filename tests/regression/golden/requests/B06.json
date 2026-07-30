@@ -1,0 +1,11 @@
+{
+  "design_enabled": true,
+  "design_max_type_m": 1.25,
+  "design_max_type_s": 0.01,
+  "design_precision_target_effect": 0.2,
+  "design_target_power": 0.8,
+  "effect_type": "mean_difference",
+  "grid_points": 401,
+  "lower": 0.11,
+  "upper": 0.73
+}

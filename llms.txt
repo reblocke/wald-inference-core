@@ -1,0 +1,27 @@
+# Wald Inference Core
+
+Repository: https://github.com/reblocke/wald-inference-core
+Distribution: wald-inference
+Import: wald_inference
+License: MIT
+Maintainer: Brian Locke (@reblocke)
+
+Purpose:
+Pure-Python numerical utilities for documented one-parameter normal/Wald reconstruction,
+compatibility, normalized relative support, selected-claim, Type S/M, and precision calculations.
+
+Start with:
+- README.md
+- docs/SCIENTIFIC_SCOPE.md
+- docs/API.md
+- docs/VALIDATION.md
+- docs/MIGRATION_PROVENANCE.md
+
+Important constraints:
+- This package does not recover exact fitted-model likelihood.
+- Type S/M quantities are repeated-study operating characteristics, not posterior probabilities.
+- Ratio measures are evaluated on the log working scale.
+- Serializable calculation outputs use finite numbers or None; selection-rule intervals use
+  infinities only as mathematical open-tail sentinels.
+- Browser contracts, UI rendering, exports, telemetry, and persistence are out of scope.
+- Numerical behavior is tied to the tagged pre-split baseline and its committed parity corpus.

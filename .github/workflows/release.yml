@@ -1,0 +1,128 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install locked environment
+        run: uv sync --locked --all-groups
+
+      - name: Verify tag and release metadata
+        run: uv run python scripts/check_release_metadata.py --tag "$GITHUB_REF_NAME"
+
+      - name: Ruff format check
+        run: make fmt-check
+
+      - name: Ruff lint
+        run: make lint
+
+      - name: Run unit, property, reference, and regression tests
+        run: make test
+
+      - name: Verify frozen baseline parity
+        run: make parity
+
+      - name: Build reproducible release bundle
+        run: |
+          uv run python scripts/build_release_artifacts.py \
+            --ref "$GITHUB_SHA" \
+            --tag "$GITHUB_REF_NAME" \
+            --parity-report reports/baseline-parity.json \
+            --out-dir "$RUNNER_TEMP/release-bundle"
+
+      - name: Cold-wheel smoke
+        run: |
+          uv run python scripts/smoke_installed_package.py \
+            --dist-dir "$RUNNER_TEMP/release-bundle"
+
+      - name: Extract release notes from changelog
+        run: |
+          uv run python scripts/extract_release_notes.py \
+            --version "${GITHUB_REF_NAME#v}" \
+            --output "$RUNNER_TEMP/release-bundle/release-notes.md"
+
+      - name: Verify bundle checksums and tracked state
+        shell: bash
+        run: |
+          (
+            cd "$RUNNER_TEMP/release-bundle"
+            sha256sum -c SHA256SUMS
+          )
+          git diff --check
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git status --short
+            exit 1
+          fi
+
+      - name: Upload verified release bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: verified-release-bundle
+          path: ${{ runner.temp }}/release-bundle
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    needs: verify-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download verified release bundle
+        uses: actions/download-artifact@v7
+        with:
+          name: verified-release-bundle
+          path: release-bundle
+
+      - name: Verify downloaded checksums
+        shell: bash
+        run: |
+          (
+            cd release-bundle
+            sha256sum -c SHA256SUMS
+          )
+
+      - name: Create GitHub prerelease from verified files
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            release-bundle/wald_inference-"$version"-py3-none-any.whl \
+            release-bundle/wald_inference-"$version".tar.gz \
+            release-bundle/SHA256SUMS \
+            release-bundle/baseline-parity.json \
+            --verify-tag \
+            --prerelease \
+            --title "wald-inference $version" \
+            --notes-file release-bundle/release-notes.md

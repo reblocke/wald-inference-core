@@ -1,0 +1,13 @@
+{
+  "design_enabled": true,
+  "design_information_multiplier": 0.01,
+  "design_precision_target_effect": 1e-14,
+  "design_target_power": 0.8,
+  "design_true_effects": [
+    1.2e-12
+  ],
+  "effect_type": "mean_difference",
+  "grid_points": 401,
+  "lower": 0.11,
+  "upper": 0.73
+}

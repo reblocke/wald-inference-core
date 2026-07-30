@@ -1,0 +1,29 @@
+{
+  "design_enabled": [
+    "effect_display",
+    "effect_working",
+    "z",
+    "compatibility",
+    "relative_likelihood",
+    "log_relative_likelihood",
+    "design_selection_rule",
+    "design_claim_direction",
+    "design_information_multiplier",
+    "design_claim_threshold_working",
+    "design_delta_if_true",
+    "design_power_if_true",
+    "design_type_s_if_true",
+    "design_type_m_if_true",
+    "design_expected_selected_abs_z_if_true",
+    "design_observed_exaggeration_if_true"
+  ],
+  "observed_only": [
+    "effect_display",
+    "effect_working",
+    "z",
+    "compatibility",
+    "relative_likelihood",
+    "log_relative_likelihood"
+  ],
+  "schema_version": 1
+}

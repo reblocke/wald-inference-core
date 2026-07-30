@@ -1,0 +1,6 @@
+{
+  "display_range_lower": 0.9,
+  "effect_type": "odds_ratio",
+  "lower": 1.2,
+  "upper": 2.7
+}

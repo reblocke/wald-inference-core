@@ -1,0 +1,117 @@
+{
+  "response": {
+    "design": null,
+    "grid": {
+      "compatibility": {
+        "all_numeric_values_finite": true,
+        "first": 0.0,
+        "last": 0.0,
+        "length": 401,
+        "none_count": 0
+      },
+      "effect_display": {
+        "all_numeric_values_finite": true,
+        "first": -100.00015569598433,
+        "last": 100.00015569598433,
+        "length": 401,
+        "none_count": 0
+      },
+      "effect_working": {
+        "all_numeric_values_finite": true,
+        "first": -100.00015569598433,
+        "last": 100.00015569598433,
+        "length": 401,
+        "none_count": 0
+      },
+      "log_relative_likelihood": {
+        "all_numeric_values_finite": true,
+        "first": -1920735391348.8418,
+        "last": -1920735391348.8418,
+        "length": 401,
+        "none_count": 0
+      },
+      "relative_likelihood": {
+        "all_numeric_values_finite": true,
+        "first": 0.0,
+        "last": 0.0,
+        "length": 401,
+        "none_count": 0
+      },
+      "z": {
+        "all_numeric_values_finite": true,
+        "first": -1959967.036125272,
+        "last": 1959967.036125272,
+        "length": 401,
+        "none_count": 0
+      }
+    },
+    "meta": {
+      "default_null_applied": false,
+      "display_axis_scale": "working",
+      "display_range_active": false,
+      "display_range_display": null,
+      "display_range_working": null,
+      "effect_spec": {
+        "default_null": 0.0,
+        "family": "additive",
+        "key": "mean_difference",
+        "label": "Mean difference",
+        "positive_only": false,
+        "working_scale": "identity"
+      },
+      "estimate_source": "inferred_from_ci",
+      "grid_points": 401,
+      "relative_asymmetry": 0.0,
+      "s_minus_2_interval": {
+        "likelihood_ratio_mle_to_bound": 7.38905609893065,
+        "range_display": [
+          -0.0001020426913849308,
+          0.0001020426913849308
+        ],
+        "range_working": [
+          -0.0001020426913849308,
+          0.0001020426913849308
+        ],
+        "relative_likelihood_cutoff": 0.1353352832366127,
+        "support_cutoff": -2.0
+      },
+      "se_method": "ci_width",
+      "show_cutoffs": true,
+      "threshold_support_summaries": [],
+      "thresholds_display": [],
+      "thresholds_working": []
+    },
+    "summary": {
+      "ci_display": [
+        -0.0001,
+        0.0001
+      ],
+      "ci_working": [
+        -0.0001,
+        0.0001
+      ],
+      "critical_effect_distance_working": 0.00014294064790024285,
+      "critical_effect_markers_display": [
+        99.9998570593521,
+        100.0001429406479
+      ],
+      "critical_effect_markers_working": [
+        99.9998570593521,
+        100.0001429406479
+      ],
+      "estimate_display": 0.0,
+      "estimate_working": 0.0,
+      "likelihood_ratio_mle_to_null": null,
+      "log_likelihood_ratio_mle_to_null": 1920729410347.0623,
+      "log_null_relative_likelihood": -1920729410347.0623,
+      "null_display": 100.0,
+      "null_relative_likelihood": 0.0,
+      "null_working": 100.0,
+      "null_z_value": 1959963.9845400539,
+      "two_sided_wald_p_value": 0.0,
+      "working_scale_se": 5.10213456924654e-05
+    },
+    "warnings": []
+  },
+  "status": "success"
+}

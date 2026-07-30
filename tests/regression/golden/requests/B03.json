@@ -1,0 +1,12 @@
+{
+  "display_range_lower": 0.9,
+  "display_range_upper": 1.1,
+  "effect_type": "odds_ratio",
+  "grid_points": 401,
+  "lower": 1.2,
+  "null_value": 1.0,
+  "thresholds": [
+    1.25
+  ],
+  "upper": 2.7
+}

@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it."
+title: "Wald Inference Core"
+type: software
+authors:
+  - family-names: "Locke"
+    given-names: "Brian"
+version: 0.1.0
+date-released: "2026-07-29"
+license: MIT
+repository-code: "https://github.com/reblocke/wald-inference-core"

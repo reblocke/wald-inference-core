@@ -1,0 +1,17 @@
+{
+  "design_alpha": 0.05,
+  "design_claim_direction": "positive",
+  "design_claim_threshold": 1.25,
+  "design_enabled": true,
+  "design_information_multiplier": 4.0,
+  "design_selection_rule": "ci_excludes_mcid",
+  "design_true_effects": [
+    1.1,
+    1.5,
+    2.0
+  ],
+  "effect_type": "odds_ratio",
+  "grid_points": 401,
+  "lower": 1.2,
+  "upper": 2.7
+}

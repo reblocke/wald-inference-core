@@ -1,0 +1,10 @@
+{
+  "effect_type": "mean_difference",
+  "grid_points": 401,
+  "lower": 0.11,
+  "null_value": 0.0,
+  "thresholds": [
+    0.2
+  ],
+  "upper": 0.73
+}

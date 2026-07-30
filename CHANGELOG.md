@@ -1,0 +1,41 @@
+# Changelog
+
+All notable changes to this project are documented here.
+
+## [Unreleased]
+
+## [0.1.0] - 2026-07-29
+
+### Added
+
+- Initial public `wald-inference` package extracted from the frozen
+  `reblocke/conf_curve_likelihood` baseline.
+- Typed public APIs for effect transformations, Wald reconstruction, compatibility, normalized
+  relative support, detectability benchmarks, selection rules, Type S/M metrics, and inverse
+  precision targets.
+- Unit, property, scientific-reference, and frozen-baseline regression tests.
+- Machine-readable and human-readable baseline-parity reporting.
+- Reproducible wheel and source-distribution builds with cold-wheel smoke checks.
+
+### Validation
+
+- The release gate compares core-owned outputs with behavior source
+  `830756ecb11b4e8161f8dfe1fc75afc346ef4467` using `rtol=1e-12` and `atol=1e-14`.
+- The release workflow records observed artifact hashes in `SHA256SUMS` and publishes its
+  machine-readable result as `baseline-parity.json`.
+- CI run URLs, final artifact hashes, and test counts are release evidence and are not claimed
+  before the corresponding workflow completes.
+
+### Scientific impact
+
+- This is a behavior-preserving extraction. No formula, selection tail, numerical tolerance,
+  effect registry entry, or undefined-value convention is intentionally changed from the frozen
+  baseline.
+
+### Known limitations
+
+- The package implements documented Wald approximations, not exact fitted-model likelihood,
+  arbitrary non-Wald intervals, Bayesian inference, or design-specific sample-size calculations.
+
+[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/reblocke/wald-inference-core/releases/tag/v0.1.0
