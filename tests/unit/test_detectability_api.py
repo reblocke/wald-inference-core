@@ -64,7 +64,9 @@ def test_selected_claim_probability_reuses_all_six_selection_rules(
         "one_sided_negative_p_lt_alpha",
     }:
         expected[effects == 0.0] = 0.025
-    assert np.array_equal(probabilities, expected)
+        assert probabilities == pytest.approx(expected, rel=2e-14, abs=2e-15)
+    else:
+        assert np.array_equal(probabilities, expected)
 
 
 def test_scalar_and_array_probability_results_preserve_public_shape_contract() -> None:
@@ -257,45 +259,82 @@ def test_target_strictly_above_nominal_alpha_requires_nonzero_distance() -> None
 
 
 @pytest.mark.parametrize(
+    ("selection_rule", "claim_direction", "sign"),
+    [
+        ("two_sided_p_lt_alpha", "positive", 1.0),
+        ("two_sided_p_lt_alpha", "negative", -1.0),
+        ("one_sided_positive_p_lt_alpha", "positive", 1.0),
+        ("one_sided_negative_p_lt_alpha", "negative", -1.0),
+    ],
+)
+def test_stable_increment_handoff_is_monotonic(
+    selection_rule: str,
+    claim_direction: str,
+    sign: float,
+) -> None:
+    boundary = detectability.STABLE_INCREMENT_MAX_ABS_DELTA
+    magnitudes = np.asarray(
+        [
+            math.nextafter(boundary, 0.0),
+            boundary,
+            math.nextafter(boundary, math.inf),
+        ]
+    )
+    probabilities = power_curve(
+        sign * magnitudes,
+        null_working=0.0,
+        standard_error=1.0,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
+
+    assert np.all(np.diff(probabilities) >= 0.0)
+
+
+@pytest.mark.parametrize(
     ("selection_rule", "claim_direction"),
     [
         ("two_sided_p_lt_alpha", "positive"),
+        ("two_sided_p_lt_alpha", "negative"),
         ("one_sided_positive_p_lt_alpha", "positive"),
+        ("one_sided_negative_p_lt_alpha", "negative"),
     ],
 )
-def test_near_null_routing_boundary_is_monotonic_from_both_sides(
+def test_high_alpha_inverse_uses_the_same_certified_forward_probability(
     selection_rule: str,
     claim_direction: str,
 ) -> None:
-    alpha = 0.05
-    boundary = alpha + (detectability.STABLE_INCREMENT_MAX_RELATIVE_TARGET * alpha)
-    below = math.nextafter(boundary, alpha)
-    above = math.nextafter(boundary, 1.0)
-
-    lower_result = critical_effect_for_target_probability(
+    alpha = 0.9999999898936288
+    target = 0.9999999984861214
+    result = critical_effect_for_target_probability(
         null_working=0.0,
         standard_error=1.0,
         alpha=alpha,
-        target_probability=below,
+        target_probability=target,
         selection_rule=selection_rule,
         claim_direction=claim_direction,
     )
-    upper_result = critical_effect_for_target_probability(
+    achieved = selected_claim_probability(
+        result.critical_effect_working,
+        null_working=result.null_working,
+        standard_error=result.standard_error,
+        alpha=alpha,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
+    preceding_delta = math.nextafter(result.critical_delta, 0.0)
+    preceding = selected_claim_probability(
+        preceding_delta,
         null_working=0.0,
         standard_error=1.0,
         alpha=alpha,
-        target_probability=above,
         selection_rule=selection_rule,
         claim_direction=claim_direction,
     )
 
-    assert lower_result.achieved_probability >= below
-    assert upper_result.achieved_probability >= above
-    assert upper_result.critical_delta >= lower_result.critical_delta
-    assert upper_result.critical_delta == pytest.approx(
-        lower_result.critical_delta,
-        rel=1e-6,
-    )
+    assert achieved == result.achieved_probability
+    assert achieved >= target
+    assert preceding < target
 
 
 @pytest.mark.parametrize(
@@ -305,39 +344,20 @@ def test_near_null_routing_boundary_is_monotonic_from_both_sides(
         ("one_sided_positive_p_lt_alpha", "positive"),
     ],
 )
-def test_near_one_routing_boundary_is_monotonic_from_both_sides(
+def test_high_probability_forward_sweep_has_no_ulp_reversals(
     selection_rule: str,
     claim_direction: str,
 ) -> None:
-    alpha = 0.05
-    boundary = 1.0 - (detectability.STABLE_COMPLEMENT_MAX_RELATIVE_TARGET * (1.0 - alpha))
-    below = math.nextafter(boundary, alpha)
-    above = math.nextafter(boundary, 1.0)
-
-    lower_result = critical_effect_for_target_probability(
+    probabilities = power_curve(
+        np.linspace(7.5, 8.5, 2001),
         null_working=0.0,
         standard_error=1.0,
-        alpha=alpha,
-        target_probability=below,
-        selection_rule=selection_rule,
-        claim_direction=claim_direction,
-    )
-    upper_result = critical_effect_for_target_probability(
-        null_working=0.0,
-        standard_error=1.0,
-        alpha=alpha,
-        target_probability=above,
+        alpha=0.99,
         selection_rule=selection_rule,
         claim_direction=claim_direction,
     )
 
-    assert lower_result.achieved_probability >= below
-    assert upper_result.achieved_probability >= above
-    assert abs(upper_result.critical_delta) >= abs(lower_result.critical_delta)
-    assert abs(upper_result.critical_delta) == pytest.approx(
-        abs(lower_result.critical_delta),
-        rel=1e-7,
-    )
+    assert np.all(np.diff(probabilities) >= 0.0)
 
 
 def test_halving_standard_error_halves_critical_working_distance() -> None:
@@ -472,6 +492,15 @@ def test_detectability_invalid_inputs_raise_validation_error(call) -> None:
 
 
 def test_unrepresentable_or_overflowing_working_scale_result_fails_explicitly() -> None:
+    with pytest.raises(ValidationError, match="represented accurately"):
+        critical_effect_for_target_probability(
+            null_working=1.0,
+            standard_error=1.0,
+            alpha=0.05,
+            target_probability=math.nextafter(0.05, 1.0),
+            selection_rule="one_sided_positive_p_lt_alpha",
+            claim_direction="positive",
+        )
     with pytest.raises(ValidationError, match="represented accurately"):
         critical_effect_for_target_probability(
             null_working=1e16,

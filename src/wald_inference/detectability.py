@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from math import fsum, isfinite
-from warnings import catch_warnings, simplefilter
+from fractions import Fraction
+from math import exp, isfinite, log1p, nextafter, sinh, sqrt
 
 import numpy as np
-from scipy.integrate import IntegrationWarning, quad
 from scipy.stats import norm
 
 from .errors import ValidationError
@@ -16,9 +15,6 @@ from .selection import (
     DEFAULT_SELECTION_RULE,
     _coerce_finite_float,
     _finite_standardized_distance,
-    _interval_probability,
-    _pdf_shifted,
-    _probability,
     _selected_probability,
     _validate_claim_direction,
     _validate_selection_rule,
@@ -33,17 +29,12 @@ LEGACY_POWER = 0.80
 MAX_SOLVER_DELTA = 1e6
 MAX_BRACKET_STEPS = 80
 MAX_BISECTION_STEPS = 200
-STABLE_INCREMENT_MAX_ABS_DELTA = 1e-2
-STABLE_INCREMENT_MAX_RELATIVE_TARGET = 1e-8
-STABLE_COMPLEMENT_MAX_RELATIVE_TARGET = 1e-8
-INTEGRATION_ABSOLUTE_TOLERANCE = 1e-18
-INTEGRATION_RELATIVE_TOLERANCE = 1e-12
-
-_EXACT_NULL_SELECTION_RULES = {
-    "two_sided_p_lt_alpha",
-    "one_sided_positive_p_lt_alpha",
-    "one_sided_negative_p_lt_alpha",
-}
+STABLE_INCREMENT_MAX_ABS_DELTA = 0.125
+NUMERICAL_GUARD_ULPS = 8
+_INVERSE_SQRT_TWO_PI = 1.0 / sqrt(2.0 * np.pi)
+_MAX_FLOAT_EXACT = Fraction.from_float(float(np.finfo(float).max))
+_GAUSS_16_NODES, _GAUSS_16_WEIGHTS = np.polynomial.legendre.leggauss(16)
+_GAUSS_32_NODES, _GAUSS_32_WEIGHTS = np.polynomial.legendre.leggauss(32)
 
 TrueEffectValues = float | Sequence[float] | np.ndarray
 
@@ -145,58 +136,265 @@ def power_curve(
 
 
 def _probability_at_delta(spec: SelectionRuleSpec, delta: float) -> float:
-    if spec.key in _EXACT_NULL_SELECTION_RULES:
-        if delta == 0.0:
-            return spec.alpha
-        if abs(delta) <= STABLE_INCREMENT_MAX_ABS_DELTA:
-            return _probability(spec.alpha + _probability_increment_from_null(spec, delta))
+    if spec.key == "two_sided_p_lt_alpha":
+        return _two_sided_probability(spec, delta)
+    if spec.key in {
+        "one_sided_positive_p_lt_alpha",
+        "one_sided_negative_p_lt_alpha",
+    }:
+        return _one_sided_probability(spec, delta)
     return _selected_probability(spec.intervals, delta)
 
 
-def _scaled_probability_derivative(spec: SelectionRuleSpec, delta: float) -> float:
-    return float(
-        sum(
-            (_pdf_shifted(lower, delta) / spec.alpha) - (_pdf_shifted(upper, delta) / spec.alpha)
-            for lower, upper in spec.intervals
-        )
-    )
+def _step_toward(value: float, direction: float, *, steps: int) -> float:
+    stepped = value
+    for _ in range(steps):
+        stepped = nextafter(stepped, direction)
+    return stepped
 
 
-def _probability_increment_from_null(
-    spec: SelectionRuleSpec,
-    delta: float,
-) -> float:
-    if spec.key not in _EXACT_NULL_SELECTION_RULES:
-        raise ValidationError("Stable probability increments require a p-value selection rule.")
-    if delta == 0.0:
+def _floor_probability(exact_probability: Fraction) -> float:
+    if exact_probability <= 0:
         return 0.0
-    if abs(delta) > STABLE_INCREMENT_MAX_ABS_DELTA:
-        raise ValidationError("Stable probability increment requested outside the near-null range.")
-    try:
-        with catch_warnings():
-            simplefilter("error", IntegrationWarning)
-            scaled_increment, _ = quad(
-                lambda shifted_delta: _scaled_probability_derivative(
-                    spec,
-                    shifted_delta,
-                ),
-                0.0,
-                delta,
-                epsabs=INTEGRATION_ABSOLUTE_TOLERANCE,
-                epsrel=INTEGRATION_RELATIVE_TOLERANCE,
-                limit=100,
-            )
-    except (IntegrationWarning, OverflowError, ValueError) as exc:
-        raise ValidationError(
-            "Could not evaluate a stable near-null probability increment."
-        ) from exc
+    if exact_probability >= 1:
+        return 1.0
+    probability = float(exact_probability)
+    if Fraction.from_float(probability) > exact_probability:
+        probability = nextafter(probability, 0.0)
+    return probability
+
+
+def _probability_from_null(
+    alpha: float,
+    increment: float,
+    *,
+    increasing: bool,
+) -> float:
+    alpha_exact = Fraction.from_float(alpha)
+    increment_exact = Fraction.from_float(increment)
+    exact_probability = (
+        alpha_exact + increment_exact if increasing else alpha_exact - increment_exact
+    )
+    return _floor_probability(exact_probability)
+
+
+def _lower_probability_increment(first: float, second: float) -> float:
+    increment = min(first, second)
+    if increment <= 0.0:
+        return 0.0
+    guarded = increment * (1.0 - (NUMERICAL_GUARD_ULPS * np.finfo(float).eps))
+    return _step_toward(guarded, 0.0, steps=NUMERICAL_GUARD_ULPS)
+
+
+def _normal_pdf(value: float) -> float:
     with np.errstate(over="ignore", under="ignore", invalid="ignore"):
-        increment = float(np.float64(scaled_increment) * np.float64(spec.alpha))
-    if not isfinite(increment):
-        raise ValidationError(
-            "Near-null probability increment exceeds the finite floating-point range."
+        return _INVERSE_SQRT_TWO_PI * exp(-0.5 * value * value)
+
+
+def _one_sided_increment_quadrature(
+    critical_z: float,
+    magnitude: float,
+    *,
+    increasing: bool,
+    nodes: np.ndarray,
+    weights: np.ndarray,
+) -> float:
+    half_magnitude = 0.5 * magnitude
+    weighted_density = 0.0
+    for node, weight in zip(nodes, weights, strict=True):
+        offset = half_magnitude * (float(node) + 1.0)
+        argument = critical_z - offset if increasing else critical_z + offset
+        weighted_density += float(weight) * _normal_pdf(argument)
+    return half_magnitude * weighted_density
+
+
+def _two_sided_increment_quadrature(
+    critical_z: float,
+    magnitude: float,
+    *,
+    nodes: np.ndarray,
+    weights: np.ndarray,
+) -> float:
+    half_magnitude = 0.5 * magnitude
+    density_at_boundary = _normal_pdf(critical_z)
+    weighted_derivative = 0.0
+    for node, weight in zip(nodes, weights, strict=True):
+        offset = half_magnitude * (float(node) + 1.0)
+        derivative = (
+            2.0 * density_at_boundary * exp(-0.5 * offset * offset) * sinh(critical_z * offset)
         )
-    return increment
+        weighted_derivative += float(weight) * derivative
+    return half_magnitude * weighted_derivative
+
+
+def _stable_one_sided_increment(
+    critical_z: float,
+    magnitude: float,
+    *,
+    increasing: bool,
+) -> float:
+    first = _one_sided_increment_quadrature(
+        critical_z,
+        magnitude,
+        increasing=increasing,
+        nodes=_GAUSS_16_NODES,
+        weights=_GAUSS_16_WEIGHTS,
+    )
+    second = _one_sided_increment_quadrature(
+        critical_z,
+        magnitude,
+        increasing=increasing,
+        nodes=_GAUSS_32_NODES,
+        weights=_GAUSS_32_WEIGHTS,
+    )
+    return _lower_probability_increment(first, second)
+
+
+def _stable_two_sided_increment(
+    critical_z: float,
+    magnitude: float,
+) -> float:
+    first = _two_sided_increment_quadrature(
+        critical_z,
+        magnitude,
+        nodes=_GAUSS_16_NODES,
+        weights=_GAUSS_16_WEIGHTS,
+    )
+    second = _two_sided_increment_quadrature(
+        critical_z,
+        magnitude,
+        nodes=_GAUSS_32_NODES,
+        weights=_GAUSS_32_WEIGHTS,
+    )
+    return _lower_probability_increment(first, second)
+
+
+def _lower_probability_from_complement(complement: float) -> float:
+    if complement <= 0.0:
+        return nextafter(1.0, 0.0)
+    conservative_complement = _step_toward(
+        complement,
+        float("inf"),
+        steps=NUMERICAL_GUARD_ULPS,
+    )
+    return _floor_probability(Fraction(1, 1) - Fraction.from_float(conservative_complement))
+
+
+def _direct_one_sided_probability(critical_z: float, directed_delta: float) -> float:
+    selected_z = directed_delta - critical_z
+    if selected_z <= 0.0:
+        probability = float(norm.cdf(selected_z))
+        if probability <= 0.0:
+            return 0.0
+        return _step_toward(
+            probability,
+            0.0,
+            steps=NUMERICAL_GUARD_ULPS,
+        )
+    complement = float(norm.cdf(-selected_z))
+    return _lower_probability_from_complement(complement)
+
+
+def _one_sided_probability(spec: SelectionRuleSpec, delta: float) -> float:
+    directed_delta = delta if spec.key == "one_sided_positive_p_lt_alpha" else -delta
+    if directed_delta == 0.0:
+        return spec.alpha
+
+    critical_z = (
+        spec.intervals[0][0]
+        if spec.key == "one_sided_positive_p_lt_alpha"
+        else -spec.intervals[0][1]
+    )
+    magnitude = abs(directed_delta)
+    if magnitude <= STABLE_INCREMENT_MAX_ABS_DELTA:
+        increasing = directed_delta > 0.0
+        increment = _stable_one_sided_increment(
+            critical_z,
+            magnitude,
+            increasing=increasing,
+        )
+        if not increasing and increment > 0.0:
+            increment = _step_toward(
+                increment,
+                float("inf"),
+                steps=NUMERICAL_GUARD_ULPS,
+            )
+        return _probability_from_null(
+            spec.alpha,
+            increment,
+            increasing=increasing,
+        )
+
+    boundary_directed_delta = (
+        STABLE_INCREMENT_MAX_ABS_DELTA if directed_delta > 0.0 else -STABLE_INCREMENT_MAX_ABS_DELTA
+    )
+    boundary_delta = (
+        boundary_directed_delta
+        if spec.key == "one_sided_positive_p_lt_alpha"
+        else -boundary_directed_delta
+    )
+    boundary_probability = _one_sided_probability(spec, boundary_delta)
+    direct_probability = _direct_one_sided_probability(
+        critical_z,
+        directed_delta,
+    )
+    if directed_delta > 0.0:
+        return max(boundary_probability, direct_probability)
+    return min(boundary_probability, direct_probability)
+
+
+def _central_interval_probability(
+    critical_z: float,
+    magnitude: float,
+) -> float:
+    if critical_z <= 0.75:
+        weighted_density = 0.0
+        for node, weight in zip(
+            _GAUSS_32_NODES,
+            _GAUSS_32_WEIGHTS,
+            strict=True,
+        ):
+            centered_value = (critical_z * float(node)) - magnitude
+            weighted_density += float(weight) * _normal_pdf(centered_value)
+        probability = critical_z * weighted_density
+    else:
+        upper_log_cdf = float(norm.logcdf(critical_z - magnitude))
+        lower_log_cdf = float(norm.logcdf(-critical_z - magnitude))
+        if lower_log_cdf == float("-inf"):
+            probability = exp(upper_log_cdf)
+        else:
+            ratio = exp(lower_log_cdf - upper_log_cdf)
+            if ratio >= 1.0:
+                probability = 0.0
+            else:
+                probability = exp(upper_log_cdf + log1p(-ratio))
+    return min(1.0, max(0.0, probability))
+
+
+def _two_sided_probability(spec: SelectionRuleSpec, delta: float) -> float:
+    magnitude = abs(delta)
+    if magnitude == 0.0:
+        return spec.alpha
+
+    critical_z = spec.intervals[1][0]
+    if magnitude <= STABLE_INCREMENT_MAX_ABS_DELTA:
+        increment = _stable_two_sided_increment(
+            critical_z,
+            magnitude,
+        )
+        return _probability_from_null(
+            spec.alpha,
+            increment,
+            increasing=True,
+        )
+
+    boundary_probability = _two_sided_probability(
+        spec,
+        STABLE_INCREMENT_MAX_ABS_DELTA,
+    )
+    complement = _central_interval_probability(critical_z, magnitude)
+    direct_probability = _lower_probability_from_complement(complement)
+    return max(boundary_probability, direct_probability)
 
 
 def _bracket_and_bisect_magnitude(
@@ -239,263 +437,147 @@ def _bracket_and_bisect_magnitude(
     return high
 
 
-def _is_near_null_target(
-    *,
-    spec: SelectionRuleSpec,
-    target_probability: float,
-) -> bool:
-    target_increment = target_probability - spec.alpha
-    return target_increment <= (STABLE_INCREMENT_MAX_RELATIVE_TARGET * spec.alpha)
-
-
-def _is_near_one_target(
-    *,
-    spec: SelectionRuleSpec,
-    target_probability: float,
-) -> bool:
-    return (1.0 - target_probability) <= (
-        STABLE_COMPLEMENT_MAX_RELATIVE_TARGET * (1.0 - spec.alpha)
-    )
-
-
-def _one_sided_critical_z(spec: SelectionRuleSpec) -> float:
-    if spec.key == "one_sided_positive_p_lt_alpha":
-        return spec.intervals[0][0]
-    return -spec.intervals[0][1]
-
-
-def _one_sided_unselected_probability(
-    spec: SelectionRuleSpec,
-    magnitude: float,
-) -> float:
-    shifted_boundary = _one_sided_critical_z(spec) - magnitude
-    return _probability(float(norm.cdf(shifted_boundary)))
-
-
-def _one_sided_probability_from_quantile(
-    *,
-    target_probability: float,
-    target_quantile: float,
-    shifted_boundary: float,
-) -> float:
-    if shifted_boundary > target_quantile:
-        raise ValidationError(
-            "Could not certify the one-sided critical effect in the quantile domain."
-        )
-    if shifted_boundary == target_quantile:
-        return target_probability
-    try:
-        with catch_warnings():
-            simplefilter("error", IntegrationWarning)
-            probability_increment, _ = quad(
-                norm.pdf,
-                shifted_boundary,
-                target_quantile,
-                epsabs=INTEGRATION_ABSOLUTE_TOLERANCE,
-                epsrel=INTEGRATION_RELATIVE_TOLERANCE,
-                limit=100,
-            )
-    except (IntegrationWarning, OverflowError, ValueError) as exc:
-        raise ValidationError(
-            "Could not certify the one-sided critical effect probability."
-        ) from exc
-    achieved_probability = fsum((target_probability, probability_increment))
-    if not isfinite(achieved_probability):
-        raise ValidationError(
-            "Critical-effect probability exceeds the finite floating-point range."
-        )
-    return _probability(achieved_probability)
-
-
-def _one_sided_critical_solution(
-    *,
-    spec: SelectionRuleSpec,
-    target_probability: float,
-) -> tuple[float, float]:
-    target_increment = target_probability - spec.alpha
-    direction_sign = 1.0 if spec.claim_direction == "positive" else -1.0
-    if _is_near_null_target(
-        spec=spec,
-        target_probability=target_probability,
-    ):
-        magnitude = _bracket_and_bisect_magnitude(
-            is_satisfied=lambda magnitude: (
-                _probability_increment_from_null(
-                    spec,
-                    direction_sign * magnitude,
-                )
-                >= target_increment
-            ),
-            initial_high=STABLE_INCREMENT_MAX_ABS_DELTA,
-        )
-        achieved_probability = _probability(
-            fsum(
-                (
-                    spec.alpha,
-                    _probability_increment_from_null(
-                        spec,
-                        direction_sign * magnitude,
-                    ),
-                )
-            )
-        )
-        return magnitude, achieved_probability
-
-    if _is_near_one_target(
-        spec=spec,
-        target_probability=target_probability,
-    ):
-        target_unselected_probability = 1.0 - target_probability
-        magnitude = _bracket_and_bisect_magnitude(
-            is_satisfied=lambda candidate: (
-                _one_sided_unselected_probability(
-                    spec,
-                    candidate,
-                )
-                <= target_unselected_probability
-            )
-        )
-        achieved_probability = _probability(
-            1.0 - _one_sided_unselected_probability(spec, magnitude)
-        )
-        return magnitude, achieved_probability
-
-    critical_z = _one_sided_critical_z(spec)
-    target_quantile = float(norm.isf(target_probability))
-    with np.errstate(over="ignore", invalid="ignore"):
-        initial_high = float(critical_z - target_quantile)
-    if not isfinite(initial_high) or initial_high <= 0:
-        raise ValidationError(
-            "Could not solve a finite critical effect for the requested probability."
-        )
-    magnitude = _bracket_and_bisect_magnitude(
-        is_satisfied=lambda candidate: float(critical_z - candidate) <= target_quantile,
-        initial_high=initial_high,
-    )
-    shifted_boundary = float(critical_z - magnitude)
-    achieved_probability = _one_sided_probability_from_quantile(
-        target_probability=target_probability,
-        target_quantile=target_quantile,
-        shifted_boundary=shifted_boundary,
-    )
-    return magnitude, achieved_probability
-
-
-def _two_sided_unselected_probability(
-    spec: SelectionRuleSpec,
-    magnitude: float,
-) -> float:
-    lower = spec.intervals[0][1]
-    upper = spec.intervals[1][0]
-    return _probability(_interval_probability(lower, upper, magnitude))
-
-
 def _solve_magnitude_for_probability(
     *,
     spec: SelectionRuleSpec,
     direction_sign: float,
     target_probability: float,
-) -> tuple[float, float]:
-    if spec.key != "two_sided_p_lt_alpha":
-        magnitude, achieved_probability = _one_sided_critical_solution(
-            spec=spec,
-            target_probability=target_probability,
-        )
-    elif _is_near_null_target(
-        spec=spec,
-        target_probability=target_probability,
-    ):
-        target_increment = target_probability - spec.alpha
-        magnitude = _bracket_and_bisect_magnitude(
-            is_satisfied=lambda candidate: (
-                _probability_increment_from_null(
-                    spec,
-                    direction_sign * candidate,
-                )
-                >= target_increment
-            ),
-            initial_high=STABLE_INCREMENT_MAX_ABS_DELTA,
-        )
-        achieved_probability = _probability(
-            fsum(
-                (
-                    spec.alpha,
-                    _probability_increment_from_null(
-                        spec,
-                        direction_sign * magnitude,
-                    ),
-                )
+) -> float:
+    magnitude = _bracket_and_bisect_magnitude(
+        is_satisfied=lambda candidate: (
+            _probability_at_delta(
+                spec,
+                direction_sign * candidate,
             )
+            >= target_probability
         )
-    elif _is_near_one_target(
-        spec=spec,
-        target_probability=target_probability,
-    ):
-        target_unselected_probability = 1.0 - target_probability
-        magnitude = _bracket_and_bisect_magnitude(
-            is_satisfied=lambda candidate: (
-                _two_sided_unselected_probability(
-                    spec,
-                    candidate,
-                )
-                <= target_unselected_probability
-            )
-        )
-        achieved_probability = _probability(
-            1.0 - _two_sided_unselected_probability(spec, magnitude)
-        )
-    else:
-        magnitude = _bracket_and_bisect_magnitude(
-            is_satisfied=lambda candidate: (
-                _probability_at_delta(
-                    spec,
-                    direction_sign * candidate,
-                )
-                >= target_probability
-            )
-        )
-        achieved_probability = _probability_at_delta(
-            spec,
-            direction_sign * magnitude,
-        )
-
-    if achieved_probability < target_probability:
+    )
+    achieved_probability = _probability_at_delta(
+        spec,
+        direction_sign * magnitude,
+    )
+    preceding_probability = _probability_at_delta(
+        spec,
+        direction_sign * nextafter(magnitude, 0.0),
+    )
+    if achieved_probability < target_probability or preceding_probability >= target_probability:
         raise ValidationError(
-            "Could not certify the critical effect probability at floating-point precision."
+            "Could not certify the smallest finite critical effect at floating-point precision."
         )
-    return magnitude, achieved_probability
+    return magnitude
 
 
-def _critical_effect_working(
+def _compose_working_effect(
     *,
     null_working: float,
     standard_error: float,
     critical_delta: float,
 ) -> float:
-    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
-        displacement = float(np.float64(critical_delta) * np.float64(standard_error))
-        critical_effect = float(np.float64(null_working) + np.float64(displacement))
-    if not isfinite(displacement) or not isfinite(critical_effect):
+    exact_effect = Fraction.from_float(null_working) + (
+        Fraction.from_float(critical_delta) * Fraction.from_float(standard_error)
+    )
+    if exact_effect < -_MAX_FLOAT_EXACT or exact_effect > _MAX_FLOAT_EXACT:
         raise ValidationError(
             "Critical effect exceeds the finite floating-point range on the working scale."
         )
+    return float(exact_effect)
+
+
+def _probability_for_working_effect(
+    effect_working: float,
+    *,
+    spec: SelectionRuleSpec,
+    null_working: float,
+    standard_error: float,
+) -> tuple[float, float]:
     represented_delta = float(
         _finite_standardized_distance(
-            np.asarray([critical_effect]),
+            np.asarray([effect_working]),
             center=null_working,
             scale=standard_error,
         )[0]
     )
-    if not np.isclose(
-        represented_delta,
-        critical_delta,
-        rtol=1e-12,
-        atol=1e-14,
+    return represented_delta, _probability_at_delta(spec, represented_delta)
+
+
+def _representable_critical_effect(
+    *,
+    spec: SelectionRuleSpec,
+    null_working: float,
+    standard_error: float,
+    critical_delta: float,
+    target_probability: float,
+) -> tuple[float, float, float]:
+    direction = float("inf") if critical_delta > 0.0 else float("-inf")
+    effect_working = _compose_working_effect(
+        null_working=null_working,
+        standard_error=standard_error,
+        critical_delta=critical_delta,
+    )
+    if effect_working == null_working:
+        raise ValidationError(
+            "Critical effect cannot be represented accurately on the working scale."
+        )
+    if not isfinite(effect_working):
+        raise ValidationError(
+            "Critical effect exceeds the finite floating-point range on the working scale."
+        )
+
+    represented_delta, achieved_probability = _probability_for_working_effect(
+        effect_working,
+        spec=spec,
+        null_working=null_working,
+        standard_error=standard_error,
+    )
+    for _ in range(4):
+        if achieved_probability >= target_probability:
+            break
+        effect_working = nextafter(effect_working, direction)
+        if not isfinite(effect_working):
+            raise ValidationError(
+                "Critical effect exceeds the finite floating-point range on the working scale."
+            )
+        represented_delta, achieved_probability = _probability_for_working_effect(
+            effect_working,
+            spec=spec,
+            null_working=null_working,
+            standard_error=standard_error,
+        )
+    else:
+        raise ValidationError(
+            "Critical effect cannot be represented accurately on the working scale."
+        )
+
+    for _ in range(4):
+        preceding_effect = nextafter(effect_working, null_working)
+        if preceding_effect == effect_working:
+            break
+        preceding_delta, preceding_probability = _probability_for_working_effect(
+            preceding_effect,
+            spec=spec,
+            null_working=null_working,
+            standard_error=standard_error,
+        )
+        if preceding_probability < target_probability:
+            break
+        effect_working = preceding_effect
+        represented_delta = preceding_delta
+        achieved_probability = preceding_probability
+    else:
+        raise ValidationError(
+            "Critical effect cannot be represented accurately on the working scale."
+        )
+
+    if (
+        effect_working == null_working
+        or (critical_delta > 0.0 and represented_delta <= 0.0)
+        or (critical_delta < 0.0 and represented_delta >= 0.0)
+        or abs(represented_delta - critical_delta) > (abs(critical_delta) * 1e-12)
     ):
         raise ValidationError(
             "Critical effect cannot be represented accurately on the working scale."
         )
-    return critical_effect
+    return represented_delta, effect_working, achieved_probability
 
 
 def critical_effect_for_target_probability(
@@ -559,16 +641,18 @@ def critical_effect_for_target_probability(
         achieved_probability = null_probability
     else:
         direction_sign = 1.0 if spec.claim_direction == "positive" else -1.0
-        magnitude, achieved_probability = _solve_magnitude_for_probability(
+        magnitude = _solve_magnitude_for_probability(
             spec=spec,
             direction_sign=direction_sign,
             target_probability=target,
         )
-        critical_delta = direction_sign * magnitude
-        critical_effect = _critical_effect_working(
+        solved_delta = direction_sign * magnitude
+        critical_delta, critical_effect, achieved_probability = _representable_critical_effect(
+            spec=spec,
             null_working=null_value,
             standard_error=se_value,
-            critical_delta=critical_delta,
+            critical_delta=solved_delta,
+            target_probability=target,
         )
 
     return CriticalEffectResult(

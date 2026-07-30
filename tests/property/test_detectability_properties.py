@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from scipy.stats import norm
 
 from wald_inference import (
     critical_effect_for_target_probability,
@@ -206,13 +205,11 @@ def test_near_null_probability_is_monotonic_without_ulp_reversals(
         allow_infinity=False,
     ),
 )
-def test_one_sided_middle_route_is_quantile_minimal_across_alpha_range(
+def test_one_sided_inverse_is_public_probability_minimal_across_alpha_range(
     alpha: float,
     target_fraction: float,
 ) -> None:
     target = alpha + ((1.0 - alpha) * target_fraction)
-    critical_z = float(norm.isf(alpha))
-    target_quantile = float(norm.isf(target))
 
     for selection_rule, claim_direction in [
         ("one_sided_positive_p_lt_alpha", "positive"),
@@ -228,7 +225,24 @@ def test_one_sided_middle_route_is_quantile_minimal_across_alpha_range(
         )
         magnitude = abs(result.critical_delta)
         preceding_magnitude = float(np.nextafter(magnitude, 0.0))
+        sign = 1.0 if claim_direction == "positive" else -1.0
+        achieved_probability = selected_claim_probability(
+            result.critical_delta,
+            null_working=0.0,
+            standard_error=1.0,
+            alpha=alpha,
+            selection_rule=selection_rule,
+            claim_direction=claim_direction,
+        )
+        preceding_probability = selected_claim_probability(
+            sign * preceding_magnitude,
+            null_working=0.0,
+            standard_error=1.0,
+            alpha=alpha,
+            selection_rule=selection_rule,
+            claim_direction=claim_direction,
+        )
 
-        assert float(critical_z - magnitude) <= target_quantile
-        assert float(critical_z - preceding_magnitude) > target_quantile
-        assert result.achieved_probability >= target
+        assert achieved_probability == result.achieved_probability
+        assert achieved_probability >= target
+        assert preceding_probability < target
