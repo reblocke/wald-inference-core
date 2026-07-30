@@ -4,14 +4,15 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
-## [0.3.0] - 2026-07-29
+## [0.3.0] - 2026-07-30
 
 ### Added
 
 - Added scalar/array `selected_claim_probability` and one-dimensional `power_curve`, both routed
   through the canonical intervals for all six existing selection rules.
-- Added `critical_effect_for_target_probability` with explicit finite bracketing and monotonic
-  bisection for two-sided, one-sided positive, and one-sided negative p-value rules.
+- Added `critical_effect_for_target_probability` with stable near-null probability increments,
+  one-sided quantile-domain inversion, and complement-domain one- and two-sided inversion near
+  probability one.
 - Added immutable `CriticalEffectResult` with signed standardized delta, working-scale critical
   effect, target, and achieved probability.
 
@@ -21,6 +22,9 @@ All notable changes to this project are documented here.
   vector behavior, null probability, monotonicity, symmetry, analytic one-sided quantiles, direct
   two-sided tail evaluation, target inversion, log-scale composition, invalid inputs, and
   floating-point extremes.
+- Added high-precision boundary and high-alpha references, explicit predecessor-minimality checks,
+  targets one floating-point step above alpha and below one, and bit-exact null and near-null
+  monotonicity contracts.
 - Extended the exact root API, release metadata, distribution inspection, and cold-wheel smoke
   contracts for v0.3.0.
 - Retained the frozen baseline-parity gate for every pre-existing numerical output, including the

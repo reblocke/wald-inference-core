@@ -127,7 +127,7 @@ numerator and denominator, and describe all results as normalized Wald approxima
 exact fitted likelihoods, Bayes factors, or posterior probabilities. The legacy module and every
 pre-v0.2.0 calculation remain unchanged.
 
-## 2026-07-29: Separate exact detectability from the legacy z-sum benchmark
+## 2026-07-30: Separate exact detectability from the legacy z-sum benchmark
 
 **Context:** A focused critical-effect app needs vectorized selected-claim probability and inverse
 detectability thresholds. The frozen integrated calculation instead provides only the fixed
@@ -139,9 +139,16 @@ multiple numerical authorities.
 `critical_effect_for_target_probability`, and immutable `CriticalEffectResult`. Route every forward
 probability through the canonical selection intervals for all six existing rules. Restrict monotonic
 inversion to the two-sided, matching one-sided positive, and matching one-sided negative p-value
-rules; use explicit finite bracketing and bisection, and reject unsupported or unrepresentable
-results. Preserve `legacy_critical_effect_distance` and `legacy_critical_effect_markers` unchanged
-as a separately labeled closed-form benchmark.
+rules. Normalize exact-null probability locally to alpha without changing the frozen selection
+module. Use the canonical interval-density derivative for stable near-null increments, analytic
+one-sided quantile ordering away from that boundary, and the unselected probability for one- and
+two-sided targets near one. Route targets within `1e-8` relative to alpha through the null-anchored
+increment and targets within `1e-8` relative to one through the complement. Require the returned
+magnitude to satisfy the selected numerical objective while its immediately preceding float does
+not, compute achieved probability from that same objective, and reject unsupported, uncertifiable,
+or unrepresentable results. Preserve
+`legacy_critical_effect_distance` and `legacy_critical_effect_markers` unchanged as a separately
+labeled closed-form benchmark.
 
 **Consequences:** Downstream applications can calculate exact Wald detectability without copying
 selection formulas and can compose log-scale results through the effect registry. They must keep

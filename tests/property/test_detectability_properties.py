@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from scipy.stats import norm
 
 from wald_inference import (
     critical_effect_for_target_probability,
@@ -154,3 +155,80 @@ def test_probability_is_monotonic_in_selected_one_sided_direction(
     )
 
     assert np.all(np.diff(probabilities) >= 0.0)
+
+
+@pytest.mark.parametrize(
+    ("selection_rule", "claim_direction", "sign"),
+    [
+        ("two_sided_p_lt_alpha", "positive", 1.0),
+        ("two_sided_p_lt_alpha", "negative", -1.0),
+        ("one_sided_positive_p_lt_alpha", "positive", 1.0),
+        ("one_sided_negative_p_lt_alpha", "negative", -1.0),
+    ],
+)
+def test_near_null_probability_is_monotonic_without_ulp_reversals(
+    selection_rule: str,
+    claim_direction: str,
+    sign: float,
+) -> None:
+    magnitudes = np.concatenate(
+        (
+            np.asarray([0.0]),
+            np.logspace(-16, -2, 300),
+        )
+    )
+
+    probabilities = power_curve(
+        sign * magnitudes,
+        null_working=0.0,
+        standard_error=1.0,
+        alpha=0.05,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
+
+    assert probabilities[0] == 0.05
+    assert np.all(np.diff(probabilities) >= 0.0)
+
+
+@settings(max_examples=100, deadline=None)
+@given(
+    alpha=st.floats(
+        min_value=1e-10,
+        max_value=0.999,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+    target_fraction=st.floats(
+        min_value=1e-3,
+        max_value=0.999,
+        allow_nan=False,
+        allow_infinity=False,
+    ),
+)
+def test_one_sided_middle_route_is_quantile_minimal_across_alpha_range(
+    alpha: float,
+    target_fraction: float,
+) -> None:
+    target = alpha + ((1.0 - alpha) * target_fraction)
+    critical_z = float(norm.isf(alpha))
+    target_quantile = float(norm.isf(target))
+
+    for selection_rule, claim_direction in [
+        ("one_sided_positive_p_lt_alpha", "positive"),
+        ("one_sided_negative_p_lt_alpha", "negative"),
+    ]:
+        result = critical_effect_for_target_probability(
+            null_working=0.0,
+            standard_error=1.0,
+            alpha=alpha,
+            target_probability=target,
+            selection_rule=selection_rule,
+            claim_direction=claim_direction,
+        )
+        magnitude = abs(result.critical_delta)
+        preceding_magnitude = float(np.nextafter(magnitude, 0.0))
+
+        assert float(critical_z - magnitude) <= target_quantile
+        assert float(critical_z - preceding_magnitude) > target_quantile
+        assert result.achieved_probability >= target

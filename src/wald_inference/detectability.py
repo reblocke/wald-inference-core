@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from math import isfinite
+from collections.abc import Callable, Sequence
+from math import fsum, isfinite
+from warnings import catch_warnings, simplefilter
 
 import numpy as np
+from scipy.integrate import IntegrationWarning, quad
 from scipy.stats import norm
 
 from .errors import ValidationError
@@ -14,6 +16,9 @@ from .selection import (
     DEFAULT_SELECTION_RULE,
     _coerce_finite_float,
     _finite_standardized_distance,
+    _interval_probability,
+    _pdf_shifted,
+    _probability,
     _selected_probability,
     _validate_claim_direction,
     _validate_selection_rule,
@@ -28,6 +33,17 @@ LEGACY_POWER = 0.80
 MAX_SOLVER_DELTA = 1e6
 MAX_BRACKET_STEPS = 80
 MAX_BISECTION_STEPS = 200
+STABLE_INCREMENT_MAX_ABS_DELTA = 1e-2
+STABLE_INCREMENT_MAX_RELATIVE_TARGET = 1e-8
+STABLE_COMPLEMENT_MAX_RELATIVE_TARGET = 1e-8
+INTEGRATION_ABSOLUTE_TOLERANCE = 1e-18
+INTEGRATION_RELATIVE_TOLERANCE = 1e-12
+
+_EXACT_NULL_SELECTION_RULES = {
+    "two_sided_p_lt_alpha",
+    "one_sided_positive_p_lt_alpha",
+    "one_sided_negative_p_lt_alpha",
+}
 
 TrueEffectValues = float | Sequence[float] | np.ndarray
 
@@ -48,7 +64,7 @@ def _coerce_true_effect_values(values: object) -> np.ndarray:
 
 def _probabilities_for_deltas(spec: SelectionRuleSpec, deltas: np.ndarray) -> np.ndarray:
     probabilities = np.fromiter(
-        (_selected_probability(spec.intervals, float(delta)) for delta in deltas.flat),
+        (_probability_at_delta(spec, float(delta)) for delta in deltas.flat),
         dtype=float,
         count=deltas.size,
     ).reshape(deltas.shape)
@@ -129,23 +145,69 @@ def power_curve(
 
 
 def _probability_at_delta(spec: SelectionRuleSpec, delta: float) -> float:
+    if spec.key in _EXACT_NULL_SELECTION_RULES:
+        if delta == 0.0:
+            return spec.alpha
+        if abs(delta) <= STABLE_INCREMENT_MAX_ABS_DELTA:
+            return _probability(spec.alpha + _probability_increment_from_null(spec, delta))
     return _selected_probability(spec.intervals, delta)
 
 
-def _solve_magnitude_for_probability(
-    *,
-    spec: SelectionRuleSpec,
-    direction_sign: float,
-    target_probability: float,
-) -> tuple[float, float]:
-    def probability(magnitude: float) -> float:
-        return _probability_at_delta(spec, direction_sign * magnitude)
+def _scaled_probability_derivative(spec: SelectionRuleSpec, delta: float) -> float:
+    return float(
+        sum(
+            (_pdf_shifted(lower, delta) / spec.alpha) - (_pdf_shifted(upper, delta) / spec.alpha)
+            for lower, upper in spec.intervals
+        )
+    )
 
+
+def _probability_increment_from_null(
+    spec: SelectionRuleSpec,
+    delta: float,
+) -> float:
+    if spec.key not in _EXACT_NULL_SELECTION_RULES:
+        raise ValidationError("Stable probability increments require a p-value selection rule.")
+    if delta == 0.0:
+        return 0.0
+    if abs(delta) > STABLE_INCREMENT_MAX_ABS_DELTA:
+        raise ValidationError("Stable probability increment requested outside the near-null range.")
+    try:
+        with catch_warnings():
+            simplefilter("error", IntegrationWarning)
+            scaled_increment, _ = quad(
+                lambda shifted_delta: _scaled_probability_derivative(
+                    spec,
+                    shifted_delta,
+                ),
+                0.0,
+                delta,
+                epsabs=INTEGRATION_ABSOLUTE_TOLERANCE,
+                epsrel=INTEGRATION_RELATIVE_TOLERANCE,
+                limit=100,
+            )
+    except (IntegrationWarning, OverflowError, ValueError) as exc:
+        raise ValidationError(
+            "Could not evaluate a stable near-null probability increment."
+        ) from exc
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        increment = float(np.float64(scaled_increment) * np.float64(spec.alpha))
+    if not isfinite(increment):
+        raise ValidationError(
+            "Near-null probability increment exceeds the finite floating-point range."
+        )
+    return increment
+
+
+def _bracket_and_bisect_magnitude(
+    *,
+    is_satisfied: Callable[[float], bool],
+    initial_high: float = 1.0,
+) -> float:
     low = 0.0
-    high = 1.0
+    high = initial_high
     for _ in range(MAX_BRACKET_STEPS):
-        high_probability = probability(high)
-        if high_probability >= target_probability:
+        if is_satisfied(high):
             break
         high *= 2.0
         if not np.isfinite(high) or high > MAX_SOLVER_DELTA:
@@ -161,17 +223,247 @@ def _solve_magnitude_for_probability(
         midpoint = low + ((high - low) / 2.0)
         if midpoint == low or midpoint == high:
             break
-        if probability(midpoint) >= target_probability:
+        if is_satisfied(midpoint):
             high = midpoint
         else:
             low = midpoint
-
-    achieved_probability = probability(high)
-    if achieved_probability < target_probability:
+    if not is_satisfied(high):
         raise ValidationError(
             "Could not solve a finite critical effect for the requested probability."
         )
-    return high, achieved_probability
+    preceding = float(np.nextafter(high, 0.0))
+    if is_satisfied(preceding):
+        raise ValidationError(
+            "Could not identify the smallest finite critical effect at floating-point precision."
+        )
+    return high
+
+
+def _is_near_null_target(
+    *,
+    spec: SelectionRuleSpec,
+    target_probability: float,
+) -> bool:
+    target_increment = target_probability - spec.alpha
+    return target_increment <= (STABLE_INCREMENT_MAX_RELATIVE_TARGET * spec.alpha)
+
+
+def _is_near_one_target(
+    *,
+    spec: SelectionRuleSpec,
+    target_probability: float,
+) -> bool:
+    return (1.0 - target_probability) <= (
+        STABLE_COMPLEMENT_MAX_RELATIVE_TARGET * (1.0 - spec.alpha)
+    )
+
+
+def _one_sided_critical_z(spec: SelectionRuleSpec) -> float:
+    if spec.key == "one_sided_positive_p_lt_alpha":
+        return spec.intervals[0][0]
+    return -spec.intervals[0][1]
+
+
+def _one_sided_unselected_probability(
+    spec: SelectionRuleSpec,
+    magnitude: float,
+) -> float:
+    shifted_boundary = _one_sided_critical_z(spec) - magnitude
+    return _probability(float(norm.cdf(shifted_boundary)))
+
+
+def _one_sided_probability_from_quantile(
+    *,
+    target_probability: float,
+    target_quantile: float,
+    shifted_boundary: float,
+) -> float:
+    if shifted_boundary > target_quantile:
+        raise ValidationError(
+            "Could not certify the one-sided critical effect in the quantile domain."
+        )
+    if shifted_boundary == target_quantile:
+        return target_probability
+    try:
+        with catch_warnings():
+            simplefilter("error", IntegrationWarning)
+            probability_increment, _ = quad(
+                norm.pdf,
+                shifted_boundary,
+                target_quantile,
+                epsabs=INTEGRATION_ABSOLUTE_TOLERANCE,
+                epsrel=INTEGRATION_RELATIVE_TOLERANCE,
+                limit=100,
+            )
+    except (IntegrationWarning, OverflowError, ValueError) as exc:
+        raise ValidationError(
+            "Could not certify the one-sided critical effect probability."
+        ) from exc
+    achieved_probability = fsum((target_probability, probability_increment))
+    if not isfinite(achieved_probability):
+        raise ValidationError(
+            "Critical-effect probability exceeds the finite floating-point range."
+        )
+    return _probability(achieved_probability)
+
+
+def _one_sided_critical_solution(
+    *,
+    spec: SelectionRuleSpec,
+    target_probability: float,
+) -> tuple[float, float]:
+    target_increment = target_probability - spec.alpha
+    direction_sign = 1.0 if spec.claim_direction == "positive" else -1.0
+    if _is_near_null_target(
+        spec=spec,
+        target_probability=target_probability,
+    ):
+        magnitude = _bracket_and_bisect_magnitude(
+            is_satisfied=lambda magnitude: (
+                _probability_increment_from_null(
+                    spec,
+                    direction_sign * magnitude,
+                )
+                >= target_increment
+            ),
+            initial_high=STABLE_INCREMENT_MAX_ABS_DELTA,
+        )
+        achieved_probability = _probability(
+            fsum(
+                (
+                    spec.alpha,
+                    _probability_increment_from_null(
+                        spec,
+                        direction_sign * magnitude,
+                    ),
+                )
+            )
+        )
+        return magnitude, achieved_probability
+
+    if _is_near_one_target(
+        spec=spec,
+        target_probability=target_probability,
+    ):
+        target_unselected_probability = 1.0 - target_probability
+        magnitude = _bracket_and_bisect_magnitude(
+            is_satisfied=lambda candidate: (
+                _one_sided_unselected_probability(
+                    spec,
+                    candidate,
+                )
+                <= target_unselected_probability
+            )
+        )
+        achieved_probability = _probability(
+            1.0 - _one_sided_unselected_probability(spec, magnitude)
+        )
+        return magnitude, achieved_probability
+
+    critical_z = _one_sided_critical_z(spec)
+    target_quantile = float(norm.isf(target_probability))
+    with np.errstate(over="ignore", invalid="ignore"):
+        initial_high = float(critical_z - target_quantile)
+    if not isfinite(initial_high) or initial_high <= 0:
+        raise ValidationError(
+            "Could not solve a finite critical effect for the requested probability."
+        )
+    magnitude = _bracket_and_bisect_magnitude(
+        is_satisfied=lambda candidate: float(critical_z - candidate) <= target_quantile,
+        initial_high=initial_high,
+    )
+    shifted_boundary = float(critical_z - magnitude)
+    achieved_probability = _one_sided_probability_from_quantile(
+        target_probability=target_probability,
+        target_quantile=target_quantile,
+        shifted_boundary=shifted_boundary,
+    )
+    return magnitude, achieved_probability
+
+
+def _two_sided_unselected_probability(
+    spec: SelectionRuleSpec,
+    magnitude: float,
+) -> float:
+    lower = spec.intervals[0][1]
+    upper = spec.intervals[1][0]
+    return _probability(_interval_probability(lower, upper, magnitude))
+
+
+def _solve_magnitude_for_probability(
+    *,
+    spec: SelectionRuleSpec,
+    direction_sign: float,
+    target_probability: float,
+) -> tuple[float, float]:
+    if spec.key != "two_sided_p_lt_alpha":
+        magnitude, achieved_probability = _one_sided_critical_solution(
+            spec=spec,
+            target_probability=target_probability,
+        )
+    elif _is_near_null_target(
+        spec=spec,
+        target_probability=target_probability,
+    ):
+        target_increment = target_probability - spec.alpha
+        magnitude = _bracket_and_bisect_magnitude(
+            is_satisfied=lambda candidate: (
+                _probability_increment_from_null(
+                    spec,
+                    direction_sign * candidate,
+                )
+                >= target_increment
+            ),
+            initial_high=STABLE_INCREMENT_MAX_ABS_DELTA,
+        )
+        achieved_probability = _probability(
+            fsum(
+                (
+                    spec.alpha,
+                    _probability_increment_from_null(
+                        spec,
+                        direction_sign * magnitude,
+                    ),
+                )
+            )
+        )
+    elif _is_near_one_target(
+        spec=spec,
+        target_probability=target_probability,
+    ):
+        target_unselected_probability = 1.0 - target_probability
+        magnitude = _bracket_and_bisect_magnitude(
+            is_satisfied=lambda candidate: (
+                _two_sided_unselected_probability(
+                    spec,
+                    candidate,
+                )
+                <= target_unselected_probability
+            )
+        )
+        achieved_probability = _probability(
+            1.0 - _two_sided_unselected_probability(spec, magnitude)
+        )
+    else:
+        magnitude = _bracket_and_bisect_magnitude(
+            is_satisfied=lambda candidate: (
+                _probability_at_delta(
+                    spec,
+                    direction_sign * candidate,
+                )
+                >= target_probability
+            )
+        )
+        achieved_probability = _probability_at_delta(
+            spec,
+            direction_sign * magnitude,
+        )
+
+    if achieved_probability < target_probability:
+        raise ValidationError(
+            "Could not certify the critical effect probability at floating-point precision."
+        )
+    return magnitude, achieved_probability
 
 
 def _critical_effect_working(

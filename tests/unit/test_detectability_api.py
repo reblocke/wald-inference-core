@@ -57,11 +57,14 @@ def test_selected_claim_probability_reuses_all_six_selection_rules(
     )
 
     assert isinstance(probabilities, np.ndarray)
-    assert probabilities == pytest.approx(
-        [metric.selected_claim_probability for metric in metrics],
-        rel=0.0,
-        abs=0.0,
-    )
+    expected = np.asarray([metric.selected_claim_probability for metric in metrics])
+    if selection_rule in {
+        "two_sided_p_lt_alpha",
+        "one_sided_positive_p_lt_alpha",
+        "one_sided_negative_p_lt_alpha",
+    }:
+        expected[effects == 0.0] = 0.025
+    assert np.array_equal(probabilities, expected)
 
 
 def test_scalar_and_array_probability_results_preserve_public_shape_contract() -> None:
@@ -183,22 +186,62 @@ def test_target_at_nominal_null_probability_returns_zero_distance() -> None:
         assert result.achieved_probability == pytest.approx(0.05, abs=1e-15)
 
 
-def test_probability_at_null_matches_nominal_alpha_for_p_value_rules() -> None:
-    for selection_rule, claim_direction in [
+@pytest.mark.parametrize(
+    "alpha",
+    [
+        1e-300,
+        1e-20,
+        1e-6,
+        0.025,
+        0.05,
+        0.18998074903745185,
+        0.24552222611130556,
+        0.5,
+        0.9,
+    ],
+)
+@pytest.mark.parametrize(
+    ("selection_rule", "claim_direction"),
+    [
         ("two_sided_p_lt_alpha", "positive"),
         ("one_sided_positive_p_lt_alpha", "positive"),
         ("one_sided_negative_p_lt_alpha", "negative"),
-    ]:
-        probability = selected_claim_probability(
-            2.0,
-            null_working=2.0,
-            standard_error=0.5,
-            alpha=0.025,
-            selection_rule=selection_rule,
-            claim_direction=claim_direction,
-        )
+    ],
+)
+def test_probability_at_null_is_bit_exact_for_scalar_vector_and_curve(
+    alpha: float,
+    selection_rule: str,
+    claim_direction: str,
+) -> None:
+    scalar = selected_claim_probability(
+        2.0,
+        null_working=2.0,
+        standard_error=0.5,
+        alpha=alpha,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
+    vector = selected_claim_probability(
+        [2.0, 2.0],
+        null_working=2.0,
+        standard_error=0.5,
+        alpha=alpha,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
+    curve = power_curve(
+        [2.0, 2.0],
+        null_working=2.0,
+        standard_error=0.5,
+        alpha=alpha,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
 
-        assert probability == pytest.approx(0.025, rel=1e-14, abs=1e-15)
+    assert scalar == alpha
+    assert isinstance(vector, np.ndarray)
+    assert np.array_equal(vector, np.asarray([alpha, alpha]))
+    assert np.array_equal(curve, np.asarray([alpha, alpha]))
 
 
 def test_target_strictly_above_nominal_alpha_requires_nonzero_distance() -> None:
@@ -211,6 +254,90 @@ def test_target_strictly_above_nominal_alpha_requires_nonzero_distance() -> None
 
     assert result.critical_delta > 0.0
     assert result.achieved_probability >= result.target_probability
+
+
+@pytest.mark.parametrize(
+    ("selection_rule", "claim_direction"),
+    [
+        ("two_sided_p_lt_alpha", "positive"),
+        ("one_sided_positive_p_lt_alpha", "positive"),
+    ],
+)
+def test_near_null_routing_boundary_is_monotonic_from_both_sides(
+    selection_rule: str,
+    claim_direction: str,
+) -> None:
+    alpha = 0.05
+    boundary = alpha + (detectability.STABLE_INCREMENT_MAX_RELATIVE_TARGET * alpha)
+    below = math.nextafter(boundary, alpha)
+    above = math.nextafter(boundary, 1.0)
+
+    lower_result = critical_effect_for_target_probability(
+        null_working=0.0,
+        standard_error=1.0,
+        alpha=alpha,
+        target_probability=below,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
+    upper_result = critical_effect_for_target_probability(
+        null_working=0.0,
+        standard_error=1.0,
+        alpha=alpha,
+        target_probability=above,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
+
+    assert lower_result.achieved_probability >= below
+    assert upper_result.achieved_probability >= above
+    assert upper_result.critical_delta >= lower_result.critical_delta
+    assert upper_result.critical_delta == pytest.approx(
+        lower_result.critical_delta,
+        rel=1e-6,
+    )
+
+
+@pytest.mark.parametrize(
+    ("selection_rule", "claim_direction"),
+    [
+        ("two_sided_p_lt_alpha", "positive"),
+        ("one_sided_positive_p_lt_alpha", "positive"),
+    ],
+)
+def test_near_one_routing_boundary_is_monotonic_from_both_sides(
+    selection_rule: str,
+    claim_direction: str,
+) -> None:
+    alpha = 0.05
+    boundary = 1.0 - (detectability.STABLE_COMPLEMENT_MAX_RELATIVE_TARGET * (1.0 - alpha))
+    below = math.nextafter(boundary, alpha)
+    above = math.nextafter(boundary, 1.0)
+
+    lower_result = critical_effect_for_target_probability(
+        null_working=0.0,
+        standard_error=1.0,
+        alpha=alpha,
+        target_probability=below,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
+    upper_result = critical_effect_for_target_probability(
+        null_working=0.0,
+        standard_error=1.0,
+        alpha=alpha,
+        target_probability=above,
+        selection_rule=selection_rule,
+        claim_direction=claim_direction,
+    )
+
+    assert lower_result.achieved_probability >= below
+    assert upper_result.achieved_probability >= above
+    assert abs(upper_result.critical_delta) >= abs(lower_result.critical_delta)
+    assert abs(upper_result.critical_delta) == pytest.approx(
+        abs(lower_result.critical_delta),
+        rel=1e-7,
+    )
 
 
 def test_halving_standard_error_halves_critical_working_distance() -> None:

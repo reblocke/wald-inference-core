@@ -138,7 +138,10 @@ the same shape. `power_curve` is the corresponding nonempty one-dimensional conv
 
 `critical_effect_for_target_probability` returns the smallest effect in the requested direction
 whose exact selected-claim probability meets the finite target strictly between zero and one. It
-uses explicit finite bracketing and monotonic bisection. Inversion is intentionally limited to:
+uses stable integrated probability increments near the null, a one-sided quantile-domain objective
+away from that boundary, and explicit finite bracketing and monotonic bisection. One- and two-sided
+targets near one are solved in the unselected-probability domain to avoid subtractive roundoff.
+Inversion is intentionally limited to:
 
 ```text
 two_sided_p_lt_alpha             positive or negative branch
@@ -150,6 +153,20 @@ The immutable `CriticalEffectResult` records the rule, direction, alpha, target,
 error, signed standardized `critical_delta`, working-scale critical effect, and achieved
 probability. Unsupported inverse rules, incoherent one-sided directions, a target without a finite
 bracket, or an unrepresentable working-scale result raise `ValidationError`.
+
+The float64 precision routes are explicit. Targets satisfying
+`target - alpha <= 1e-8 * alpha` use the stable increment from the exact-null anchor. Targets
+satisfying `1 - target <= 1e-8 * (1 - alpha)` use the unselected-probability complement. Other
+one-sided targets use the normal-quantile ordering directly; other two-sided targets use the
+canonical selected-interval probability. Each bisection result must satisfy its route-specific
+objective while the immediately preceding positive float does not. The achieved probability is
+computed from the same stable objective and the solver fails closed if it cannot certify the
+target; it is not raised to the target after an independently rounded forward evaluation.
+
+For the three invertible p-value rules, forward probability at an exact zero standardized distance
+is bit-exact `alpha`. Near-null forward evaluation uses the same stable selection-interval increment
+as inversion for `abs(delta) <= 1e-2` instead of relying on rounded differences between nearly equal
+tail probabilities.
 
 For ratio measures, these functions operate on the log working scale. Use the effect registry
 transformations to map returned critical effects to the natural scale; equal log distances are

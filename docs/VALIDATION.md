@@ -49,9 +49,12 @@ failure.
   compatibility surfaces.
 - **Property tests** cover valid finite ranges, symmetry, identity/log equivalence, pairwise
   antisymmetry, requested endpoint support, detectability monotonicity and symmetry, information
-  scaling, and scalar/array consistency.
+  scaling, scalar/array consistency, and one-sided quantile-domain predecessor minimality across
+  low and high alpha values.
 - **Scientific-reference tests** compare formulas with independently expressed normal-distribution
-  identities or closed forms, including analytic one-sided and direct-tail two-sided detectability.
+  identities or closed forms, including analytic one-sided, direct-tail two-sided, and
+  hard-coded mpmath one-sided quantile differences plus high-precision floating-boundary
+  detectability references.
 - **Regression tests** compare every core-owned value with the frozen corpus and preserve exact
   finite/undefined conventions.
 - **Packaging tests** inspect wheel/sdist metadata and contents.
