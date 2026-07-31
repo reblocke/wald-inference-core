@@ -9,7 +9,8 @@ All notable changes to this project are documented here.
 - Pin every third-party GitHub Action to a live full commit SHA while retaining the established
   checkout, Python, uv, and artifact-transfer major versions, and install an exact checksummed
   GitHub CLI release before any credentialed release command.
-- Add Dependabot configuration for the locked uv environment and GitHub Actions, private
+- Add Dependabot configuration for the locked uv environment and GitHub Actions while preserving
+  the released NumPy and SciPy scientific compatibility ceilings, plus private
   vulnerability-reporting guidance, synthetic/no-PHI contribution rules, issue forms, a pull
   request template, and durable governance policy.
 - Require future releases to use a GitHub-verified signed annotated tag, one reproducible asset

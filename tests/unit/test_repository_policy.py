@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import tomllib
 from collections import defaultdict
 from pathlib import Path
 
@@ -52,6 +53,13 @@ def _job_block(workflow: str, job: str, next_job: str | None = None) -> str:
     start = workflow.index(f"  {job}:")
     end = len(workflow) if next_job is None else workflow.index(f"\n  {next_job}:", start)
     return workflow[start:end]
+
+
+def _dependabot_update_block(config: str, ecosystem: str) -> str:
+    marker = f'  - package-ecosystem: "{ecosystem}"'
+    start = config.index(marker)
+    end = config.find("\n  - package-ecosystem:", start + len(marker))
+    return config[start:] if end == -1 else config[start:end]
 
 
 def test_all_external_actions_use_reviewed_full_shas_and_exact_version_comments() -> None:
@@ -291,16 +299,34 @@ def test_workflows_have_no_pypi_publication_path() -> None:
 
 def test_dependabot_covers_uv_and_actions_without_major_action_updates_or_automerge() -> None:
     dependabot = (PROJECT_ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
-    pyproject = (PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    uv_update = _dependabot_update_block(dependabot, "uv")
+    actions_update = _dependabot_update_block(dependabot, "github-actions")
 
-    assert 'package-ecosystem: "uv"' in dependabot
-    assert 'package-ecosystem: "github-actions"' in dependabot
     assert dependabot.count('interval: "weekly"') == 2
     assert dependabot.count("default-days: 7") == 2
-    assert '"numpy>=2.2.5,<2.3"' in pyproject
-    assert 'dependency-name: "numpy"' in dependabot
-    assert dependabot.count('">=2.3"') == 1
-    assert '"version-update:semver-major"' in dependabot
+    assert set(pyproject["project"]["dependencies"]) == {
+        "numpy>=2.2.5,<2.3",
+        "scipy>=1.14.1,<1.15",
+    }
+    version_ignore_rules = re.findall(
+        r'^      - dependency-name: "([^"]+)"\n'
+        r"        versions:\n"
+        r'^          - "([^"]+)"$',
+        uv_update,
+        re.MULTILINE,
+    )
+    assert version_ignore_rules == [
+        ("numpy", ">=2.3"),
+        ("scipy", ">=1.15"),
+    ]
+    assert uv_update.count("      - dependency-name:") == len(version_ignore_rules)
+    assert uv_update.count("        versions:") == len(version_ignore_rules)
+    assert uv_update.count('          - "') == len(version_ignore_rules)
+    assert re.findall(r'^      - dependency-name: "([^"]+)"$', actions_update, re.MULTILINE) == [
+        "*"
+    ]
+    assert '"version-update:semver-major"' in actions_update
     assert "automerge" not in dependabot.lower()
 
 
