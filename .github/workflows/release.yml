@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   verify-build:
+    name: Verify tag and build release bundle
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -191,12 +192,13 @@ jobs:
           retention-days: 14
 
   attest:
+    name: Attest release artifacts
     needs: verify-build
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
-      attestations: write
+      id-token: write # Authenticate artifact provenance attestations.
+      attestations: write # Publish provenance attestations for release artifacts.
 
     steps:
       - name: Download verified release bundle
@@ -225,12 +227,13 @@ jobs:
           subject-path: release-bundle/assets/*.tar.gz
 
   release:
+    name: Verify and publish immutable release
     needs:
       - verify-build
       - attest
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # Create and publish the verified GitHub release.
 
     steps:
       - name: Download verified release bundle

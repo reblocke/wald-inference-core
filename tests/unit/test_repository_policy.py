@@ -98,11 +98,16 @@ def test_workflow_permissions_are_narrow_and_job_scoped() -> None:
     assert "enable-cache: true" not in verify_build
     assert "enable-cache: false" in verify_build
     assert (
-        "permissions:\n      contents: read\n      id-token: write\n      attestations: write"
+        "permissions:\n      contents: read\n"
+        "      id-token: write # Authenticate artifact provenance attestations.\n"
+        "      attestations: write # Publish provenance attestations for release artifacts."
         in (attest)
     )
     assert "contents: write" not in attest
-    assert "permissions:\n      contents: write" in publish
+    assert (
+        "permissions:\n"
+        "      contents: write # Create and publish the verified GitHub release." in publish
+    )
     assert "id-token: write" not in publish
     assert "attestations: write" not in publish
     assert release.count("contents: write") == 1
@@ -262,6 +267,7 @@ def test_dependabot_covers_uv_and_actions_without_major_action_updates_or_autome
     assert 'package-ecosystem: "uv"' in dependabot
     assert 'package-ecosystem: "github-actions"' in dependabot
     assert dependabot.count('interval: "weekly"') == 2
+    assert dependabot.count("default-days: 7") == 2
     assert '"version-update:semver-major"' in dependabot
     assert "automerge" not in dependabot.lower()
 
