@@ -66,7 +66,7 @@ from .types import (
     WaldReconstruction,
 )
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 __all__ = [
     "DEFAULT_CLAIM_DIRECTION",

@@ -111,11 +111,11 @@ The tag workflow:
 16. reconfirms immutability immediately before publication; and
 17. publishes once as stable, then verifies immutable-release and release-asset attestations.
 
-The expected v0.4.1 assets are:
+The expected v0.4.2 assets are:
 
 ```text
-wald_inference-0.4.1-py3-none-any.whl
-wald_inference-0.4.1.tar.gz
+wald_inference-0.4.2-py3-none-any.whl
+wald_inference-0.4.2.tar.gz
 SHA256SUMS
 baseline-parity.json
 ```
