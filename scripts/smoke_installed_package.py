@@ -63,8 +63,8 @@ SMOKE_CODE = textwrap.dedent(
         raise AssertionError(f"unexpected smoke value type: {type(value)!r}")
 
 
-    assert version("wald-inference") == "0.4.1"
-    assert wald_inference.__version__ == "0.4.1"
+    assert version("wald-inference") == "0.4.2"
+    assert wald_inference.__version__ == "0.4.2"
     assert wald_inference.__all__
     for exported_name in wald_inference.__all__:
         assert hasattr(wald_inference, exported_name), exported_name

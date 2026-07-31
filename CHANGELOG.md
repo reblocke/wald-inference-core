@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-07-30
+
 ### Governance and release security
 
 - Pin every third-party GitHub Action to a live full commit SHA while retaining the established
@@ -20,8 +22,13 @@ All notable changes to this project are documented here.
 - Require each verified release tag target to be contained in protected `main` history and defer
   isolated project-version parsing until after cryptographic tag verification.
 - Disable shared dependency caching in the release-artifact build job.
+- Give only the release publication job the attestation-read permission required to verify the
+  immutable release and its hosted assets after publication.
+- Reject empty or whitespace-only version-bounded release notes both before artifact transfer and
+  again before draft creation.
 - Add regressions for action pins, least-privilege job permissions, current-version release notes,
-  draft-first immutable publication, PyPI prohibition, and public security/privacy policy.
+  draft-first immutable publication, exact NumPy/SciPy Dependabot ceilings, PyPI prohibition, and
+  public security/privacy policy.
 - Preserve every numerical formula, public API, tolerance, dependency resolution, and frozen
   baseline value.
 
@@ -253,7 +260,8 @@ All notable changes to this project are documented here.
 - The package implements documented Wald approximations, not exact fitted-model likelihood,
   arbitrary non-Wald intervals, Bayesian inference, or design-specific sample-size calculations.
 
-[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/reblocke/wald-inference-core/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/reblocke/wald-inference-core/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/reblocke/wald-inference-core/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/reblocke/wald-inference-core/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/reblocke/wald-inference-core/compare/v0.2.1...v0.3.0

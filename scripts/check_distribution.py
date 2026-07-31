@@ -10,7 +10,7 @@ import tarfile
 import zipfile
 from pathlib import Path, PurePosixPath
 
-DIST_STEM = "wald_inference-0.4.1"
+DIST_STEM = "wald_inference-0.4.2"
 WHEEL_NAME = f"{DIST_STEM}-py3-none-any.whl"
 SDIST_NAME = f"{DIST_STEM}.tar.gz"
 COPYRIGHT = "Copyright (c) 2026 Brian Locke"
@@ -86,7 +86,7 @@ def check_distribution(dist_dir: Path) -> list[str]:
             metadata = email.message_from_bytes(archive.read(metadata_names[0]))
             expected_headers = {
                 "Name": "wald-inference",
-                "Version": "0.4.1",
+                "Version": "0.4.2",
                 "Author": "Brian Locke",
                 "Maintainer": "Brian Locke",
                 "License-Expression": "MIT",

@@ -17,7 +17,8 @@ while retaining the legacy z-sum benchmark separately. Version `0.4.0` adds type
 precision-guardrail and assumed-effect sensitivity results while preserving every existing
 per-target calculation. Version `0.4.1` repairs threshold-transition bracketing in inverse
 precision and makes structured pairwise comparisons reuse the canonical exact-binary64 support
-ratio. It also fails closed on natural-ratio underflow.
+ratio. It also fails closed on natural-ratio underflow. Version `0.4.2` hardens dependency
+governance and signed, immutable GitHub release verification without changing numerical behavior.
 
 ## Question supported
 
@@ -74,11 +75,11 @@ For development from a clone:
 uv sync --locked --all-groups
 ```
 
-GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.4.1
+GitHub Releases, not PyPI, are the authorized distribution channel. After downloading the v0.4.2
 wheel:
 
 ```bash
-python -m pip install ./wald_inference-0.4.1-py3-none-any.whl
+python -m pip install ./wald_inference-0.4.2-py3-none-any.whl
 ```
 
 The release page is <https://github.com/reblocke/wald-inference-core/releases>. A downstream
@@ -280,7 +281,7 @@ privacy behavior.
 
 ## Version, citation, license, and contact
 
-- Version prepared for release: `0.4.1`
+- Version prepared for release: `0.4.2`
 - Governance and maintenance contact: repository issues and pull requests using the documented
   synthetic-input boundary.
 - Vulnerabilities: use the private process in [SECURITY.md](SECURITY.md), never a public report.

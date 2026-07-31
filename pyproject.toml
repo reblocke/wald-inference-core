@@ -1,6 +1,6 @@
 [project]
 name = "wald-inference"
-version = "0.4.1"
+version = "0.4.2"
 description = "Pure-Python utilities for documented one-parameter Wald inference"
 readme = "README.md"
 requires-python = ">=3.11"

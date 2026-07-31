@@ -381,7 +381,7 @@ ValidationError
 __version__
 ```
 
-`__version__` is `0.4.1`. Canonical numerical outputs intended for serialization contain finite
+`__version__` is `0.4.2`. Canonical numerical outputs intended for serialization contain finite
 values or documented `None`; invalid inputs do not return sentinel NaN or infinity. The documented
 `SelectionRuleSpec.intervals` infinities are structural open-tail boundaries, not calculated result
 values.

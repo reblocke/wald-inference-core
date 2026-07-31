@@ -39,7 +39,7 @@ def _write_test_sdist(
             format=tarfile.PAX_FORMAT,
         ) as archive,
     ):
-        root = tarfile.TarInfo("wald_inference-0.4.1")
+        root = tarfile.TarInfo("wald_inference-0.4.2")
         root.type = tarfile.DIRTYPE
         root.mode = 0o755
         root.mtime = timestamp
@@ -48,7 +48,7 @@ def _write_test_sdist(
         archive.addfile(root)
 
         payload = b"reproducible source\n"
-        source = tarfile.TarInfo("wald_inference-0.4.1/example.txt")
+        source = tarfile.TarInfo("wald_inference-0.4.2/example.txt")
         source.mode = 0o644
         source.mtime = timestamp + 1
         source.uid = uid
@@ -79,8 +79,8 @@ def test_sdist_normalization_removes_build_time_and_owner_metadata(tmp_path: Pat
     with tarfile.open(first, mode="r:gz") as archive:
         members = archive.getmembers()
         assert [member.name for member in members] == [
-            "wald_inference-0.4.1",
-            "wald_inference-0.4.1/example.txt",
+            "wald_inference-0.4.2",
+            "wald_inference-0.4.2/example.txt",
         ]
         assert all(member.mtime == source_date_epoch for member in members)
         assert all(member.uid == 0 and member.gid == 0 for member in members)
@@ -96,7 +96,7 @@ def test_release_notes_extract_only_the_requested_current_version() -> None:
 
 - Future work that must not appear.
 
-## [0.4.1] - 2026-07-30
+## [0.4.2] - 2026-07-30
 
 ### Fixed
 
@@ -106,13 +106,13 @@ def test_release_notes_extract_only_the_requested_current_version() -> None:
 
 - Historical detail that must not appear.
 
-[Unreleased]: https://example.invalid/compare/v0.4.1...HEAD
+[Unreleased]: https://example.invalid/compare/v0.4.2...HEAD
 """
 
-    notes = EXTRACT_RELEASE_NOTES.extract_release_notes(changelog, "0.4.1")
+    notes = EXTRACT_RELEASE_NOTES.extract_release_notes(changelog, "0.4.2")
 
     assert notes == (
-        "# wald-inference 0.4.1\n\nReleased 2026-07-30.\n\n### Fixed\n\n- Current release detail.\n"
+        "# wald-inference 0.4.2\n\nReleased 2026-07-30.\n\n### Fixed\n\n- Current release detail.\n"
     )
     assert "Future work" not in notes
     assert "Historical detail" not in notes
@@ -140,11 +140,11 @@ def test_current_repository_release_notes_are_extractable() -> None:
         ("# Changelog\n\n## [0.4.0] - 2026-07-29\n\n- Old.\n", "found 0"),
         (
             "# Changelog\n\n"
-            "## [0.4.1] - 2026-07-30\n\n- First.\n\n"
-            "## [0.4.1] - 2026-07-31\n\n- Duplicate.\n",
+            "## [0.4.2] - 2026-07-30\n\n- First.\n\n"
+            "## [0.4.2] - 2026-07-31\n\n- Duplicate.\n",
             "found 2",
         ),
-        ("# Changelog\n\n## [0.4.1] - 2026-07-30\n\n", "is empty"),
+        ("# Changelog\n\n## [0.4.2] - 2026-07-30\n\n", "is empty"),
     ],
 )
 def test_release_notes_reject_missing_duplicate_or_empty_sections(
@@ -152,4 +152,4 @@ def test_release_notes_reject_missing_duplicate_or_empty_sections(
     message: str,
 ) -> None:
     with pytest.raises(ValueError, match=message):
-        EXTRACT_RELEASE_NOTES.extract_release_notes(changelog, "0.4.1")
+        EXTRACT_RELEASE_NOTES.extract_release_notes(changelog, "0.4.2")
