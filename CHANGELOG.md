@@ -16,6 +16,9 @@ All notable changes to this project are documented here.
   bundle, separate wheel/source-distribution build-provenance attestations, an exact-asset draft,
   hosted re-download and byte-exact asset/body verification, immutable-release gates, and one-time
   stable publication.
+- Require each verified release tag target to be contained in protected `main` history and defer
+  isolated project-version parsing until after cryptographic tag verification.
+- Disable shared dependency caching in the release-artifact build job.
 - Add regressions for action pins, least-privilege job permissions, current-version release notes,
   draft-first immutable publication, PyPI prohibition, and public security/privacy policy.
 - Preserve every numerical formula, public API, tolerance, dependency resolution, and frozen

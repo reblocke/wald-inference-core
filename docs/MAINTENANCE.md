@@ -44,9 +44,9 @@ proposals, not merge authority; major GitHub Action upgrades remain explicit dec
 3. Confirm `main` is clean, CI passes, and the expected reviewed head is exact.
 4. Create a GitHub-verifiable signed annotated tag `vX.Y.Z` at that exact commit.
 5. Push the tag. The workflow installs an exact checksummed GitHub CLI, then, before installing
-   repository code, requires the tag name to match the package version, binds the local/event tag
-   object to the verified remote object, confirms its target, and requires GitHub signature
-   verification.
+   repository code, binds the local/event tag object to the verified remote object, confirms its
+   target and signature, requires that target to be contained in the protected `main` history, and
+   checks the tag name against the package version using isolated Python.
 6. The read-only job reruns all gates, builds twice for byte reproducibility, cold-installs the
    wheel, extracts only the tagged version's changelog section, and transfers one checksummed
    bundle.

@@ -95,6 +95,8 @@ def test_workflow_permissions_are_narrow_and_job_scoped() -> None:
     assert "contents: write" not in verify_build
     assert "id-token: write" not in verify_build
     assert "attestations: write" not in verify_build
+    assert "enable-cache: true" not in verify_build
+    assert "enable-cache: false" in verify_build
     assert (
         "permissions:\n      contents: read\n      id-token: write\n      attestations: write"
         in (attest)
@@ -111,7 +113,11 @@ def test_workflow_permissions_are_narrow_and_job_scoped() -> None:
 def test_release_requires_verified_signed_tag_before_repository_code() -> None:
     release = (WORKFLOW_ROOT / "release.yml").read_text(encoding="utf-8")
 
-    assert 'tomllib.load(open("pyproject.toml", "rb"))["project"]["version"]' in release
+    version_parse = (
+        "python -I -c 'import tomllib; "
+        'print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])\''
+    )
+    assert version_parse in release
     assert 'test "$GITHUB_REF_NAME" = "v${project_version}"' in release
     assert 'git cat-file -t "$GITHUB_REF_NAME"' in release
     assert 'git rev-parse "$GITHUB_REF_NAME^{commit}"' in release
@@ -123,10 +129,24 @@ def test_release_requires_verified_signed_tag_before_repository_code() -> None:
     assert ')" = "valid"' in release
     assert "--jq '.object.type'" in release
     assert ')" = "commit"' in release
+    assert '"https://github.com/${GITHUB_REPOSITORY}.git"' in release
+    assert "+refs/heads/main:refs/remotes/origin/main" in release
+    assert 'git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main' in release
+    assert release.index(".verification.verified") < release.index("git fetch")
+    assert release.index("git merge-base --is-ancestor") < release.index(version_parse)
+    assert release.index(".verification.verified") < release.index(version_parse)
     assert release.index(".verification.verified") < release.index("uv sync --locked")
     assert release.index(".verification.verified") < release.index(
         "scripts/check_release_metadata.py"
     )
+
+
+def test_checkout_credentials_are_not_persisted() -> None:
+    workflow_text = "\n".join(path.read_text(encoding="utf-8") for path in _workflow_paths())
+
+    checkout_count = workflow_text.count("uses: actions/checkout@")
+    assert checkout_count > 0
+    assert workflow_text.count("persist-credentials: false") == checkout_count
 
 
 def test_release_uses_checksummed_patched_github_cli_before_credentialed_commands() -> None:
