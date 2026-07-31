@@ -41,30 +41,28 @@ Changing either ceiling requires an explicit dependency-compatibility review and
 1. Finalize the changelog section, CFF date/version, package version, and `__version__`.
 2. Verify live repository settings: required review/CI for `main`, protection for released `v*`
    tags, read-only default workflow permissions, private vulnerability reporting, dependency
-   alerts and Dependabot security updates, and immutable releases. Confirm that the
-   `RELEASE_SETTINGS_READ_TOKEN` secret is an expiring fine-grained token restricted to this
-   repository with Administration **read** permission only.
+   alerts and Dependabot security updates, and immutable releases.
 3. Confirm `main` is clean, CI passes, and the expected reviewed head is exact.
-4. Create a GitHub-verifiable signed annotated tag `vX.Y.Z` at that exact commit.
+4. Create an annotated tag `vX.Y.Z` at that exact commit.
 5. Push the tag. The workflow installs an exact checksummed GitHub CLI, then, before installing
-   repository code, binds the local/event tag object to the verified remote object, confirms its
-   target and signature, requires that target to be contained in the protected `main` history, and
-   checks the tag name against the package version using isolated Python.
+   repository code, binds the local/event tag object to the exact remote tag object, confirms its
+   target, requires that target to be contained in the protected `main` history, and checks the tag
+   name against the package version using isolated Python.
 6. The read-only job reruns all gates, builds twice for byte reproducibility, cold-installs the
    wheel, extracts only the tagged version's changelog section, and transfers one checksummed
    bundle.
 7. A separate read/OIDC/attestations job generates build provenance for the wheel and source
    distribution without release-write permission.
-8. The contents-write job requires immutable releases, creates a draft with exactly the wheel,
-   source distribution, `SHA256SUMS`, and parity report, re-downloads and byte-compares them,
-   compares the draft body byte-for-byte, reconfirms immutability, and publishes once as stable.
-9. Verify the immutable release and each release asset attestation. Then run independent cold-clone
-   and downstream-adapter validation and record the release URL, commit, workflow run, artifact
-   names, SHA-256 values, and adoption status.
+8. The contents-write job creates a draft with exactly the wheel, source distribution,
+   `SHA256SUMS`, and parity report, re-downloads and byte-compares them, compares the draft body
+   byte-for-byte, and publishes once as stable.
+9. Require the published release to report immutable and verify the release and each release asset
+   attestation. Then run independent cold-clone and downstream-adapter validation and record the
+   release URL, commit, workflow run, artifact names, SHA-256 values, and adoption status.
 
 The draft is the candidate release; there is no published-prerelease promotion stage. If an
 internal candidate check fails, leave the draft visible for inspection. If post-publication
-validation finds a defect, document it, fix it in a new commit/version, and release a new signed
+validation finds a defect, document it, fix it in a new commit/version, and release a new annotated
 tag. Never replace a published binary or move a published tag.
 
 PyPI publication is not authorized. Downstream repositories must pin the exact GitHub release wheel

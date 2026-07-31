@@ -15,12 +15,12 @@ All notable changes to this project are documented here.
   the released NumPy and SciPy scientific compatibility ceilings, plus private
   vulnerability-reporting guidance, synthetic/no-PHI contribution rules, issue forms, a pull
   request template, and durable governance policy.
-- Require future releases to use a GitHub-verified signed annotated tag, one reproducible asset
+- Require future releases to use an exact remote-bound annotated tag, one reproducible asset
   bundle, separate wheel/source-distribution build-provenance attestations, an exact-asset draft,
-  hosted re-download and byte-exact asset/body verification, immutable-release gates, and one-time
-  stable publication.
-- Require each verified release tag target to be contained in protected `main` history and defer
-  isolated project-version parsing until after cryptographic tag verification.
+  hosted re-download and byte-exact asset/body verification, one-time stable publication, and
+  post-publication immutable-release proof.
+- Require each annotated release tag target to be contained in protected `main` history and defer
+  isolated project-version parsing until after exact remote tag-object and target verification.
 - Disable shared dependency caching in the release-artifact build job.
 - Give only the release publication job the attestation-read permission required to verify the
   immutable release and its hosted assets after publication.
