@@ -55,14 +55,14 @@
 
 - Downstream applications consume exact released versions; they never pin an unreviewed branch.
 - A numerical bug fix requires a patch release and a scientific-impact note.
-- Release artifacts are built from a GitHub-verified signed annotated tag, reproduced
-  byte-for-byte, installed in a cold environment, checksummed, and attached to a draft GitHub
-  release.
+- Release artifacts are built from an annotated tag whose local and remote tag objects resolve to
+  the exact protected-`main` commit, reproduced byte-for-byte, installed in a cold environment,
+  checksummed, and attached to a draft GitHub release.
 - Credentialed release commands use an exact checksummed GitHub CLI version; do not rely on the
   mutable runner-installed binary.
-- The draft is the candidate. Publish it once as stable only after exact hosted-asset verification,
-  build-provenance attestations, and an immutable-release settings gate. Never rebuild, replace, or
-  promote assets under an existing published tag.
+- The draft is the candidate. Publish it once as stable only after exact hosted-asset verification
+  and build-provenance attestations, then require proof that the published release is immutable.
+  Never rebuild, replace, or promote assets under an existing published tag.
 
 ## Done criteria
 

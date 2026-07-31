@@ -18,7 +18,8 @@ precision-guardrail and assumed-effect sensitivity results while preserving ever
 per-target calculation. Version `0.4.1` repairs threshold-transition bracketing in inverse
 precision and makes structured pairwise comparisons reuse the canonical exact-binary64 support
 ratio. It also fails closed on natural-ratio underflow. Version `0.4.2` hardens dependency
-governance and signed, immutable GitHub release verification without changing numerical behavior.
+governance, exact annotated-tag binding, and immutable GitHub release verification without changing
+numerical behavior.
 
 ## Question supported
 

@@ -46,25 +46,24 @@ cold-install smoke result. Report every skipped check, warning, and generated ar
 
 ## Release changes
 
-A release change requires a reviewed pull request and a GitHub-verified signed annotated tag. The
-tag must equal `v` plus the authoritative package version and point to the exact reviewed commit.
+A release change requires a reviewed pull request and an annotated tag. The tag must equal `v`
+plus the authoritative package version and point to the exact reviewed commit.
 The release workflow:
 
 1. installs and selects an exact checksummed GitHub CLI version;
-2. binds the local/event annotated tag object to the GitHub-verified remote object and verifies it
-   before installing or executing repository code;
-3. requires the verified tag target to be contained in the protected `main` history, then checks
+2. binds the local/event annotated tag object to the exact remote tag object and target before
+   installing or executing repository code;
+3. requires the annotated tag target to be contained in the protected `main` history, then checks
    the tag against the project version using isolated Python;
 4. runs the locked test, parity, reproducibility, distribution, and cold-install gates;
 5. builds and transfers one complete exact-version asset bundle;
 6. generates build-provenance attestations for the wheel and source distribution in a separate
    narrowly permissioned job;
-7. requires immutable releases before creating a draft;
-8. creates a draft with exactly the wheel, source distribution, checksums, and parity report;
-9. re-downloads and byte-compares every asset and verifies the current version's release body
+7. creates a draft with exactly the wheel, source distribution, checksums, and parity report;
+8. re-downloads and byte-compares every asset and verifies the current version's release body
    byte-for-byte;
-10. reconfirms immutability; and
-11. publishes the verified draft once as a stable immutable release.
+9. publishes the verified draft once as stable, then requires the release to report immutable and
+   verifies the release and every hosted asset attestation.
 
 If any check fails after draft creation, retain the unpublished draft for inspection. Do not move a
 tag or replace an asset. PyPI publication remains prohibited.

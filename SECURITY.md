@@ -44,5 +44,5 @@ synthetic artifact that demonstrates the issue.
 - Clinical interpretation and patient-specific use are out of scope. This mathematical library is
   not clinical decision support or a regulated medical device.
 
-A security fix requires a new reviewed commit, version, signed annotated tag, and immutable
-release. Never move an affected tag or replace a published asset.
+A security fix requires a new reviewed commit, version, annotated tag, and immutable release.
+Never move an affected tag or replace a published asset.

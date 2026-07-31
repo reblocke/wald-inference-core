@@ -264,3 +264,28 @@ found after publication requires a new version and signed tag; no published asse
 publication state is replaced. Repository files cannot enable private vulnerability reporting,
 Dependabot security updates, protection rules, or immutable releases, so those remain explicit
 live administrative gates. Numerical behavior, public APIs, and parity tolerances are unchanged.
+
+## 2026-07-31: Supersede external release credentials with intrinsic release verification
+
+**Context:** The 2026-07-30 release decision required GitHub to report a valid signature on the
+annotated tag and required a separate repository-administration token to query immutable-release
+settings before publication. Those two checks introduce account-level key enrollment and an
+external expiring credential even though the workflow can bind the exact remote annotated-tag
+object to the event commit using its job-scoped token and can verify the published release's
+immutable state and attestations directly.
+
+**Decision:** Supersede only those two requirements. Require an annotated tag, bind its local and
+remote tag objects and target to the event commit with `github.token`, require the target to be in
+protected `main` history, and require the tag to match the project version before repository code
+runs. Do not inspect GitHub signature-verification fields and do not query the administrative
+immutable-release settings endpoint or require `RELEASE_SETTINGS_READ_TOKEN`. Preserve the
+reproducible build, provenance attestations, exact draft asset/body re-download comparison, and
+one-time publication. Immediately after publication, require `isImmutable` to be true and verify
+the release and every hosted asset attestation.
+
+**Consequences:** Release automation needs no credential beyond the job-scoped GitHub token and
+OIDC used for build attestations. The workflow proves tag identity and containment but no longer
+proves tag-author identity cryptographically. Immutability is proved after publication rather than
+preflighted through an administrative setting; if that proof fails, the published record is not
+rewritten and remediation requires a new version and annotated tag. All numerical behavior,
+artifact construction, parity evidence, checksums, and distribution boundaries remain unchanged.

@@ -36,10 +36,9 @@ release, the maintainer must verify the live settings appropriate to the operati
 - immutable releases.
 
 If a required setting is unavailable or disabled, stop before the affected operation. Do not
-weaken a workflow to route around the setting. The immutable-release workflow gate uses the
-`RELEASE_SETTINGS_READ_TOKEN` Actions secret. It must contain a fine-grained, expiring token
-restricted to this repository with Administration **read** permission; it is not used to publish
-or modify settings.
+weaken the artifact, draft-verification, or post-publication proof gates to route around the
+setting. Release automation uses only job-scoped GitHub permissions; live administrative settings
+remain a maintainer verification outside the workflow.
 
 ## Security and privacy
 
@@ -50,10 +49,10 @@ data, restricted source material, or sensitive logs.
 ## Release authority
 
 A future release requires an exact expected head, synchronized package/citation/changelog metadata,
-a GitHub-verified signed annotated tag, all local and CI gates, a reproducible wheel and source
+an exact remote-bound annotated tag, all local and CI gates, a reproducible wheel and source
 distribution, SHA-256 checksums, frozen-parity evidence, build-provenance attestations, exact draft
 asset/body verification, an exact checksummed GitHub CLI version selected before credentialed
-release commands, and live repository release immutability.
+release commands, and proof that the published release is immutable.
 
 The draft is the candidate release. After its exact assets and current-version notes are verified,
 it is published once as a stable immutable release. There is no published-prerelease promotion

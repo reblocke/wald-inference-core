@@ -125,7 +125,7 @@ def test_workflow_permissions_are_narrow_and_job_scoped() -> None:
     assert release.count("attestations: write") == 1
 
 
-def test_release_requires_verified_signed_tag_before_repository_code() -> None:
+def test_release_requires_annotated_tag_binding_before_repository_code() -> None:
     release = (WORKFLOW_ROOT / "release.yml").read_text(encoding="utf-8")
 
     version_parse = (
@@ -139,19 +139,23 @@ def test_release_requires_verified_signed_tag_before_repository_code() -> None:
     assert "/git/ref/tags/${GITHUB_REF_NAME}" in release
     assert 'git rev-parse "refs/tags/$GITHUB_REF_NAME"' in release
     assert "--jq '.tag'" in release
-    assert ".verification.verified" in release
-    assert ".verification.reason" in release
-    assert ')" = "valid"' in release
+    assert "GH_TOKEN: ${{ github.token }}" in release
+    assert ".verification.verified" not in release
+    assert ".verification.reason" not in release
     assert "--jq '.object.type'" in release
     assert ')" = "commit"' in release
     assert '"https://github.com/${GITHUB_REPOSITORY}.git"' in release
     assert "+refs/heads/main:refs/remotes/origin/main" in release
     assert 'git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main' in release
-    assert release.index(".verification.verified") < release.index("git fetch")
+    assert release.index('git rev-parse "refs/tags/$GITHUB_REF_NAME"') < release.index("git fetch")
     assert release.index("git merge-base --is-ancestor") < release.index(version_parse)
-    assert release.index(".verification.verified") < release.index(version_parse)
-    assert release.index(".verification.verified") < release.index("uv sync --locked")
-    assert release.index(".verification.verified") < release.index(
+    assert release.index('git rev-parse "refs/tags/$GITHUB_REF_NAME"') < release.index(
+        version_parse
+    )
+    assert release.index('git rev-parse "refs/tags/$GITHUB_REF_NAME"') < release.index(
+        "uv sync --locked"
+    )
+    assert release.index('git rev-parse "refs/tags/$GITHUB_REF_NAME"') < release.index(
         "scripts/check_release_metadata.py"
     )
 
@@ -175,7 +179,6 @@ def test_release_uses_checksummed_patched_github_cli_before_credentialed_command
     assert release.count("sha256sum --check --strict -") == 2
     assert release.count("Confirm the checksummed GitHub CLI is selected") == 2
     assert verify_build.index("Install checksummed GitHub CLI") < verify_build.index("gh api")
-    assert publish.index("Install checksummed GitHub CLI") < publish.index("gh api")
     assert publish.index("Confirm the checksummed GitHub CLI is selected") < publish.index(
         "gh release create"
     )
@@ -201,9 +204,10 @@ def test_release_is_build_once_attested_draft_first_and_immutable() -> None:
     assert "subject-path: release-bundle/assets/*.whl" in release
     assert "subject-path: release-bundle/assets/*.tar.gz" in release
     assert release.count("find release-bundle/assets -maxdepth 1 -type f | wc -l") >= 2
-    assert release.count('"repos/${GITHUB_REPOSITORY}/immutable-releases"') == 2
-    assert release.count("X-GitHub-Api-Version: 2026-03-10") >= 2
-    assert release.count("secrets.RELEASE_SETTINGS_READ_TOKEN") == 2
+    assert '"repos/${GITHUB_REPOSITORY}/immutable-releases"' not in release
+    assert "RELEASE_SETTINGS_READ_TOKEN" not in release
+    assert "secrets." not in release
+    assert release.count("GH_TOKEN: ${{ github.token }}") == 4
     assert "--draft" in publish
     assert "--verify-tag" in publish
     assert "--prerelease" not in release
@@ -220,11 +224,11 @@ def test_release_is_build_once_attested_draft_first_and_immutable() -> None:
     assert "gh release verify" in publish
     assert "gh release verify-asset" in publish
     assert (
-        publish.index("/immutable-releases")
-        < publish.index("gh release create")
+        publish.index("gh release create")
         < publish.index("gh release download")
-        < publish.rindex("/immutable-releases")
         < publish.index("--draft=false")
+        < publish.index("--json isImmutable")
+        < publish.index("gh release verify")
     )
 
     for forbidden_build in ["uv build", "make build", "build_release_artifacts.py"]:
