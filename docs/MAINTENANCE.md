@@ -31,7 +31,10 @@ Do not silently change formulas, selection boundaries, tolerances, or undefined-
 Dependency upgrades must be explicit. Re-lock the environment, review transitive changes, run the
 full suite and parity corpus, rebuild artifacts, and document any numerical delta. Do not widen
 tolerances to absorb an unexplained dependency change. Dependabot pull requests are review
-proposals, not merge authority; major GitHub Action upgrades remain explicit decisions.
+proposals, not merge authority; major GitHub Action upgrades remain explicit decisions. The
+automated updater must ignore NumPy 2.3 or newer and SciPy 1.15 or newer while the released
+`numpy>=2.2.5,<2.3` and `scipy>=1.14.1,<1.15` scientific compatibility ranges remain in force.
+Changing either ceiling requires an explicit dependency-compatibility review and release.
 
 ## Release workflow
 

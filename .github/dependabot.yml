@@ -8,11 +8,14 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "America/Denver"
-    # NumPy 2.3+ is outside the released scientific/runtime compatibility ceiling.
+    # These versions are outside the released scientific/runtime compatibility ceilings.
     ignore:
       - dependency-name: "numpy"
         versions:
           - ">=2.3"
+      - dependency-name: "scipy"
+        versions:
+          - ">=1.15"
     cooldown:
       default-days: 7
     open-pull-requests-limit: 5
