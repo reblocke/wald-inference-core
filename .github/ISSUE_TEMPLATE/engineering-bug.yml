@@ -1,0 +1,61 @@
+name: Packaging or repository engineering bug
+description: Report a reproducible nonsensitive packaging, CI, documentation, or release defect.
+title: "[Engineering]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use only synthetic values. Never include protected health information, patient-level data,
+        credentials, restricted data, or vulnerability details. Use private vulnerability
+        reporting for security, privacy, dependency-compromise, or release-integrity concerns.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Packaging, wheel, or source distribution
+        - CI, dependency update, or release workflow
+        - Documentation, metadata, or citation
+        - Baseline parity tooling or test infrastructure
+        - Other repository engineering
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Exact version or commit
+      placeholder: v0.4.1 or a 40-character commit SHA
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal synthetic reproduction
+      description: List exact commands and synthetic inputs.
+      placeholder: |
+        1. uv sync --locked --all-groups
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: Redact local paths, tokens, and sensitive logs.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-report safety
+      options:
+        - label: I used only synthetic values and removed credentials, sensitive data, patient-level data, and protected health information.
+          required: true
+        - label: This report contains no vulnerability or embargoed disclosure.
+          required: true

@@ -1,0 +1,64 @@
+name: Numerical or scientific behavior
+description: Report a reproducible discrepancy in behavior owned by wald-inference.
+title: "[Numerical]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this public form only for nonsensitive behavior that can be reproduced with synthetic
+        aggregate numerical values. Never include protected health information, patient-level
+        data, credentials, unpublished restricted data, or vulnerability details. Security and
+        privacy defects belong in private vulnerability reporting.
+  - type: input
+    id: version
+    attributes:
+      label: Exact version or commit
+      description: Provide the GitHub release tag or full commit SHA.
+      placeholder: v0.4.1 or a 40-character commit SHA
+    validations:
+      required: true
+  - type: input
+    id: api
+    attributes:
+      label: Public API or result
+      description: Name the root-public function, result field, or validation behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal synthetic reproduction
+      description: Provide runnable Python and synthetic numerical inputs.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior and rationale
+      description: State the expected value, tolerance, formula authority, or reference.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: Redact local paths and sensitive logs.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, Python, NumPy, SciPy, and package versions.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-report safety
+      options:
+        - label: I used only synthetic values and removed credentials, sensitive data, patient-level data, and protected health information.
+          required: true
+        - label: This report contains no vulnerability or embargoed disclosure.
+          required: true

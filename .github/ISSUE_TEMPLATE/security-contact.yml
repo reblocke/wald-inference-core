@@ -1,0 +1,20 @@
+name: Private security coordination request
+description: Request a private route only when GitHub private vulnerability reporting is unavailable.
+title: "[Security contact request]"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not identify the vulnerability class, affected component, reproduction, impact, exploit,
+        or suspected exposure here. Do not include credentials, protected health information,
+        patient-level data, restricted data, logs, screenshots, or links containing details. This
+        public form records only that the private reporting control is unavailable.
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Safe coordination request
+      options:
+        - label: GitHub's private Report a vulnerability control is unavailable to me.
+          required: true
+        - label: I included no vulnerability details or sensitive information in this issue.
+          required: true

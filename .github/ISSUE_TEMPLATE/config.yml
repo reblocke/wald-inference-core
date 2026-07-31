@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a vulnerability privately
+    url: https://github.com/reblocke/wald-inference-core/security/advisories/new
+    about: Do not disclose vulnerabilities, secrets, sensitive values, or health information publicly.
+  - name: Contribution and reporting guidance
+    url: https://github.com/reblocke/wald-inference-core/blob/main/CONTRIBUTING.md
+    about: Review repository scope, synthetic-input requirements, and verification expectations.

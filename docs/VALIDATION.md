@@ -86,14 +86,30 @@ current build. `make clean` removes generated local artifacts.
 
 The tag workflow:
 
-1. verifies that tag, package, citation, changelog, and `__version__` agree;
-2. reruns format, lint, tests, and frozen parity under `uv.lock`;
-3. archives the same tag twice and builds with the locked backend and fixed source epoch;
-4. requires byte-identical wheels and source distributions;
-5. inspects archive contents and metadata;
-6. installs the wheel into an empty virtual environment and runs public-API smoke checks;
-7. publishes SHA-256 checksums and the machine-readable parity report; and
-8. passes only those already-verified files to the write-enabled release job.
+1. installs an exact checksummed GitHub CLI version before any credentialed release command;
+2. requires an annotated tag whose internal and ref names match the package version, binds the
+   local/event tag object to the verified remote object, and requires its target to be the exact
+   workflow commit;
+3. requires GitHub to report a valid cryptographic signature on that annotated tag before
+   installing or executing repository code;
+4. requires the verified tag target to be contained in the protected `main` history;
+5. reads the project version with isolated Python and verifies package, citation, changelog, and
+   `__version__` agreement;
+6. reruns format, lint, tests, and frozen parity under `uv.lock`;
+7. archives the same tag twice and builds with the locked backend and fixed source epoch;
+8. requires byte-identical wheels and source distributions and inspects their contents;
+9. installs the wheel into an empty virtual environment and runs public-API smoke checks;
+10. extracts only the tagged version's nonempty changelog section;
+11. transfers one exact four-asset bundle to later jobs;
+12. generates GitHub build-provenance attestations for the wheel and source distribution in a
+    separate job with read, OIDC, and attestations permissions but no release-write permission;
+13. requires immutable releases before creating a draft;
+14. creates a draft containing exactly the wheel, source distribution, `SHA256SUMS`, and
+    machine-readable parity report;
+15. re-downloads and byte-compares every draft asset, reruns the hosted checksums, and requires the
+    draft body to match the generated current-version notes byte-for-byte;
+16. reconfirms immutability immediately before publication; and
+17. publishes once as stable, then verifies immutable-release and release-asset attestations.
 
 The expected v0.4.1 assets are:
 
@@ -110,3 +126,6 @@ The source baseline identifiers above are fixed and verified by the imported pro
 Final core test counts, artifact hashes, GitHub Actions run URL, release URL, and fresh-clone results
 do not exist until their respective commands and external actions complete. They must be recorded in
 the release and portfolio migration log after observation; this document does not predict them.
+Repository files also do not prove that private vulnerability reporting, Dependabot security
+updates, branch/tag protection, or immutable releases are enabled. Those settings require live
+verification.

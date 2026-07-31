@@ -242,3 +242,25 @@ negative-direction mirror. Extreme finite pairwise comparisons share the exact-b
 already exposed by the scalar/vector ratio API. The forward Wald model, thresholds, default
 tolerances, Type S/M definitions, candidate-versus-MLE comparison fields, and legacy adapter are
 unchanged. Strict ratio outputs remain inside the registry domain.
+
+## 2026-07-30: Supersede prerelease promotion with draft-first immutable publication
+
+**Context:** The earlier release decision used a published GitHub prerelease as the candidate and
+later changed its publication state to stable. Immutable GitHub releases lock the tag, assets, and
+publication state at publication, so that promotion model cannot preserve immutability. The
+repository also lacked full-SHA Action pins, signed-tag enforcement, hosted-asset re-download
+verification, artifact attestations, and durable public security/contribution routes.
+
+**Decision:** Use a GitHub-verified signed annotated tag, one authoritative reproducible bundle,
+separate narrowly permissioned build-provenance attestations, and a draft release as the candidate.
+Install an exact checksummed GitHub CLI version before any credentialed release command.
+Require immutable releases before draft creation, upload exactly the wheel, source distribution,
+checksums, and parity report, re-download and byte-compare every asset, verify the current-version
+release body byte-for-byte, reconfirm immutability, and publish once as stable. Pin every external
+Action to a live full commit SHA with an exact-version comment. Keep PyPI prohibited.
+
+**Consequences:** A failed internal candidate remains an unpublished draft for inspection. A defect
+found after publication requires a new version and signed tag; no published asset, tag, or
+publication state is replaced. Repository files cannot enable private vulnerability reporting,
+Dependabot security updates, protection rules, or immutable releases, so those remain explicit
+live administrative gates. Numerical behavior, public APIs, and parity tolerances are unchanged.

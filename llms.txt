@@ -44,3 +44,10 @@ Important constraints:
   infinities only as mathematical open-tail sentinels.
 - Browser contracts, UI rendering, exports, telemetry, and persistence are out of scope.
 - Numerical behavior is tied to the tagged pre-split baseline and its committed parity corpus.
+- Public issues, pull requests, fixtures, screenshots, and logs use synthetic values only and must
+  not contain PHI, patient-level data, credentials, or restricted data.
+- Vulnerabilities use GitHub private vulnerability reporting as documented in `SECURITY.md`.
+- Future releases require a GitHub-verified signed annotated tag, full-SHA Action pins,
+  build-provenance attestations, exact draft-asset re-download verification, and immutable stable
+  publication.
+- GitHub Releases are the sole authorized distribution channel; PyPI publishing is prohibited.

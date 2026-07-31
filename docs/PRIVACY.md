@@ -26,6 +26,10 @@ synthetic numerical inputs or generated baseline fixtures. Applications that cal
 their input collection, logging, persistence, export, and transmission behavior and must document
 and test those boundaries independently.
 
+Public issues, pull requests, code-review excerpts, screenshots, workflow logs, release evidence,
+and new fixtures must also use synthetic values and must not contain protected health information,
+patient-level data, credentials, unpublished restricted data, or identifying local-path details.
+
 Do not add telemetry, persistence, logging of user values, remote APIs, or server-side processing
 without explicit approval and a new privacy review.
 
