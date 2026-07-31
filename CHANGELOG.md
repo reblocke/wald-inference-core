@@ -4,6 +4,23 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Governance and release security
+
+- Pin every third-party GitHub Action to a live full commit SHA while retaining the established
+  checkout, Python, uv, and artifact-transfer major versions, and install an exact checksummed
+  GitHub CLI release before any credentialed release command.
+- Add Dependabot configuration for the locked uv environment and GitHub Actions, private
+  vulnerability-reporting guidance, synthetic/no-PHI contribution rules, issue forms, a pull
+  request template, and durable governance policy.
+- Require future releases to use a GitHub-verified signed annotated tag, one reproducible asset
+  bundle, separate wheel/source-distribution build-provenance attestations, an exact-asset draft,
+  hosted re-download and byte-exact asset/body verification, immutable-release gates, and one-time
+  stable publication.
+- Add regressions for action pins, least-privilege job permissions, current-version release notes,
+  draft-first immutable publication, PyPI prohibition, and public security/privacy policy.
+- Preserve every numerical formula, public API, tolerance, dependency resolution, and frozen
+  baseline value.
+
 ## [0.4.1] - 2026-07-30
 
 ### Fixed

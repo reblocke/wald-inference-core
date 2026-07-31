@@ -248,7 +248,10 @@ direct inflation of the natural-scale ratio.
 - [Migration provenance](docs/MIGRATION_PROVENANCE.md)
 - [Decisions](docs/DECISIONS.md)
 - [Maintenance and releases](docs/MAINTENANCE.md)
+- [Governance](docs/GOVERNANCE.md)
 - [Privacy](docs/PRIVACY.md)
+- [Security policy](SECURITY.md)
+- [Contributing](CONTRIBUTING.md)
 
 The root `wald_inference.__all__` is the deliberate stable root import surface. Downstream
 applications adapt domain objects into app contracts; they do not copy formulas.
@@ -278,6 +281,9 @@ privacy behavior.
 ## Version, citation, license, and contact
 
 - Version prepared for release: `0.4.1`
+- Governance and maintenance contact: repository issues and pull requests using the documented
+  synthetic-input boundary.
+- Vulnerabilities: use the private process in [SECURITY.md](SECURITY.md), never a public report.
 - Citation metadata: [`CITATION.cff`](CITATION.cff)
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - License: MIT; see [`LICENSE`](LICENSE)
