@@ -172,7 +172,7 @@ jobs:
         shell: bash
         run: |
           test "$(find "$RUNNER_TEMP/release-bundle/assets" -maxdepth 1 -type f | wc -l)" -eq 4
-          test -s "$RUNNER_TEMP/release-bundle/release-notes.md"
+          grep -q '[^[:space:]]' "$RUNNER_TEMP/release-bundle/release-notes.md"
           (
             cd "$RUNNER_TEMP/release-bundle/assets"
             sha256sum -c SHA256SUMS
@@ -234,6 +234,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Create and publish the verified GitHub release.
+      attestations: read # Required to verify the immutable release and asset attestations.
 
     steps:
       - name: Download verified release bundle
@@ -246,7 +247,7 @@ jobs:
         shell: bash
         run: |
           test "$(find release-bundle/assets -maxdepth 1 -type f | wc -l)" -eq 4
-          test -s release-bundle/release-notes.md
+          grep -q '[^[:space:]]' release-bundle/release-notes.md
           (
             cd release-bundle/assets
             sha256sum -c SHA256SUMS
