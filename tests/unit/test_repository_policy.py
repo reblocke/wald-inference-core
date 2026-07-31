@@ -108,6 +108,8 @@ def test_workflow_permissions_are_narrow_and_job_scoped() -> None:
         "permissions:\n"
         "      contents: write # Create and publish the verified GitHub release." in publish
     )
+    assert "attestations: read # Required to verify the immutable release" in publish
+    assert "attestations: read" not in verify_build
     assert "id-token: write" not in publish
     assert "attestations: write" not in publish
     assert release.count("contents: write") == 1
@@ -219,6 +221,32 @@ def test_release_is_build_once_attested_draft_first_and_immutable() -> None:
 
     for forbidden_build in ["uv build", "make build", "build_release_artifacts.py"]:
         assert forbidden_build not in publish
+
+
+def test_release_note_guards_reject_whitespace_only_content(tmp_path: Path) -> None:
+    release = (WORKFLOW_ROOT / "release.yml").read_text(encoding="utf-8")
+    verify_build = _job_block(release, "verify-build", "attest")
+    publish = _job_block(release, "release")
+    guard = "grep -q '[^[:space:]]'"
+
+    assert f'{guard} "$RUNNER_TEMP/release-bundle/release-notes.md"' in verify_build
+    assert f"{guard} release-bundle/release-notes.md" in publish
+    assert release.count(guard) == 2
+
+    notes = tmp_path / "release-notes.md"
+    notes.write_text(" \t\n\n", encoding="utf-8")
+    whitespace_only = subprocess.run(
+        ["grep", "-q", "[^[:space:]]", notes],
+        check=False,
+    )
+    notes.write_text("\n# Release notes\n", encoding="utf-8")
+    substantive = subprocess.run(
+        ["grep", "-q", "[^[:space:]]", notes],
+        check=False,
+    )
+
+    assert whitespace_only.returncode != 0
+    assert substantive.returncode == 0
 
 
 def test_release_body_comparison_rejects_a_trailing_newline_mismatch(
