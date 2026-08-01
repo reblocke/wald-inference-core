@@ -21,6 +21,23 @@ ratio. It also fails closed on natural-ratio underflow. Version `0.4.2` hardens 
 governance, exact annotated-tag binding, and immutable GitHub release verification without changing
 numerical behavior.
 
+## Why this package exists
+
+The Wald-inference applet portfolio needs one released, reviewable implementation of its shared
+numerical definitions. Keeping reconstruction, compatibility, relative support, detectability,
+Type S/M, and precision primitives here prevents each browser app from acquiring a subtly
+different formula or edge-case convention. Focused applications consume an exact Core release and
+remain responsible for their own inputs, displays, explanations, exports, and privacy behavior.
+
+## Intended use and audience
+
+This package is for researchers, methodologists, educators, and scientific-software developers who
+want to reproduce or build narrowly scoped tools around the documented one-parameter Wald model.
+It accepts published aggregate estimates and intervals or explicit hypothetical repeated-study
+assumptions; it does not need or accept patient identifiers. Users remain responsible for deciding
+whether the effect scale, Wald approximation, confidence level, selection rule, and assumed true
+effects are appropriate for their question.
+
 ## Question supported
 
 Given a reported estimate and 95% confidence interval treated as a one-parameter normal/Wald result,
@@ -242,6 +259,26 @@ multiplicatively, not arithmetically, symmetric on the natural scale.
 Type M for a ratio measure is therefore an exaggeration ratio of log distances from the null, not
 direct inflation of the natural-scale ratio.
 
+## Scientific basis and citation roles
+
+The publications below motivate terminology or scientific context. They do not authorize the
+software's exact formulas, numerical tolerances, edge-case behavior, or API. Those implementation
+details are governed by the tagged Core source, documented definitions, validation suite, and
+frozen parity evidence.
+
+| Capability | Methodology source | Role in this package |
+|---|---|---|
+| Compatibility interpretation | Rafi Z, Greenland S. “Semantic and cognitive tools to aid statistical science: replace confidence and significance by compatibility and surprise.” *BMC Medical Research Methodology*. 2020;20:244. [doi:10.1186/s12874-020-01105-9](https://doi.org/10.1186/s12874-020-01105-9). | Supports compatibility terminology and interpretation of p-value functions; it is not a code or numerical-fixture dependency. |
+| Normalized relative support and S−2 | Zampieri FG, Cahusac PMB, Maia IS, et al. “Trial Analysis and Interpretation in Critical Care Using the Evidential (Likelihood) Approach: Rationale and Practical Considerations.” *American Journal of Respiratory and Critical Care Medicine*. 2025;211(9):1610–1621. [doi:10.1164/rccm.202504-0809TR](https://doi.org/10.1164/rccm.202504-0809TR). | Supports evidential-likelihood, likelihood-ratio, support, and S−2 terminology; Core still computes a CI-reconstructed Wald approximation, not an exact fitted-model likelihood. |
+| Critical-effect rationale | Perugini A, Gambarota F, Toffalini E, et al. “The Benefits of Reporting Critical-Effect-Size Values.” *Advances in Methods and Practices in Psychological Science*. 2025;8(2):25152459251335298. [doi:10.1177/25152459251335298](https://doi.org/10.1177/25152459251335298). | Supplies design context; Core's explicit probability model and directed inverse define the implemented quantity. |
+| Type S and Type M | Gelman A, Carlin J. “Beyond Power Calculations: Assessing Type S (Sign) and Type M (Magnitude) Errors.” *Perspectives on Psychological Science*. 2014;9(6):641–651. [doi:10.1177/1745691614551642](https://doi.org/10.1177/1745691614551642). | Supports Type S/M concepts and repeated-study design interpretation; Core's documented selection rules govern the calculations. |
+| Joint precision guardrails | The Type S/M and critical-effect sources above provide concept context; no external paper is claimed to define this joint inverse solver. | The typed solver, feasibility rules, tolerances, tests, and released Core behavior are the authority. Relative information is not automatically sample size. |
+
+The Rafi and Greenland article was retrieved on 2026-08-01 and is available under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Retrieval and provenance notes for all
+four sources are recorded in [Migration provenance](docs/MIGRATION_PROVENANCE.md). No publication
+figure, table, dataset, code, or substantial text is copied into this repository.
+
 ## Public API and scientific scope
 
 - [API reference](docs/API.md)
@@ -286,7 +323,9 @@ privacy behavior.
 - Governance and maintenance contact: repository issues and pull requests using the documented
   synthetic-input boundary.
 - Vulnerabilities: use the private process in [SECURITY.md](SECURITY.md), never a public report.
-- Citation metadata: [`CITATION.cff`](CITATION.cff)
+- Software citation: cite the exact tagged Core release or commit used; machine-readable metadata
+  is in [`CITATION.cff`](CITATION.cff). Also cite the directly relevant methodology source above
+  when discussing its terminology or scientific rationale.
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - License: MIT; see [`LICENSE`](LICENSE)
 - Copyright: Copyright (c) 2026 Brian Locke
