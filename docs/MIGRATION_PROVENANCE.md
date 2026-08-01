@@ -159,6 +159,25 @@ No external figure, table, dataset, or substantial copied text is added by the e
 references support terminology and methodology; they do not supersede the frozen implementation as
 the v0.1.0 parity authority.
 
+A source-access review on 2026-08-01 recorded Zampieri et al. as CC BY-NC-ND 4.0 and Perugini et
+al. as CC BY-NC 4.0. The Gelman and Carlin publisher page states © The Author(s) 2014 and directs
+reuse requests through the publisher. These statuses document access and reuse conditions only;
+no source content is copied.
+
+## Compatibility terminology citation added 2026-08-01
+
+The README now cites:
+
+- Rafi Z, Greenland S. “Semantic and cognitive tools to aid statistical science: replace
+  confidence and significance by compatibility and surprise.” *BMC Medical Research
+  Methodology*. 2020;20:244.
+  <https://doi.org/10.1186/s12874-020-01105-9>
+
+The source was retrieved on 2026-08-01 and is available under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). It supports compatibility terminology
+and interpretation of p-value functions. It is not a source-code, numerical-fixture, formula, or
+runtime dependency. No source text, figure, table, dataset, or code was copied.
+
 ## Release evidence
 
 The v0.1.0 artifact names, SHA-256 values, GitHub Actions run, release URL, and independent
