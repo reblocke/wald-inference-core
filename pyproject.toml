@@ -43,7 +43,7 @@ Releases = "https://github.com/reblocke/wald-inference-core/releases"
 
 [dependency-groups]
 build = [
-  "setuptools==83.0.0",
+  "setuptools==84.0.0",
 ]
 dev = [
   "hypothesis>=6.151,<7",
@@ -52,7 +52,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["setuptools==83.0.0"]
+requires = ["setuptools==84.0.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
